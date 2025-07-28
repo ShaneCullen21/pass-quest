@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut } from "lucide-react";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { SortableTableHeader } from "@/components/ui/sortable-table-header";
+import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 
 const Clients = () => {
@@ -78,6 +80,8 @@ const Clients = () => {
     }
   ];
 
+  const { sortedData, sortConfig, handleSort } = useTableSort(clientProjects);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -147,16 +151,51 @@ const Clients = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border">
-                <TableHead className="text-muted-foreground font-medium">Project name</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Client</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Status</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Start date</TableHead>
-                <TableHead className="text-muted-foreground font-medium">End date</TableHead>
+                <SortableTableHeader 
+                  sortKey="projectName" 
+                  currentSortKey={sortConfig.key} 
+                  sortDirection={sortConfig.direction}
+                  onSort={handleSort}
+                >
+                  Project name
+                </SortableTableHeader>
+                <SortableTableHeader 
+                  sortKey="client" 
+                  currentSortKey={sortConfig.key} 
+                  sortDirection={sortConfig.direction}
+                  onSort={handleSort}
+                >
+                  Client
+                </SortableTableHeader>
+                <SortableTableHeader 
+                  sortKey="status" 
+                  currentSortKey={sortConfig.key} 
+                  sortDirection={sortConfig.direction}
+                  onSort={handleSort}
+                >
+                  Status
+                </SortableTableHeader>
+                <SortableTableHeader 
+                  sortKey="startDate" 
+                  currentSortKey={sortConfig.key} 
+                  sortDirection={sortConfig.direction}
+                  onSort={handleSort}
+                >
+                  Start date
+                </SortableTableHeader>
+                <SortableTableHeader 
+                  sortKey="endDate" 
+                  currentSortKey={sortConfig.key} 
+                  sortDirection={sortConfig.direction}
+                  onSort={handleSort}
+                >
+                  End date
+                </SortableTableHeader>
                 <TableHead className="text-muted-foreground font-medium">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientProjects.map((project, index) => (
+              {sortedData.map((project, index) => (
                 <TableRow key={index} className="border-b border-border hover:bg-muted/50">
                   <TableCell>
                     <span className="text-foreground font-medium">

@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { SortableTableHeader } from "@/components/ui/sortable-table-header";
+import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 
 const Reports = () => {
@@ -94,6 +96,8 @@ const Reports = () => {
       amount: "$1,200.00"
     }
   ];
+
+  const { sortedData, sortConfig, handleSort } = useTableSort(invoiceData);
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -215,16 +219,59 @@ const Reports = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice Number</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Payment Status</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Payment Terms</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <SortableTableHeader 
+                      sortKey="invoiceNumber" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Invoice Number
+                    </SortableTableHeader>
+                    <SortableTableHeader 
+                      sortKey="date" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Date
+                    </SortableTableHeader>
+                    <SortableTableHeader 
+                      sortKey="paymentStatus" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Payment Status
+                    </SortableTableHeader>
+                    <SortableTableHeader 
+                      sortKey="dueDate" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Due Date
+                    </SortableTableHeader>
+                    <SortableTableHeader 
+                      sortKey="paymentTerms" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Payment Terms
+                    </SortableTableHeader>
+                    <SortableTableHeader 
+                      sortKey="amount" 
+                      currentSortKey={sortConfig.key} 
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                      className="text-right"
+                    >
+                      Amount
+                    </SortableTableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoiceData.map((invoice) => (
+                  {sortedData.map((invoice) => (
                     <TableRow key={invoice.invoiceNumber}>
                       <TableCell className="font-medium">
                         {invoice.invoiceNumber}
