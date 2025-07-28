@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
+import { MoreHorizontal, Bell, Search, CircleHelp, User, LogOut, Plus } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
@@ -125,7 +125,8 @@ const Projects = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            CREATE PROJECT
+            <Plus className="h-4 w-4 mr-2" />
+            Create project
           </Button>
         </div>
 
