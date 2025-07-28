@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,12 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Navigation } from "@/components/ui/navigation";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ActionCard } from "@/components/dashboard/ActionCard";
+import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, MoreHorizontal, Search, Bell, HelpCircle, User } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    signOut();
+    setShowLogoutDialog(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -92,7 +103,7 @@ const Dashboard = () => {
                 <span className="text-sm font-medium">Emily</span>
                 <Button
                   variant="ghost"
-                  onClick={signOut}
+                  onClick={handleLogout}
                   size="icon"
                   className="text-muted-foreground"
                 >
@@ -108,7 +119,7 @@ const Dashboard = () => {
               </div>
               <Button
                 variant="ghost"
-                onClick={signOut}
+                onClick={handleLogout}
                 size="icon"
                 className="text-muted-foreground"
               >
@@ -212,6 +223,12 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
+      
+      <LogoutConfirmation 
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };

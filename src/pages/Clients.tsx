@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut } from "lucide-react";
+import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
 
 const Clients = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    signOut();
+    setShowLogoutDialog(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -94,7 +105,7 @@ const Clients = () => {
                 <span className="text-sm font-medium">Emily</span>
                 <Button
                   variant="ghost"
-                  onClick={signOut}
+                  onClick={handleLogout}
                   size="icon"
                   className="text-muted-foreground"
                 >
@@ -110,7 +121,7 @@ const Clients = () => {
               </div>
               <Button
                 variant="ghost"
-                onClick={signOut}
+                onClick={handleLogout}
                 size="icon"
                 className="text-muted-foreground"
               >
@@ -184,6 +195,12 @@ const Clients = () => {
           </Table>
         </div>
       </main>
+      
+      <LogoutConfirmation 
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };

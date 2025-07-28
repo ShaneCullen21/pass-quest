@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
+import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
 
 const Templates = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    signOut();
+    setShowLogoutDialog(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -67,7 +78,7 @@ const Templates = () => {
                 <span className="text-sm font-medium">Emily</span>
                 <Button
                   variant="ghost"
-                  onClick={signOut}
+                  onClick={handleLogout}
                   size="icon"
                   className="text-muted-foreground"
                 >
@@ -83,7 +94,7 @@ const Templates = () => {
               </div>
               <Button
                 variant="ghost"
-                onClick={signOut}
+                onClick={handleLogout}
                 size="icon"
                 className="text-muted-foreground"
               >
@@ -183,6 +194,12 @@ const Templates = () => {
           </Button>
         </div>
       </main>
+      
+      <LogoutConfirmation 
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };

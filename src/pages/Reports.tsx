@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
+import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
 
 const Reports = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    signOut();
+    setShowLogoutDialog(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -126,7 +137,7 @@ const Reports = () => {
                 <span className="text-sm font-medium">Emily</span>
                 <Button
                   variant="ghost"
-                  onClick={signOut}
+                  onClick={handleLogout}
                   size="icon"
                   className="text-muted-foreground"
                 >
@@ -142,7 +153,7 @@ const Reports = () => {
               </div>
               <Button
                 variant="ghost"
-                onClick={signOut}
+                onClick={handleLogout}
                 size="icon"
                 className="text-muted-foreground"
               >
@@ -235,6 +246,12 @@ const Reports = () => {
           </Card>
         </div>
       </div>
+      
+      <LogoutConfirmation 
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };
