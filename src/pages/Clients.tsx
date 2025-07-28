@@ -1,10 +1,37 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Bell, Search, CircleHelp, Plus } from "lucide-react";
+import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Clients = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
   const clientProjects = [
     {
       projectName: "Mary and Brian wedding",
@@ -62,17 +89,33 @@ const Clients = () => {
               
               <div className="flex items-center space-x-2 ml-4">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary-foreground">E</span>
+                  <User className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <span className="text-sm font-medium">Emily</span>
+                <Button
+                  variant="ghost"
+                  onClick={signOut}
+                  size="icon"
+                  className="text-muted-foreground"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
             {/* Mobile User Actions */}
             <div className="sm:hidden flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-primary-foreground">E</span>
+                <User className="h-4 w-4 text-primary-foreground" />
               </div>
+              <Button
+                variant="ghost"
+                onClick={signOut}
+                size="icon"
+                className="text-muted-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
