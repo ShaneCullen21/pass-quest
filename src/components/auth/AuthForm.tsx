@@ -87,20 +87,20 @@ export const AuthForm = () => {
 
   if (showResetForm) {
     return (
-      <Card className="w-full max-w-md mx-auto bg-auth-card border-auth-border">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center gap-2">
+      <Card className="w-full max-w-md mx-auto bg-auth-card border-auth-border shadow-lg">
+        <CardHeader className="space-y-4">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowResetForm(false)}
-              className="h-8 w-8"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+            <CardTitle className="text-xl font-semibold text-foreground">Reset Password</CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Enter your email address and we'll send you a reset link.
           </CardDescription>
         </CardHeader>
@@ -136,10 +136,10 @@ export const AuthForm = () => {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-auth-card border-auth-border">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Welcome</CardTitle>
-        <CardDescription className="text-center">
+    <Card className="w-full max-w-md mx-auto bg-auth-card border-auth-border shadow-lg">
+      <CardHeader className="space-y-6 text-center">
+        <CardTitle className="text-2xl font-semibold text-foreground">Welcome</CardTitle>
+        <CardDescription className="text-muted-foreground text-base">
           Sign in to your account or create a new one
         </CardDescription>
       </CardHeader>

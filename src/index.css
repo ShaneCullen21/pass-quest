@@ -17,12 +17,12 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 263 70% 50%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 263 70% 60%;
+    --primary: 15 44% 42%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 15 44% 52%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 20%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -38,13 +38,13 @@ All colors MUST be HSL.
     --ring: 263 70% 50%;
 
     /* Auth-specific colors */
-    --auth-background: 263 70% 5%;
-    --auth-card: 263 30% 8%;
-    --auth-border: 263 30% 15%;
+    --auth-background: 0 0% 96%;
+    --auth-card: 0 0% 100%;
+    --auth-border: 0 0% 90%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-auth: linear-gradient(135deg, hsl(var(--auth-background)), hsl(263 70% 8%));
+    --gradient-auth: linear-gradient(135deg, hsl(var(--auth-background)), hsl(0 0% 98%));
 
     --radius: 0.5rem;
 
