@@ -69,11 +69,12 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
       <header className="border-b border-border bg-background">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <Navigation />
             
-            <div className="flex items-center space-x-3">
+            {/* Desktop User Actions */}
+            <div className="hidden sm:flex items-center space-x-3">
               <Button variant="ghost" size="icon" className="text-muted-foreground">
                 <Search className="h-5 w-5" />
               </Button>
@@ -99,12 +100,27 @@ const Dashboard = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Mobile User Actions */}
+            <div className="sm:hidden flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <Button
+                variant="ghost"
+                onClick={signOut}
+                size="icon"
+                className="text-muted-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-foreground mb-6">Welcome back, Emily!</h1>
