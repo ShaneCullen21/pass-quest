@@ -167,12 +167,12 @@ const Projects = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border">
-                <TableHead className="text-muted-foreground font-medium">DOCUMENT NAME</TableHead>
-                <TableHead className="text-muted-foreground font-medium">CLIENTS</TableHead>
-                <TableHead className="text-muted-foreground font-medium">STATUS</TableHead>
-                <TableHead className="text-muted-foreground font-medium">LOCATION</TableHead>
-                <TableHead className="text-muted-foreground font-medium">PROJECT DATE</TableHead>
-                <TableHead className="text-muted-foreground font-medium">ACTIONS</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Document name</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Clients</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Status</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Location</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Project date</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
