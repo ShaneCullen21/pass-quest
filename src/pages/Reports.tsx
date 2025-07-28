@@ -1,8 +1,10 @@
 import { Navigation } from "@/components/ui/navigation";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { Bell, Search, CircleHelp } from "lucide-react";
 
 const Reports = () => {
   // Mock data for invoice summary
@@ -73,7 +75,42 @@ const Reports = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      {/* Header */}
+      <header className="border-b border-border bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Navigation />
+            
+            {/* Desktop User Actions */}
+            <div className="hidden sm:flex items-center space-x-3">
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Search className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Bell className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <CircleHelp className="h-5 w-5" />
+              </Button>
+              
+              <div className="flex items-center space-x-2 ml-4">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary-foreground">E</span>
+                </div>
+                <span className="text-sm font-medium">Emily</span>
+              </div>
+            </div>
+
+            {/* Mobile User Actions */}
+            <div className="sm:hidden flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-primary-foreground">E</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
