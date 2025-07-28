@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
+import { useLocation, Link } from "react-router-dom";
 
 interface NavigationProps {
   className?: string;
@@ -10,13 +11,14 @@ interface NavigationProps {
 
 const Navigation = ({ className }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
   
   const navItems = [
-    { label: "DASHBOARD", active: true },
-    { label: "PROJECTS", active: false },
-    { label: "TEMPLATES", active: false },
-    { label: "CLIENTS", active: false },
-    { label: "REPORTS", active: false },
+    { label: "DASHBOARD", active: false, href: "/" },
+    { label: "PROJECTS", active: false, href: "/projects" },
+    { label: "TEMPLATES", active: false, href: "/templates" },
+    { label: "CLIENTS", active: false, href: "/clients" },
+    { label: "REPORTS", active: false, href: "/reports" },
   ];
 
   return (
@@ -24,17 +26,18 @@ const Navigation = ({ className }: NavigationProps) => {
       {/* Desktop Navigation */}
       <nav className={cn("hidden md:flex items-center space-x-8", className)}>
         {navItems.map((item) => (
-          <button
+          <Link
             key={item.label}
+            to={item.href}
             className={cn(
               "text-sm font-medium transition-colors hover:text-primary",
-              item.active
+              location.pathname === item.href
                 ? "text-primary border-b-2 border-primary pb-1"
                 : "text-muted-foreground"
             )}
           >
             {item.label}
-          </button>
+          </Link>
         ))}
       </nav>
 
@@ -61,18 +64,19 @@ const Navigation = ({ className }: NavigationProps) => {
               </div>
               <nav className="flex flex-col p-4 space-y-2">
                 {navItems.map((item) => (
-                  <button
+                  <Link
                     key={item.label}
+                    to={item.href}
                     className={cn(
                       "text-left px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                      item.active
+                      location.pathname === item.href
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 ))}
               </nav>
             </div>
