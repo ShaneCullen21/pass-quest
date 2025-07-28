@@ -33,33 +33,34 @@ const Projects = () => {
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center">
-                
-              </div>
-              <Navigation />
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Navigation />
             
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:block text-sm text-muted-foreground">
-                Free trial expires in 14 days. <span className="text-primary underline cursor-pointer">Learn more</span>
-              </div>
-              <Button variant="ghost" size="icon">
+            {/* Desktop User Actions */}
+            <div className="hidden sm:flex items-center space-x-3">
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
                 <CircleHelp className="h-5 w-5" />
               </Button>
-              <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">E</AvatarFallback>
-                </Avatar>
-                <span className="hidden md:inline text-sm font-medium">Emily</span>
+              
+              <div className="flex items-center space-x-2 ml-4">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary-foreground">E</span>
+                </div>
+                <span className="text-sm font-medium">Emily</span>
+              </div>
+            </div>
+
+            {/* Mobile User Actions */}
+            <div className="sm:hidden flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-primary-foreground">E</span>
               </div>
             </div>
           </div>
