@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { FieldToolbar } from "./FieldToolbar";
 import { DocumentCanvas } from "./DocumentCanvas";
+import { FieldConfigModal } from "./FieldConfigModal";
+import { DocumentUploadModal } from "./DocumentUploadModal";
 
 interface ContractField {
   id: string;
@@ -45,6 +47,12 @@ export const ContractEditor = ({
   const [fields, setFields] = useState<ContractField[]>([]);
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [selectedField, setSelectedField] = useState<ContractField | null>(null);
+  const [showFieldConfig, setShowFieldConfig] = useState(false);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState<string | undefined>(undefined);
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +80,16 @@ export const ContractEditor = ({
   const handleFieldDelete = useCallback((fieldId: string) => {
     setFields(prev => prev.filter(field => field.id !== fieldId));
   }, []);
+
+  const handleFieldClick = (field: ContractField) => {
+    setSelectedField(field);
+    setShowFieldConfig(true);
+  };
+
+  const handleDocumentUpload = (file: File, documentUrl: string) => {
+    setDocumentUrl(documentUrl);
+    // In a real app, you would upload to Supabase Storage here
+  };
 
   const handleSaveContract = async () => {
     if (!title.trim()) {
@@ -197,11 +215,39 @@ export const ContractEditor = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-[600px]">
         {/* Field Toolbar */}
         <div className="lg:col-span-1">
-          <FieldToolbar
-            selectedTool={selectedTool}
-            onToolSelect={setSelectedTool}
-            clients={contractData.selectedClients}
-          />
+          <div className="flex flex-col gap-4">
+            <FieldToolbar
+              selectedTool={selectedTool}
+              onToolSelect={setSelectedTool}
+              clients={[]}
+            />
+            
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDocumentUpload(true)}
+              >
+                Upload Document
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGrid(!showGrid)}
+              >
+                {showGrid ? 'Hide Grid' : 'Show Grid'}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSnapToGrid(!snapToGrid)}
+              >
+                {snapToGrid ? 'Free Move' : 'Snap to Grid'}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Document Canvas */}
@@ -213,10 +259,30 @@ export const ContractEditor = ({
             onAddField={handleAddField}
             onFieldUpdate={handleFieldUpdate}
             onFieldDelete={handleFieldDelete}
-            clients={contractData.selectedClients}
+            onFieldClick={handleFieldClick}
+            clients={[]}
+            documentUrl={documentUrl}
+            showGrid={showGrid}
+            snapToGrid={snapToGrid}
           />
         </div>
       </div>
+
+      {/* Field Configuration Modal */}
+      <FieldConfigModal
+        isOpen={showFieldConfig}
+        onClose={() => setShowFieldConfig(false)}
+        field={selectedField}
+        clients={[]}
+        onSave={handleFieldUpdate}
+      />
+
+      {/* Document Upload Modal */}
+      <DocumentUploadModal
+        isOpen={showDocumentUpload}
+        onClose={() => setShowDocumentUpload(false)}
+        onDocumentUpload={handleDocumentUpload}
+      />
     </div>
   );
 };
