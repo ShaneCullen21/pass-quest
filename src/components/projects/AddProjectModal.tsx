@@ -20,13 +20,24 @@ interface Client {
   company: string | null;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  location: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+  clients_ids: string | null;
+}
+
 interface AddProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onProjectAdded?: () => void;
+  editProject?: Project | null;
 }
 
-export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProjectModalProps) => {
+export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProject }: AddProjectModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
     location: "",
@@ -40,16 +51,20 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProje
   const [isLoadingClients, setIsLoadingClients] = useState(false);
   const { toast } = useToast();
 
-  // Load clients when modal opens
-  useEffect(() => {
-    if (open) {
-      loadClients();
-    }
-  }, [open]);
+  const isEditMode = !!editProject;
 
-  // Reset form when modal closes
+  // Pre-populate form data when editing
   useEffect(() => {
-    if (!open) {
+    if (editProject) {
+      setFormData({
+        name: editProject.name,
+        location: editProject.location || "",
+        start_date: editProject.start_date ? new Date(editProject.start_date) : undefined,
+        end_date: editProject.end_date ? new Date(editProject.end_date) : undefined,
+        status: editProject.status,
+        client_ids: editProject.clients_ids ? [editProject.clients_ids] : []
+      });
+    } else {
       setFormData({
         name: "",
         location: "",
@@ -58,6 +73,27 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProje
         status: "",
         client_ids: []
       });
+    }
+  }, [editProject, open]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open && !editProject) {
+      setFormData({
+        name: "",
+        location: "",
+        start_date: undefined,
+        end_date: undefined,
+        status: "",
+        client_ids: []
+      });
+    }
+  }, [open, editProject]);
+
+  // Load clients when modal opens
+  useEffect(() => {
+    if (open) {
+      loadClients();
     }
   }, [open]);
 
@@ -148,34 +184,59 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProje
     try {
       const { data: userData } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('projects')
-        .insert({
-          name: formData.name.trim(),
-          location: formData.location.trim() || null,
-          start_date: formData.start_date?.toISOString().split('T')[0] || null,
-          end_date: formData.end_date?.toISOString().split('T')[0] || null,
-          status: formData.status,
-          clients_ids: formData.client_ids.length > 0 ? formData.client_ids[0] : null, // Using first client for now since DB expects single UUID
-          user_id: userData.user?.id!
+      if (isEditMode && editProject) {
+        // Update existing project
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            name: formData.name.trim(),
+            location: formData.location.trim() || null,
+            start_date: formData.start_date?.toISOString().split('T')[0] || null,
+            end_date: formData.end_date?.toISOString().split('T')[0] || null,
+            status: formData.status,
+            clients_ids: formData.client_ids.length > 0 ? formData.client_ids[0] : null,
+          })
+          .eq('id', editProject.id);
+
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: "Project updated successfully"
         });
+      } else {
+        // Add new project
+        const { error } = await supabase
+          .from('projects')
+          .insert({
+            name: formData.name.trim(),
+            location: formData.location.trim() || null,
+            start_date: formData.start_date?.toISOString().split('T')[0] || null,
+            end_date: formData.end_date?.toISOString().split('T')[0] || null,
+            status: formData.status,
+            clients_ids: formData.client_ids.length > 0 ? formData.client_ids[0] : null, // Using first client for now since DB expects single UUID
+            user_id: userData.user?.id!
+          });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: "Project added successfully"
+        });
       }
-
-      toast({
-        title: "Success",
-        description: "Project added successfully"
-      });
 
       onOpenChange(false);
       onProjectAdded?.();
     } catch (error) {
-      console.error("Error adding project:", error);
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} project:`, error);
       toast({
         title: "Error",
-        description: "Failed to add project. Please try again.",
+        description: `Failed to ${isEditMode ? 'update' : 'add'} project. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -192,7 +253,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProje
       <DialogContent className="sm:max-w-lg bg-background border border-border shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-foreground">
-            Add new project
+            {isEditMode ? "Edit project" : "Add new project"}
           </DialogTitle>
         </DialogHeader>
         
@@ -370,7 +431,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded }: AddProje
               disabled={isSubmitting}
               className="w-full bg-[hsl(15,78%,46%)] hover:bg-[hsl(15,78%,40%)] text-white font-medium"
             >
-              {isSubmitting ? "Adding..." : "Save & Continue"}
+              {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Project" : "Save & Continue")}
             </Button>
             <Button 
               type="button" 

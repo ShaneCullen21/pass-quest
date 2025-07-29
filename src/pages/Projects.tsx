@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { MoreHorizontal, Bell, Search, CircleHelp, User, LogOut, Plus } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Bell, Search, CircleHelp, User, LogOut, Plus, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
@@ -14,14 +15,20 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
+import { DeleteProjectConfirmation } from "@/components/projects/DeleteProjectConfirmation";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+
+type Project = Tables<"projects">;
 const Projects = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<any[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -124,6 +131,38 @@ const Projects = () => {
 
   const handleProjectAdded = () => {
     fetchProjects(); // Refresh projects after adding
+    setEditingProject(null); // Clear editing state
+  };
+
+  const handleDeleteProject = async () => {
+    if (!deletingProject) return;
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', deletingProject.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Project deleted successfully"
+      });
+
+      fetchProjects();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingProject(null);
+    }
   };
 
   const formatDateRange = (startDate: string | null, endDate: string | null) => {
@@ -365,9 +404,26 @@ const Projects = () => {
                         {formatDateRange(project.start_date, project.end_date)}
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setEditingProject(project)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => setDeletingProject(project)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -420,9 +476,22 @@ const Projects = () => {
       />
       
       <AddProjectModal
-        open={showAddProjectModal}
-        onOpenChange={setShowAddProjectModal}
+        open={showAddProjectModal || !!editingProject}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddProjectModal(false);
+            setEditingProject(null);
+          }
+        }}
+        editProject={editingProject}
         onProjectAdded={handleProjectAdded}
+      />
+      
+      <DeleteProjectConfirmation
+        open={!!deletingProject}
+        onOpenChange={(open) => !open && setDeletingProject(null)}
+        onConfirm={handleDeleteProject}
+        projectName={deletingProject?.name || ""}
       />
     </div>;
 };
