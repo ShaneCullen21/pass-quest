@@ -101,7 +101,9 @@ const Projects = () => {
       // Attach client data to projects
       const projectsWithClients = (projects || []).map(project => ({
         ...project,
-        clients: project.clients_ids ? clientsMap.get(project.clients_ids) : null
+        clients: project.client_ids && project.client_ids.length > 0 
+          ? project.client_ids.map(id => clientsMap.get(id)).filter(Boolean)
+          : []
       }));
 
       setProjects(projectsWithClients);
@@ -383,13 +385,10 @@ const Projects = () => {
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <span className="text-foreground">
-                            {project.clients?.name || "No client assigned"}
+                            {project.clients && project.clients.length > 0 
+                              ? project.clients.map(client => client.name).join(", ")
+                              : "No client assigned"}
                           </span>
-                          {project.clients?.company && (
-                            <span className="text-muted-foreground text-sm">
-                              ({project.clients.company})
-                            </span>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>

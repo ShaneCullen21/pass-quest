@@ -27,7 +27,7 @@ interface Project {
   start_date: string | null;
   end_date: string | null;
   status: string;
-  clients_ids: string | null;
+  client_ids: string[] | null;
 }
 
 interface AddProjectModalProps {
@@ -62,7 +62,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
         start_date: editProject.start_date ? new Date(editProject.start_date) : undefined,
         end_date: editProject.end_date ? new Date(editProject.end_date) : undefined,
         status: editProject.status,
-        client_ids: editProject.clients_ids ? [editProject.clients_ids] : []
+        client_ids: editProject.client_ids || []
       });
     } else {
       setFormData({
@@ -194,7 +194,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
             start_date: formData.start_date?.toISOString().split('T')[0] || null,
             end_date: formData.end_date?.toISOString().split('T')[0] || null,
             status: formData.status,
-            clients_ids: formData.client_ids.length > 0 ? formData.client_ids[0] : null,
+            client_ids: formData.client_ids.length > 0 ? formData.client_ids : null,
           })
           .eq('id', editProject.id);
 
@@ -216,7 +216,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
             start_date: formData.start_date?.toISOString().split('T')[0] || null,
             end_date: formData.end_date?.toISOString().split('T')[0] || null,
             status: formData.status,
-            clients_ids: formData.client_ids.length > 0 ? formData.client_ids[0] : null, // Using first client for now since DB expects single UUID
+            client_ids: formData.client_ids.length > 0 ? formData.client_ids : null,
             user_id: userData.user?.id!
           });
 

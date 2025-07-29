@@ -49,7 +49,7 @@ export type Database = {
       }
       projects: {
         Row: {
-          clients_ids: string | null
+          client_ids: string[] | null
           created_at: string
           end_date: string | null
           id: string
@@ -60,7 +60,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          clients_ids?: string | null
+          client_ids?: string[] | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -71,7 +71,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          clients_ids?: string | null
+          client_ids?: string[] | null
           created_at?: string
           end_date?: string | null
           id?: string
