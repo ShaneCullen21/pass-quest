@@ -29,7 +29,7 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
-import { CreateContractModal } from "@/components/contracts/CreateContractModal";
+
 import { ContractActions } from "@/components/contracts/ContractActions";
 
 interface Project {
@@ -71,7 +71,7 @@ export default function ProjectDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateContractModalOpen, setIsCreateContractModalOpen] = useState(false);
+  
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
 
@@ -207,7 +207,6 @@ export default function ProjectDetails() {
 
   const handleContractCreated = () => {
     fetchDocuments();
-    setIsCreateContractModalOpen(false);
   };
 
   const formatAmount = (amount: number | null) => {
@@ -353,7 +352,7 @@ export default function ProjectDetails() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => setIsCreateContractModalOpen(true)}
+                  onClick={() => navigate(`/projects/${id}/contracts/new`)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Contract
@@ -473,13 +472,6 @@ export default function ProjectDetails() {
           />
         )}
 
-        {/* Create Contract Modal */}
-        <CreateContractModal
-          isOpen={isCreateContractModalOpen}
-          onClose={() => setIsCreateContractModalOpen(false)}
-          projectId={id}
-          onContractCreated={handleContractCreated}
-        />
       </div>
     </div>
   );
