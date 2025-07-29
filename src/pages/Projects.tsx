@@ -14,6 +14,7 @@ import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
 import { DeleteProjectConfirmation } from "@/components/projects/DeleteProjectConfirmation";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 type Project = Tables<"projects">;
 const Projects = () => {
   const { user, loading, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -240,7 +242,7 @@ const Projects = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</span>
+                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}

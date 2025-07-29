@@ -11,9 +11,11 @@ import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const Reports = () => {
   const { user, loading, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
@@ -138,7 +140,7 @@ const Reports = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</span>
+                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}

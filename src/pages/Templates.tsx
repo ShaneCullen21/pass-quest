@@ -8,9 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const Templates = () => {
   const { user, loading, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
@@ -75,7 +77,7 @@ const Templates = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</span>
+                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
