@@ -63,11 +63,18 @@ const Clients = () => {
     if (!user) return;
     
     setClientsLoading(true);
-    try {
-      const { data, error } = await supabase
+    
+    // Add minimum loading time to show the nice animation
+    const [clientsData] = await Promise.all([
+      supabase
         .from("clients")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }),
+      new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading time
+    ]);
+
+    try {
+      const { data, error } = clientsData;
 
       if (error) {
         console.error("Error fetching clients:", error);
