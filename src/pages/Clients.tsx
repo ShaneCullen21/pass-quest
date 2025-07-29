@@ -4,6 +4,7 @@ import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut, Edit, Trash2 } from "lucide-react";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
@@ -12,6 +13,7 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { AddClientModal } from "@/components/clients/AddClientModal";
 import { DeleteClientConfirmation } from "@/components/clients/DeleteClientConfirmation";
+import { TableLoading } from "@/components/ui/table-loading";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -28,10 +30,25 @@ const Clients = () => {
   const [clientsLoading, setClientsLoading] = useState(true);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+  
+  // Pagination constants
+  const CLIENTS_PER_PAGE = 6;
   
   // Move useTableSort hook call to the top, before any conditional logic
   const { sortedData, sortConfig, handleSort } = useTableSort(clients);
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedData.length / CLIENTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * CLIENTS_PER_PAGE;
+  const endIndex = startIndex + CLIENTS_PER_PAGE;
+  const paginatedClients = sortedData.slice(startIndex, endIndex);
+  
+  // Reset to first page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortedData.length]);
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
@@ -192,12 +209,10 @@ const Clients = () => {
         {/* Clients Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           {clientsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading clients...</p>
-              </div>
-            </div>
+            <TableLoading 
+              columns={["Name", "Company", "Email", "Phone", "Address", "Actions"]}
+              rows={6}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -246,14 +261,14 @@ const Clients = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedData.length === 0 ? (
+                {paginatedClients.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       <p className="text-muted-foreground">No clients found. Add your first client to get started.</p>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedData.map((client) => (
+                  paginatedClients.map((client) => (
                     <TableRow key={client.id} className="border-b border-border hover:bg-muted/50">
                       <TableCell>
                         <span className="text-foreground font-medium">
@@ -297,6 +312,80 @@ const Clients = () => {
             </Table>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {!clientsLoading && totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setCurrentPage(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: totalPages }, (_, index) => {
+                  const page = index + 1;
+                  const isCurrentPage = page === currentPage;
+                  
+                  // Show first page, last page, current page, and pages around current
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    page === currentPage ||
+                    Math.abs(page - currentPage) <= 1
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={isCurrentPage}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+                  
+                  // Show ellipsis for gaps
+                  if (
+                    (page === 2 && currentPage > 4) ||
+                    (page === totalPages - 1 && currentPage < totalPages - 3)
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+                  
+                  return null;
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </main>
       
       <LogoutConfirmation 
