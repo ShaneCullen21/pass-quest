@@ -171,7 +171,7 @@ const Profile = () => {
                   type="email"
                   value={formData.email}
                   disabled
-                  className="bg-muted"
+                  className="bg-muted text-muted-foreground"
                 />
                 <p className="text-sm text-muted-foreground">
                   Email cannot be changed. Contact support if you need to update your email address.
