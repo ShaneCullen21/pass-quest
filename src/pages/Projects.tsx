@@ -378,9 +378,12 @@ const Projects = () => {
                   sortedData.map((project, index) => (
                     <TableRow key={project.id || index} className="border-b border-border hover:bg-muted/50">
                       <TableCell>
-                        <span className="text-foreground font-medium underline decoration-primary cursor-pointer">
+                        <button 
+                          onClick={() => navigate(`/projects/${project.id}`)}
+                          className="text-foreground font-medium underline decoration-primary cursor-pointer hover:text-primary transition-colors"
+                        >
                           {project.name}
-                        </span>
+                        </button>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
