@@ -18,6 +18,53 @@ const Reports = () => {
   const { profile } = useProfile();
   const navigate = useNavigate();
 
+  // Define invoice data first
+  const invoiceData = [
+    {
+      invoiceNumber: "INV-001",
+      date: "2024-01-15", 
+      paymentStatus: "paid",
+      dueDate: "2024-02-15",
+      paymentTerms: "Net 30",
+      amount: "$2,500.00"
+    },
+    {
+      invoiceNumber: "INV-002", 
+      date: "2024-01-22",
+      paymentStatus: "unpaid",
+      dueDate: "2024-02-22", 
+      paymentTerms: "Net 30",
+      amount: "$1,800.00"
+    },
+    {
+      invoiceNumber: "INV-003",
+      date: "2024-01-28",
+      paymentStatus: "overdue",
+      dueDate: "2024-02-28",
+      paymentTerms: "Due on Receipt", 
+      amount: "$3,200.00"
+    },
+    {
+      invoiceNumber: "INV-004",
+      date: "2024-02-01",
+      paymentStatus: "paid", 
+      dueDate: "2024-03-01",
+      paymentTerms: "Net 30",
+      amount: "$950.00"
+    },
+    {
+      invoiceNumber: "INV-005",
+      date: "2024-02-05",
+      paymentStatus: "refunded", 
+      dueDate: "2024-03-05",
+      paymentTerms: "Single Payment",
+      amount: "$1,200.00"
+    }
+  ];
+
+  // CRITICAL: Call all hooks BEFORE any early returns
+  const { sortedData, sortConfig, handleSort } = useTableSort(invoiceData);
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
@@ -44,52 +91,6 @@ const Reports = () => {
     receivables: "$12,340.25", 
     overdue: "$3,450.00"
   };
-
-  // Mock data for financial reports table
-  const invoiceData = [
-    {
-      invoiceNumber: "INV-001",
-      date: "2024-01-15",
-      paymentStatus: "paid",
-      dueDate: "2024-02-15",
-      paymentTerms: "Single Payment",
-      amount: "$5,230.00"
-    },
-    {
-      invoiceNumber: "INV-002", 
-      date: "2024-01-20",
-      paymentStatus: "unpaid",
-      dueDate: "2024-02-20",
-      paymentTerms: "Installments (2/3 paid)",
-      amount: "$3,450.00"
-    },
-    {
-      invoiceNumber: "INV-003",
-      date: "2024-01-25", 
-      paymentStatus: "overdue",
-      dueDate: "2024-02-10",
-      paymentTerms: "Single Payment",
-      amount: "$2,100.00"
-    },
-    {
-      invoiceNumber: "INV-004",
-      date: "2024-02-01",
-      paymentStatus: "paid",
-      dueDate: "2024-03-01",
-      paymentTerms: "Recurring Monthly",
-      amount: "$8,900.00"
-    },
-    {
-      invoiceNumber: "INV-005",
-      date: "2024-02-05",
-      paymentStatus: "refunded", 
-      dueDate: "2024-03-05",
-      paymentTerms: "Single Payment",
-      amount: "$1,200.00"
-    }
-  ];
-
-  const { sortedData, sortConfig, handleSort } = useTableSort(invoiceData);
 
   const getStatusBadge = (status: string) => {
     const variants = {
