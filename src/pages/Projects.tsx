@@ -11,10 +11,12 @@ import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
+import { AddProjectModal } from "@/components/projects/AddProjectModal";
 const Projects = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
@@ -128,7 +130,10 @@ const Projects = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button 
+            onClick={() => setShowAddProjectModal(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create project
           </Button>
@@ -255,6 +260,14 @@ const Projects = () => {
         open={showLogoutDialog}
         onOpenChange={setShowLogoutDialog}
         onConfirm={confirmLogout}
+      />
+      
+      <AddProjectModal
+        open={showAddProjectModal}
+        onOpenChange={setShowAddProjectModal}
+        onProjectAdded={() => {
+          // TODO: Refresh projects data when implemented
+        }}
       />
     </div>;
 };
