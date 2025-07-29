@@ -1,19 +1,22 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ContractEditor as ContractEditorComponent } from "@/components/contracts/ContractEditor";
 
 const ContractEditor = () => {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
+  const [searchParams] = useSearchParams();
+  const contractId = searchParams.get('contractId');
 
-  // Mock contract data - in a real app, this would come from query params or state
+  // Contract data - will be populated from contract ID if editing, or defaults for new contract
   const contractData = {
     sourceType: "blank" as const,
     templateId: null,
     documentUrl: null,
     selectedClients: [],
     selectedProject: projectId || null,
-    title: "",
+    title: contractId ? `Editing Contract ${contractId.slice(0, 8)}...` : "",
     description: "",
+    contractId: contractId, // Pass the contract ID for editing
   };
 
   const handleSave = () => {

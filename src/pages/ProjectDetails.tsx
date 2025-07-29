@@ -16,6 +16,7 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Table,
@@ -63,7 +64,7 @@ export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast: showToast } = useToast();
   
   const [project, setProject] = useState<Project | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
@@ -114,7 +115,7 @@ export default function ProjectDetails() {
       }
     } catch (error) {
       console.error("Error fetching project details:", error);
-      toast({
+      showToast({
         title: "Error",
         description: "Failed to fetch project details",
         variant: "destructive",
@@ -162,7 +163,7 @@ export default function ProjectDetails() {
       setDocuments(allDocuments);
     } catch (error) {
       console.error("Error fetching documents:", error);
-      toast({
+      showToast({
         title: "Error",
         description: "Failed to fetch documents",
         variant: "destructive",
@@ -436,21 +437,34 @@ export default function ProjectDetails() {
                        <TableCell>
                          <div className="flex gap-2">
                            {document.type === 'contract' ? (
-                             <ContractActions 
-                               contract={document}
-                               onStatusChange={handleContractCreated}
-                               compact={true}
-                             />
-                           ) : (
-                             <>
-                               <Button variant="ghost" size="sm">
-                                 View
-                               </Button>
-                               <Button variant="ghost" size="sm">
-                                 Edit
-                               </Button>
-                             </>
-                           )}
+                              <ContractActions 
+                                contract={document}
+                                onStatusChange={handleContractCreated}
+                                compact={true}
+                                projectId={id}
+                              />
+                            ) : (
+                              <>
+                                <Button variant="ghost" size="sm">
+                                  View
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                     if (document.type === 'proposal') {
+                                       // For now, just show a message - you could implement proposal editor later
+                                       toast.error('Proposal editor not yet implemented');
+                                     } else if (document.type === 'invoice') {
+                                       // For now, just show a message - you could implement invoice editor later
+                                       toast.error('Invoice editor not yet implemented');
+                                     }
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                              </>
+                            )}
                          </div>
                        </TableCell>
                     </TableRow>

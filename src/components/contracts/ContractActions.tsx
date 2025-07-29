@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +33,11 @@ interface ContractActionsProps {
   contract: Contract;
   onStatusChange?: () => void;
   compact?: boolean;
+  projectId?: string;
 }
 
-export const ContractActions = ({ contract, onStatusChange, compact = false }: ContractActionsProps) => {
+export const ContractActions = ({ contract, onStatusChange, compact = false, projectId }: ContractActionsProps) => {
+  const navigate = useNavigate();
   const [exportLoading, setExportLoading] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   
@@ -188,6 +191,14 @@ export const ContractActions = ({ contract, onStatusChange, compact = false }: C
     }
   };
 
+  const handleEditContract = () => {
+    if (projectId) {
+      navigate(`/projects/${projectId}/contracts/new?contractId=${contract.id}`);
+    } else {
+      toast.error('Project ID not available');
+    }
+  };
+
   if (compact) {
     return (
       <div className="flex gap-1">
@@ -219,6 +230,7 @@ export const ContractActions = ({ contract, onStatusChange, compact = false }: C
         <Button
           variant="ghost"
           size="sm"
+          onClick={handleEditContract}
           title="Edit contract"
         >
           <Edit className="h-4 w-4" />
