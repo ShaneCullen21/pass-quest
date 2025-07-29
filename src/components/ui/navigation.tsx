@@ -2,7 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 
 interface NavigationProps {
@@ -53,14 +53,6 @@ const Navigation = ({ className }: NavigationProps) => {
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between p-4 border-b">
                 <h2 className="text-lg font-semibold">Menu</h2>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsOpen(false)}
-                  className="h-8 w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
               </div>
               <nav className="flex flex-col p-4 space-y-2">
                 {navItems.map((item) => (
