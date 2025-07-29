@@ -138,7 +138,7 @@ const Reports = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-medium">Emily</span>
+                <span className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</span>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}

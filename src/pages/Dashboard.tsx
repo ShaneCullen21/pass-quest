@@ -106,7 +106,7 @@ const Dashboard = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-medium">Emily</span>
+                <span className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</span>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
@@ -140,7 +140,7 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-foreground mb-6">Welcome back, Emily!</h1>
+          <h1 className="text-3xl font-semibold text-foreground mb-6">Welcome back, {user?.email?.split('@')[0] || 'User'}!</h1>
           
           {/* Stats Section */}
           <div className="mb-8">
