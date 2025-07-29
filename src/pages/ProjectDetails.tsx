@@ -278,7 +278,7 @@ export default function ProjectDetails() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-6">
               <div className="flex items-center space-x-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -288,35 +288,33 @@ export default function ProjectDetails() {
                 </div>
               </div>
 
-              {project.start_date && (
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Start Date</p>
-                    <p className="font-medium">{format(new Date(project.start_date), "MMM dd, yyyy")}</p>
-                  </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Start Date</p>
+                  <p className="font-medium">
+                    {project.start_date ? format(new Date(project.start_date), "MMM dd, yyyy") : "Not set"}
+                  </p>
                 </div>
-              )}
+              </div>
               
-              {project.end_date && (
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">End Date</p>
-                    <p className="font-medium">{format(new Date(project.end_date), "MMM dd, yyyy")}</p>
-                  </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">End Date</p>
+                  <p className="font-medium">
+                    {project.end_date ? format(new Date(project.end_date), "MMM dd, yyyy") : "Not set"}
+                  </p>
                 </div>
-              )}
+              </div>
               
-              {project.location && (
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
-                    <p className="font-medium">{project.location}</p>
-                  </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-medium">{project.location || "Not set"}</p>
                 </div>
-              )}
+              </div>
             </div>
 
             {clients.length > 0 && (
