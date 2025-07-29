@@ -36,6 +36,13 @@ export const useProfile = () => {
       return;
     }
 
+    // Don't fetch if we're already initialized and have no profile (user has no profile record)
+    if (initialized && !profile) {
+      console.log('Already checked, no profile exists');
+      setLoading(false);
+      return;
+    }
+
     console.log('Fetching profile data for user:', user.id);
 
     const fetchProfile = async () => {
@@ -62,7 +69,7 @@ export const useProfile = () => {
     };
 
     fetchProfile();
-  }, [user, initialized, profile]);
+  }, [user?.id]); // FIXED: Only depend on user.id, not the profile state
 
   return { profile, loading };
 };
