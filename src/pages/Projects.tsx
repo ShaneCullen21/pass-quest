@@ -283,38 +283,6 @@ const Projects = () => {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground">FILTER BY</span>
-              <Select defaultValue="status">
-                <SelectTrigger className="w-32 border-input">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">SORT BY</span>
-            <Select defaultValue="last-added">
-              <SelectTrigger className="w-36 border-input">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last-added">Last added</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="date">Date</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
         {/* Projects Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
