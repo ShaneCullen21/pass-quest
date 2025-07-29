@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, Search, CircleHelp } from "lucide-react";
+import { Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
+import { TemplateEditorModal } from "@/components/contracts/TemplateEditorModal";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -19,6 +20,7 @@ interface Template {
   category: string;
   created_at: string;
   updated_at: string;
+  template_data?: any;
 }
 
 const Templates = () => {
@@ -27,6 +29,8 @@ const Templates = () => {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -58,6 +62,42 @@ const Templates = () => {
     }
   };
 
+  const handleTemplateCreated = () => {
+    fetchTemplates();
+    setShowTemplateEditor(false);
+    setEditingTemplate(null);
+  };
+
+  const handleEditTemplate = (template: Template) => {
+    setEditingTemplate(template);
+    setShowTemplateEditor(true);
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    try {
+      const { error } = await supabase
+        .from('templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) throw error;
+
+      toast.success('Template deleted successfully');
+      fetchTemplates();
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      toast.error('Failed to delete template');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -72,13 +112,6 @@ const Templates = () => {
   if (!user) {
     return null;
   }
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,6 +150,10 @@ const Templates = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Templates</h1>
+          <Button onClick={() => setShowTemplateEditor(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Template
+          </Button>
         </div>
 
         {/* Tabs and Sort */}
@@ -154,39 +191,67 @@ const Templates = () => {
 
         {/* Template Cards */}
         <div className="grid gap-6 mb-16">
-          {templates.map((template, index) => (
-            <Card key={index} className="border border-border">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-6">
-                  {/* Template Preview */}
-                  <div className="w-32 h-24 bg-muted rounded-lg flex-shrink-0"></div>
-                  
-                  {/* Template Info */}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {template.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Last updated on {formatDate(template.updated_at)}
-                    </p>
+          {templatesLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading templates...</p>
+            </div>
+          ) : templates.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No templates found</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Create your first template to get started
+              </p>
+            </div>
+          ) : (
+            templates.map((template) => (
+              <Card key={template.id} className="border border-border">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-6">
+                    {/* Template Preview */}
+                    <div className="w-32 h-24 bg-muted rounded-lg flex-shrink-0"></div>
+                    
+                    {/* Template Info */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {template.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Last updated on {formatDate(template.updated_at)}
+                      </p>
+                      {template.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {template.description}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex flex-col space-y-2 flex-shrink-0">
+                      <Button 
+                        variant="outline" 
+                        className="w-36"
+                        onClick={() => handleEditTemplate(template)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit template
+                      </Button>
+                      <Button variant="outline" className="w-36">
+                        Create document
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-36"
+                        onClick={() => handleDeleteTemplate(template.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex flex-col space-y-2 flex-shrink-0">
-                    <Button variant="outline" className="w-36">
-                      Edit template
-                    </Button>
-                    <Button variant="outline" className="w-36">
-                      Create document
-                    </Button>
-                    <Button variant="outline" className="w-36">
-                      Download template
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Cannot find section */}
@@ -202,6 +267,20 @@ const Templates = () => {
           </Button>
         </div>
       </main>
+
+      {/* Template Editor Modal */}
+      <TemplateEditorModal
+        isOpen={showTemplateEditor}
+        onClose={() => {
+          setShowTemplateEditor(false);
+          setEditingTemplate(null);
+        }}
+        onTemplateCreated={handleTemplateCreated}
+        template={editingTemplate ? {
+          ...editingTemplate,
+          template_data: editingTemplate.template_data || {}
+        } : null}
+      />
     </div>
   );
 };
