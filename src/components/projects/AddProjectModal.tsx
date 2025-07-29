@@ -49,6 +49,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
   const [clients, setClients] = useState<Client[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingClients, setIsLoadingClients] = useState(false);
+  const [clientSelectionError, setClientSelectionError] = useState<string>("");
   const { toast } = useToast();
 
   const isEditMode = !!editProject;
@@ -130,6 +131,14 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
   };
 
   const handleClientToggle = (clientId: string) => {
+    const isCurrentlySelected = formData.client_ids.includes(clientId);
+    
+    if (!isCurrentlySelected && formData.client_ids.length >= 5) {
+      setClientSelectionError("Maximum 5 clients allowed per project");
+      return;
+    }
+    
+    setClientSelectionError(""); // Clear error when valid selection
     setFormData(prev => ({
       ...prev,
       client_ids: prev.client_ids.includes(clientId)
@@ -139,6 +148,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
   };
 
   const removeClient = (clientId: string) => {
+    setClientSelectionError(""); // Clear error when removing clients
     setFormData(prev => ({
       ...prev,
       client_ids: prev.client_ids.filter(id => id !== clientId)
@@ -165,6 +175,15 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       toast({
         title: "Error",
         description: "Project status is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.client_ids.length > 5) {
+      toast({
+        title: "Error",
+        description: "Maximum 5 clients allowed per project",
         variant: "destructive"
       });
       return;
@@ -421,6 +440,13 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
                     </div>
                   )}
                 </div>
+                
+                {/* Error message for client selection */}
+                {clientSelectionError && (
+                  <div className="text-sm text-destructive mt-2">
+                    {clientSelectionError}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -428,7 +454,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
           <div className="flex flex-col space-y-2 pt-4">
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || clientSelectionError !== "" || formData.client_ids.length > 5}
               className="w-full bg-[hsl(15,78%,46%)] hover:bg-[hsl(15,78%,40%)] text-white font-medium"
             >
               {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Project" : "Save & Continue")}
