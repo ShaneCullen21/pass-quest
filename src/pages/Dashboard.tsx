@@ -7,18 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Navigation } from "@/components/ui/navigation";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ActionCard } from "@/components/dashboard/ActionCard";
-import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { LogOut, MoreHorizontal, Search, Bell, HelpCircle, User } from "lucide-react";
+import { MoreHorizontal, Search, Bell, HelpCircle } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  
 
   // Project data - defined at component level to ensure consistent hook calls
   const projectData = [
@@ -54,14 +54,6 @@ const Dashboard = () => {
   // All hooks must be called before any early returns
   const { sortedData, sortConfig, handleSort } = useTableSort(projectData);
 
-  const handleLogout = () => {
-    setShowLogoutDialog(true);
-  };
-
-  const confirmLogout = () => {
-    signOut();
-    setShowLogoutDialog(false);
-  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -104,35 +96,14 @@ const Dashboard = () => {
                 <HelpCircle className="h-5 w-5" />
               </Button>
               
-              <div className="flex items-center space-x-2 ml-4">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  size="icon"
-                  className="text-muted-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="ml-4">
+                <ProfileDropdown />
               </div>
             </div>
 
             {/* Mobile User Actions */}
-            <div className="sm:hidden flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                size="icon"
-                className="text-muted-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+            <div className="sm:hidden">
+              <ProfileDropdown />
             </div>
           </div>
         </div>
@@ -266,12 +237,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
-      
-      <LogoutConfirmation 
-        open={showLogoutDialog}
-        onOpenChange={setShowLogoutDialog}
-        onConfirm={confirmLogout}
-      />
     </div>
   );
 };

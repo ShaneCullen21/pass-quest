@@ -7,9 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Bell, Search, CircleHelp, User, LogOut, Plus, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
@@ -27,7 +27,7 @@ const Projects = () => {
   const { profile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
@@ -48,14 +48,6 @@ const Projects = () => {
     setCurrentPage(1);
   }, [projects.length]);
 
-  const handleLogout = () => {
-    setShowLogoutDialog(true);
-  };
-
-  const confirmLogout = () => {
-    signOut();
-    setShowLogoutDialog(false);
-  };
 
   const fetchProjects = async () => {
     if (!user) return;
@@ -238,35 +230,14 @@ const Projects = () => {
                 <CircleHelp className="h-5 w-5" />
               </Button>
               
-              <div className="flex items-center space-x-2 ml-4">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  size="icon"
-                  className="text-muted-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="ml-4">
+                <ProfileDropdown />
               </div>
             </div>
 
             {/* Mobile User Actions */}
-            <div className="sm:hidden flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                size="icon"
-                className="text-muted-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+            <div className="sm:hidden">
+              <ProfileDropdown />
             </div>
           </div>
         </div>
@@ -440,12 +411,6 @@ const Projects = () => {
           </div>
         )}
       </main>
-      
-      <LogoutConfirmation 
-        open={showLogoutDialog}
-        onOpenChange={setShowLogoutDialog}
-        onConfirm={confirmLogout}
-      />
       
       <AddProjectModal
         open={showAddProjectModal || !!editingProject}

@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, Search, CircleHelp, User, LogOut } from "lucide-react";
-import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { Bell, Search, CircleHelp } from "lucide-react";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -14,16 +14,6 @@ const Templates = () => {
   const { user, loading, signOut } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  const handleLogout = () => {
-    setShowLogoutDialog(true);
-  };
-
-  const confirmLogout = () => {
-    signOut();
-    setShowLogoutDialog(false);
-  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -73,35 +63,14 @@ const Templates = () => {
                 <CircleHelp className="h-5 w-5" />
               </Button>
               
-              <div className="flex items-center space-x-2 ml-4">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  size="icon"
-                  className="text-muted-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="ml-4">
+                <ProfileDropdown />
               </div>
             </div>
 
             {/* Mobile User Actions */}
-            <div className="sm:hidden flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                size="icon"
-                className="text-muted-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+            <div className="sm:hidden">
+              <ProfileDropdown />
             </div>
           </div>
         </div>
@@ -196,12 +165,6 @@ const Templates = () => {
           </Button>
         </div>
       </main>
-      
-      <LogoutConfirmation 
-        open={showLogoutDialog}
-        onOpenChange={setShowLogoutDialog}
-        onConfirm={confirmLogout}
-      />
     </div>
   );
 };

@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut, Edit, Trash2 } from "lucide-react";
-import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
+import { MoreHorizontal, Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +26,7 @@ const Clients = () => {
   const { user, loading, signOut } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [clientsLoading, setClientsLoading] = useState(true);
@@ -52,14 +52,6 @@ const Clients = () => {
     setCurrentPage(1);
   }, [sortedData.length]);
 
-  const handleLogout = () => {
-    setShowLogoutDialog(true);
-  };
-
-  const confirmLogout = () => {
-    signOut();
-    setShowLogoutDialog(false);
-  };
 
   const fetchClients = async () => {
     if (!user) return;
@@ -168,35 +160,14 @@ const Clients = () => {
                 <CircleHelp className="h-5 w-5" />
               </Button>
               
-              <div className="flex items-center space-x-2 ml-4">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-medium">{profile?.first_name || user?.email?.split('@')[0] || 'User'}</span>
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  size="icon"
-                  className="text-muted-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="ml-4">
+                <ProfileDropdown />
               </div>
             </div>
 
             {/* Mobile User Actions */}
-            <div className="sm:hidden flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                size="icon"
-                className="text-muted-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+            <div className="sm:hidden">
+              <ProfileDropdown />
             </div>
           </div>
         </div>
@@ -396,12 +367,6 @@ const Clients = () => {
           </div>
         )}
       </main>
-      
-      <LogoutConfirmation 
-        open={showLogoutDialog}
-        onOpenChange={setShowLogoutDialog}
-        onConfirm={confirmLogout}
-      />
       
       <AddClientModal
         open={showAddClientModal}
