@@ -47,14 +47,105 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_clients: {
+        Row: {
+          client_id: string
+          contract_id: string
+          created_at: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          client_id: string
+          contract_id: string
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          client_id?: string
+          contract_id?: string
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
+      contract_fields: {
+        Row: {
+          client_id: string | null
+          contract_id: string
+          created_at: string
+          default_value: string | null
+          field_name: string
+          field_type: string
+          field_value: string | null
+          height: number | null
+          id: string
+          is_required: boolean | null
+          page_number: number | null
+          placeholder: string | null
+          position_x: number
+          position_y: number
+          updated_at: string
+          validation_rules: Json | null
+          width: number | null
+        }
+        Insert: {
+          client_id?: string | null
+          contract_id: string
+          created_at?: string
+          default_value?: string | null
+          field_name: string
+          field_type: string
+          field_value?: string | null
+          height?: number | null
+          id?: string
+          is_required?: boolean | null
+          page_number?: number | null
+          placeholder?: string | null
+          position_x: number
+          position_y: number
+          updated_at?: string
+          validation_rules?: Json | null
+          width?: number | null
+        }
+        Update: {
+          client_id?: string | null
+          contract_id?: string
+          created_at?: string
+          default_value?: string | null
+          field_name?: string
+          field_type?: string
+          field_value?: string | null
+          height?: number | null
+          id?: string
+          is_required?: boolean | null
+          page_number?: number | null
+          placeholder?: string | null
+          position_x?: number
+          position_y?: number
+          updated_at?: string
+          validation_rules?: Json | null
+          width?: number | null
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           amount: number | null
           created_at: string
           description: string | null
+          document_content: Json | null
+          document_url: string | null
+          expires_at: string | null
+          field_data: Json | null
           id: string
           project_id: string
+          signed_at: string | null
+          signing_status: string | null
           status: string
+          template_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -63,9 +154,16 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description?: string | null
+          document_content?: Json | null
+          document_url?: string | null
+          expires_at?: string | null
+          field_data?: Json | null
           id?: string
           project_id: string
+          signed_at?: string | null
+          signing_status?: string | null
           status?: string
+          template_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -74,9 +172,16 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description?: string | null
+          document_content?: Json | null
+          document_url?: string | null
+          expires_at?: string | null
+          field_data?: Json | null
           id?: string
           project_id?: string
+          signed_at?: string | null
+          signing_status?: string | null
           status?: string
+          template_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -218,6 +323,45 @@ export type Database = {
           id?: string
           project_id?: string
           status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          document_url: string | null
+          id: string
+          is_public: boolean | null
+          template_data: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          document_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          template_data?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          document_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          template_data?: Json | null
           title?: string
           updated_at?: string
           user_id?: string

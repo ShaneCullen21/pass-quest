@@ -9,17 +9,54 @@ import { Bell, Search, CircleHelp } from "lucide-react";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Template {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
+}
 
 const Templates = () => {
   const { user, loading, signOut } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
+    } else if (user) {
+      fetchTemplates();
     }
   }, [user, loading, navigate]);
+
+  const fetchTemplates = async () => {
+    if (!user) return;
+
+    try {
+      setTemplatesLoading(true);
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      setTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      toast.error('Failed to load templates');
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -35,13 +72,13 @@ const Templates = () => {
   if (!user) {
     return null;
   }
-  const templates = [
-    {
-      title: "Copy of General Service Template Contract",
-      lastUpdated: "Feb 26, 2025",
-      preview: "/placeholder.svg" // Using placeholder for template preview
-    }
-  ];
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,7 +167,7 @@ const Templates = () => {
                       {template.title}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Last updated on {template.lastUpdated}
+                      Last updated on {formatDate(template.updated_at)}
                     </p>
                   </div>
                   

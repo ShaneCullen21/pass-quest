@@ -1,0 +1,222 @@
+import React, { useState, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Save, Type, PenTool, Calendar, CheckSquare } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { FieldToolbar } from "./FieldToolbar";
+import { DocumentCanvas } from "./DocumentCanvas";
+
+interface ContractField {
+  id: string;
+  type: 'text' | 'signature' | 'date' | 'checkbox';
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  clientId?: string;
+  name: string;
+  isRequired: boolean;
+  placeholder?: string;
+}
+
+interface ContractEditorProps {
+  contractData: {
+    sourceType: "template" | "upload" | "blank" | null;
+    templateId: string | null;
+    documentUrl: string | null;
+    selectedClients: string[];
+    selectedProject: string | null;
+    title: string;
+    description: string;
+  };
+  onSave: () => void;
+  onBack: () => void;
+}
+
+export const ContractEditor = ({
+  contractData,
+  onSave,
+  onBack,
+}: ContractEditorProps) => {
+  const [title, setTitle] = useState(contractData.title);
+  const [description, setDescription] = useState(contractData.description);
+  const [fields, setFields] = useState<ContractField[]>([]);
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const handleAddField = useCallback((fieldType: string, position: { x: number; y: number }) => {
+    const newField: ContractField = {
+      id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: fieldType as 'text' | 'signature' | 'date' | 'checkbox',
+      position,
+      size: { width: 200, height: 40 },
+      name: `${fieldType}_${fields.length + 1}`,
+      isRequired: false,
+      placeholder: `Enter ${fieldType}...`,
+    };
+
+    setFields(prev => [...prev, newField]);
+    setSelectedTool(null);
+  }, [fields.length]);
+
+  const handleFieldUpdate = useCallback((fieldId: string, updates: Partial<ContractField>) => {
+    setFields(prev => prev.map(field => 
+      field.id === fieldId ? { ...field, ...updates } : field
+    ));
+  }, []);
+
+  const handleFieldDelete = useCallback((fieldId: string) => {
+    setFields(prev => prev.filter(field => field.id !== fieldId));
+  }, []);
+
+  const handleSaveContract = async () => {
+    if (!title.trim()) {
+      toast.error('Please enter a contract title');
+      return;
+    }
+
+    if (!contractData.selectedProject) {
+      toast.error('Please select a project');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      // Create the contract
+      const { data: contract, error: contractError } = await supabase
+        .from('contracts')
+        .insert({
+          title: title.trim(),
+          description: description.trim() || null,
+          project_id: contractData.selectedProject,
+          user_id: user?.id,
+          template_id: contractData.templateId,
+          document_url: contractData.documentUrl,
+          field_data: JSON.parse(JSON.stringify({ fields })),
+          signing_status: 'draft',
+        })
+        .select()
+        .single();
+
+      if (contractError) throw contractError;
+
+      // Add contract-client relationships
+      if (contractData.selectedClients.length > 0) {
+        const { error: clientsError } = await supabase
+          .from('contract_clients')
+          .insert(
+            contractData.selectedClients.map(clientId => ({
+              contract_id: contract.id,
+              client_id: clientId,
+              role: 'signatory',
+            }))
+          );
+
+        if (clientsError) throw clientsError;
+      }
+
+      // Save contract fields
+      if (fields.length > 0) {
+        const { error: fieldsError } = await supabase
+          .from('contract_fields')
+          .insert(
+            fields.map(field => ({
+              contract_id: contract.id,
+              client_id: field.clientId || null,
+              field_type: field.type,
+              field_name: field.name,
+              position_x: field.position.x,
+              position_y: field.position.y,
+              width: field.size.width,
+              height: field.size.height,
+              is_required: field.isRequired,
+              placeholder: field.placeholder,
+            }))
+          );
+
+        if (fieldsError) throw fieldsError;
+      }
+
+      toast.success('Contract created successfully');
+      onSave();
+    } catch (error) {
+      console.error('Error saving contract:', error);
+      toast.error('Failed to save contract');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-lg font-semibold">Contract Editor</h3>
+        </div>
+        <Button onClick={handleSaveContract} disabled={saving}>
+          <Save className="h-4 w-4 mr-2" />
+          {saving ? 'Saving...' : 'Save Contract'}
+        </Button>
+      </div>
+
+      {/* Contract Details */}
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Contract Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter contract title..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter contract description..."
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Editor */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-[600px]">
+        {/* Field Toolbar */}
+        <div className="lg:col-span-1">
+          <FieldToolbar
+            selectedTool={selectedTool}
+            onToolSelect={setSelectedTool}
+            clients={contractData.selectedClients}
+          />
+        </div>
+
+        {/* Document Canvas */}
+        <div className="lg:col-span-3">
+          <DocumentCanvas
+            ref={canvasRef}
+            fields={fields}
+            selectedTool={selectedTool}
+            onAddField={handleAddField}
+            onFieldUpdate={handleFieldUpdate}
+            onFieldDelete={handleFieldDelete}
+            clients={contractData.selectedClients}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -29,6 +29,7 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
+import { CreateContractModal } from "@/components/contracts/CreateContractModal";
 
 interface Project {
   id: string;
@@ -69,6 +70,7 @@ export default function ProjectDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateContractModalOpen, setIsCreateContractModalOpen] = useState(false);
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
 
@@ -200,6 +202,11 @@ export default function ProjectDetails() {
   const handleProjectUpdated = () => {
     fetchProjectDetails();
     setIsEditModalOpen(false);
+  };
+
+  const handleContractCreated = () => {
+    fetchDocuments();
+    setIsCreateContractModalOpen(false);
   };
 
   const formatAmount = (amount: number | null) => {
@@ -342,7 +349,11 @@ export default function ProjectDetails() {
                   <Plus className="mr-2 h-4 w-4" />
                   Add Proposal
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => setIsCreateContractModalOpen(true)}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Contract
                 </Button>
@@ -444,6 +455,14 @@ export default function ProjectDetails() {
             editProject={project}
           />
         )}
+
+        {/* Create Contract Modal */}
+        <CreateContractModal
+          isOpen={isCreateContractModalOpen}
+          onClose={() => setIsCreateContractModalOpen(false)}
+          projectId={id}
+          onContractCreated={handleContractCreated}
+        />
       </div>
     </div>
   );
