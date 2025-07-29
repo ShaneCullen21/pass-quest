@@ -9,13 +9,13 @@ import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Search, CircleHelp, Save, Upload, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/contexts/ProfileContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { user, loading } = useAuth();
-  const { profile } = useProfile();
+  const { profile, refreshProfile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -100,7 +100,8 @@ const Profile = () => {
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update form data and profile
+      // Refresh the profile context
+      await refreshProfile();
       setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
 
       const { error: updateError } = await supabase
@@ -146,6 +147,9 @@ const Profile = () => {
         throw error;
       }
 
+      // Refresh the profile context
+      await refreshProfile();
+      
       toast({
         title: "Success",
         description: "Profile updated successfully",

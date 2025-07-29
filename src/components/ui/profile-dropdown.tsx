@@ -12,19 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/contexts/ProfileContext";
 
 export const ProfileDropdown = () => {
   const { user, signOut } = useAuth();
   const { profile, loading } = useProfile();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  console.log('ProfileDropdown render', { 
-    user: user?.id, 
-    profile: profile ? { id: profile.id, first_name: profile.first_name, avatar_url: profile.avatar_url } : null, 
-    loading 
-  });
 
   // Show loading state or cached data to prevent flashing
   if (loading && !profile) {
