@@ -30,6 +30,7 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
 import { CreateContractModal } from "@/components/contracts/CreateContractModal";
+import { ContractActions } from "@/components/contracts/ContractActions";
 
 interface Project {
   id: string;
@@ -434,9 +435,14 @@ export default function ProjectDetails() {
                         {format(new Date(document.created_at), "MMM dd, yyyy")}
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm">
-                          View
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm">
+                            View
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -445,6 +451,28 @@ export default function ProjectDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Contract Actions Panel */}
+        {project && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              {/* You can add contract preview or details here */}
+            </div>
+            <div>
+              <ContractActions 
+                contract={{
+                  id: 'sample-contract-id',
+                  title: `${project.name} Contract`,
+                  description: 'Contract for project services',
+                  signing_status: 'draft',
+                  created_at: new Date().toISOString(),
+                  amount: 10000
+                }}
+                onStatusChange={handleContractCreated}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Edit Project Modal */}
         {project && (
