@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,19 +8,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { FileText, Save, X } from "lucide-react";
-
-interface TemplateEditorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onTemplateCreated: () => void;
-  template?: {
-    id: string;
-    title: string;
-    description: string;
-    template_data: any;
-  } | null;
-}
+import { FileText, Save, X, ArrowLeft } from "lucide-react";
 
 interface TemplateVariable {
   id: string;
@@ -29,34 +17,54 @@ interface TemplateVariable {
   type: 'text' | 'date' | 'number';
 }
 
-export const TemplateEditorModal = ({
-  isOpen,
-  onClose,
-  onTemplateCreated,
-  template = null,
-}: TemplateEditorModalProps) => {
+const TemplateEditor = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const templateId = searchParams.get('id');
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [variables, setVariables] = useState<TemplateVariable[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const isEditMode = !!template;
+  const isEditMode = !!templateId;
 
   useEffect(() => {
-    if (template) {
-      setTitle(template.title);
-      setDescription(template.description || "");
-      setContent(template.template_data?.content || "");
-      setVariables(template.template_data?.variables || []);
-    } else {
-      setTitle("");
-      setDescription("");
-      setContent("");
-      setVariables([]);
+    if (templateId) {
+      fetchTemplate();
     }
-  }, [template, isOpen]);
+  }, [templateId]);
+
+  const fetchTemplate = async () => {
+    if (!templateId) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setTitle(data.title);
+        setDescription(data.description || "");
+        const templateData = data.template_data as any;
+        setContent(templateData?.content || "");
+        setVariables(templateData?.variables || []);
+      }
+    } catch (error) {
+      console.error('Error fetching template:', error);
+      toast.error('Failed to load template');
+      navigate('/templates');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addVariable = () => {
     const newVariable: TemplateVariable = {
@@ -103,7 +111,7 @@ export const TemplateEditorModal = ({
         created_at: new Date().toISOString(),
       }));
 
-      if (isEditMode && template) {
+      if (isEditMode && templateId) {
         const { error } = await supabase
           .from('templates')
           .update({
@@ -111,7 +119,7 @@ export const TemplateEditorModal = ({
             description: description.trim() || null,
             template_data: templateData,
           })
-          .eq('id', template.id);
+          .eq('id', templateId);
 
         if (error) throw error;
 
@@ -132,8 +140,7 @@ export const TemplateEditorModal = ({
         toast.success("Template created successfully");
       }
 
-      onTemplateCreated();
-      onClose();
+      navigate('/templates');
     } catch (error) {
       console.error('Error saving template:', error);
       toast.error(`Failed to ${isEditMode ? 'update' : 'create'} template`);
@@ -142,23 +149,48 @@ export const TemplateEditorModal = ({
     }
   };
 
-  const handleClose = () => {
-    setTitle("");
-    setDescription("");
-    setContent("");
-    setVariables([]);
-    onClose();
+  const handleBack = () => {
+    navigate('/templates');
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading template...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            {isEditMode ? 'Edit Template' : 'Create New Template'}
-          </DialogTitle>
-        </DialogHeader>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Templates
+            </Button>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              <h1 className="text-2xl font-bold">
+                {isEditMode ? 'Edit Template' : 'Create New Template'}
+              </h1>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleBack}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : (isEditMode ? 'Update Template' : 'Create Template')}
+            </Button>
+          </div>
+        </div>
 
         <div className="space-y-6">
           {/* Template Info */}
@@ -255,19 +287,10 @@ export const TemplateEditorModal = ({
               </div>
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : (isEditMode ? 'Update Template' : 'Create Template')}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
+
+export default TemplateEditor;

@@ -11,6 +11,7 @@ import Templates from "./pages/Templates";
 import Clients from "./pages/Clients";
 import Reports from "./pages/Reports";
 import ProjectDetails from "./pages/ProjectDetails";
+import TemplateEditor from "./pages/TemplateEditor";
 import ContractEditor from "./pages/ContractEditor";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -32,6 +33,8 @@ const App = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/projects/:projectId/contracts/new" element={<ContractEditor />} />
+            <Route path="/templates/new" element={<TemplateEditor />} />
+            <Route path="/templates/edit" element={<TemplateEditor />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/reports" element={<Reports />} />

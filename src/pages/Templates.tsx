@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
-import { TemplateEditorModal } from "@/components/contracts/TemplateEditorModal";
+
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -29,8 +29,6 @@ const Templates = () => {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -39,6 +37,18 @@ const Templates = () => {
       fetchTemplates();
     }
   }, [user, loading, navigate]);
+
+  // Refresh templates when user returns from editor
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        fetchTemplates();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
 
   const fetchTemplates = async () => {
     if (!user) return;
@@ -62,16 +72,6 @@ const Templates = () => {
     }
   };
 
-  const handleTemplateCreated = () => {
-    fetchTemplates();
-    setShowTemplateEditor(false);
-    setEditingTemplate(null);
-  };
-
-  const handleEditTemplate = (template: Template) => {
-    setEditingTemplate(template);
-    setShowTemplateEditor(true);
-  };
 
   const handleDeleteTemplate = async (templateId: string) => {
     try {
@@ -150,7 +150,7 @@ const Templates = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Templates</h1>
-          <Button onClick={() => setShowTemplateEditor(true)}>
+          <Button onClick={() => navigate('/templates/new')}>
             <Plus className="h-4 w-4 mr-2" />
             Create Template
           </Button>
@@ -230,7 +230,7 @@ const Templates = () => {
                       <Button 
                         variant="outline" 
                         className="w-36"
-                        onClick={() => handleEditTemplate(template)}
+                        onClick={() => navigate(`/templates/edit?id=${template.id}`)}
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit template
@@ -268,19 +268,6 @@ const Templates = () => {
         </div>
       </main>
 
-      {/* Template Editor Modal */}
-      <TemplateEditorModal
-        isOpen={showTemplateEditor}
-        onClose={() => {
-          setShowTemplateEditor(false);
-          setEditingTemplate(null);
-        }}
-        onTemplateCreated={handleTemplateCreated}
-        template={editingTemplate ? {
-          ...editingTemplate,
-          template_data: editingTemplate.template_data || {}
-        } : null}
-      />
     </div>
   );
 };
