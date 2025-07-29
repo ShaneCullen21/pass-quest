@@ -259,7 +259,7 @@ const Projects = () => {
         {/* Projects Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           {projectsLoading ? (
-            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Project dates", "Actions"]} />
+            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Project dates", "Actions"]} rows={6} />
           ) : (
             <Table>
               <TableHeader>
