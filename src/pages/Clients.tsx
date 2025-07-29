@@ -29,6 +29,9 @@ const Clients = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const { toast } = useToast();
+  
+  // Move useTableSort hook call to the top, before any conditional logic
+  const { sortedData, sortConfig, handleSort } = useTableSort(clients);
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
@@ -118,8 +121,6 @@ const Clients = () => {
       setDeletingClient(null);
     }
   };
-
-  const { sortedData, sortConfig, handleSort } = useTableSort(clients);
 
   return (
     <div className="min-h-screen bg-background">
