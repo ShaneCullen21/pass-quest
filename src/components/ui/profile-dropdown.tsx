@@ -20,6 +20,12 @@ export const ProfileDropdown = () => {
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
+  console.log('ProfileDropdown render', { 
+    user: user?.id, 
+    profile: profile ? { id: profile.id, first_name: profile.first_name, avatar_url: profile.avatar_url } : null, 
+    loading 
+  });
+
   // Show loading state or cached data to prevent flashing
   if (loading && !profile) {
     return (

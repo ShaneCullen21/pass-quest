@@ -19,7 +19,10 @@ export const useProfile = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log('useProfile effect triggered', { user: user?.id, initialized, profile: profile?.user_id });
+    
     if (!user) {
+      console.log('No user, clearing profile');
       setProfile(null);
       setLoading(false);
       setInitialized(true);
@@ -28,9 +31,12 @@ export const useProfile = () => {
 
     // Don't refetch if we already have profile data for this user
     if (initialized && profile && profile.user_id === user.id) {
+      console.log('Profile already cached, skipping fetch');
       setLoading(false);
       return;
     }
+
+    console.log('Fetching profile data for user:', user.id);
 
     const fetchProfile = async () => {
       try {
