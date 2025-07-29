@@ -258,12 +258,7 @@ export default function ProjectDetails() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Projects
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold">{project.name}</h1>
-              <Badge variant={getStatusVariant(project.status)} className="mt-1">
-                {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-              </Badge>
-            </div>
+            <h1 className="text-3xl font-bold">{project.name}</h1>
           </div>
         </div>
 
@@ -284,6 +279,15 @@ export default function ProjectDetails() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex items-center space-x-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge variant={getStatusVariant(project.status)}>
+                    {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                  </Badge>
+                </div>
+              </div>
+
               {project.start_date && (
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
