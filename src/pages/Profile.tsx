@@ -81,13 +81,13 @@ const Profile = () => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const timestamp = Date.now();
+      const fileName = `${user.id}/avatar_${timestamp}.${fileExt}`;
 
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { 
-          upsert: true,
           contentType: file.type
         });
 
@@ -95,23 +95,28 @@ const Profile = () => {
         throw uploadError;
       }
 
-      // Get public URL
+      // Get public URL with cache-busting
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
+        
+      const cacheBustedUrl = `${publicUrl}?t=${timestamp}`;
 
-      // Refresh the profile context
-      await refreshProfile();
-      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
-
+      // Update profile in database first
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: cacheBustedUrl })
         .eq('user_id', user.id);
 
       if (updateError) {
         throw updateError;
       }
+
+      // Update form data immediately to show new image
+      setFormData(prev => ({ ...prev, avatar_url: cacheBustedUrl }));
+      
+      // Refresh the profile context to update everywhere else
+      await refreshProfile();
 
       toast({
         title: "Success",
