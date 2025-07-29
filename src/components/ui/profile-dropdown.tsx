@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import { User, LogOut, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
