@@ -15,11 +15,19 @@ interface Profile {
 export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user) {
       setProfile(null);
+      setLoading(false);
+      setInitialized(true);
+      return;
+    }
+
+    // Don't refetch if we already have profile data for this user
+    if (initialized && profile && profile.user_id === user.id) {
       setLoading(false);
       return;
     }
@@ -43,11 +51,12 @@ export const useProfile = () => {
         setProfile(null);
       } finally {
         setLoading(false);
+        setInitialized(true);
       }
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, initialized, profile]);
 
   return { profile, loading };
 };

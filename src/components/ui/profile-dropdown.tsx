@@ -16,9 +16,25 @@ import { useProfile } from "@/hooks/useProfile";
 
 export const ProfileDropdown = () => {
   const { user, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, loading } = useProfile();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  // Show loading state or cached data to prevent flashing
+  if (loading && !profile) {
+    return (
+      <Button variant="ghost" className="flex items-center space-x-2 h-auto px-2 py-1">
+        <Avatar className="w-8 h-8">
+          <AvatarFallback className="bg-primary text-primary-foreground">
+            <User className="h-4 w-4" />
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium hidden sm:block">
+          {user?.email?.split('@')[0] || 'User'}
+        </span>
+      </Button>
+    );
+  }
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
