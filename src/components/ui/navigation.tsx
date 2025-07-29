@@ -14,7 +14,7 @@ const Navigation = ({ className }: NavigationProps) => {
   const location = useLocation();
   
   const navItems = [
-    { label: "DASHBOARD", active: false, href: "/" },
+    { label: "DASHBOARD", active: false, href: "/dashboard" },
     { label: "PROJECTS", active: false, href: "/projects" },
     { label: "TEMPLATES", active: false, href: "/templates" },
     { label: "CLIENTS", active: false, href: "/clients" },
