@@ -11,7 +11,8 @@ import {
   FileText, 
   Mail,
   ExternalLink,
-  Copy
+  Copy,
+  Edit
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -20,20 +21,24 @@ import { toast } from "sonner";
 interface Contract {
   id: string;
   title: string;
-  description: string;
-  signing_status: string;
+  description?: string;
+  signing_status?: string;
+  status?: string;
   created_at: string;
-  amount: number;
+  amount?: number;
 }
 
 interface ContractActionsProps {
   contract: Contract;
   onStatusChange?: () => void;
+  compact?: boolean;
 }
 
-export const ContractActions = ({ contract, onStatusChange }: ContractActionsProps) => {
+export const ContractActions = ({ contract, onStatusChange, compact = false }: ContractActionsProps) => {
   const [exportLoading, setExportLoading] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  
+  const status = contract.signing_status || contract.status || 'draft';
 
   const exportToPDF = async () => {
     setExportLoading(true);
@@ -69,7 +74,7 @@ export const ContractActions = ({ contract, onStatusChange }: ContractActionsPro
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Status:</td>
-              <td style="padding: 8px 0; text-transform: capitalize;">${contract.signing_status}</td>
+              <td style="padding: 8px 0; text-transform: capitalize;">${status}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Amount:</td>
@@ -166,7 +171,7 @@ export const ContractActions = ({ contract, onStatusChange }: ContractActionsPro
 
   const sendByEmail = () => {
     const subject = `Contract: ${contract.title}`;
-    const body = `Please review the attached contract: ${contract.title}\n\nContract ID: ${contract.id}\nStatus: ${contract.signing_status}\n\nYou can view the contract online at: ${window.location.origin}/contracts/${contract.id}/view`;
+    const body = `Please review the attached contract: ${contract.title}\n\nContract ID: ${contract.id}\nStatus: ${status}\n\nYou can view the contract online at: ${window.location.origin}/contracts/${contract.id}/view`;
     
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
@@ -183,6 +188,45 @@ export const ContractActions = ({ contract, onStatusChange }: ContractActionsPro
     }
   };
 
+  if (compact) {
+    return (
+      <div className="flex gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={exportToPDF}
+          disabled={exportLoading}
+          title="Export to PDF"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={copyShareLink}
+          title="Share contract"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={sendByEmail}
+          title="Send by email"
+        >
+          <Mail className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          title="Edit contract"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -191,8 +235,8 @@ export const ContractActions = ({ contract, onStatusChange }: ContractActionsPro
             <FileText className="h-5 w-5" />
             Contract Actions
           </span>
-          <Badge className={`${getStatusColor(contract.signing_status)} text-white`}>
-            {contract.signing_status.charAt(0).toUpperCase() + contract.signing_status.slice(1)}
+          <Badge className={`${getStatusColor(status)} text-white`}>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>
         </CardTitle>
       </CardHeader>

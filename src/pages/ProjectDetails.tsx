@@ -434,16 +434,26 @@ export default function ProjectDetails() {
                       <TableCell>
                         {format(new Date(document.created_at), "MMM dd, yyyy")}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm">
-                            View
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            Edit
-                          </Button>
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex gap-2">
+                           {document.type === 'contract' ? (
+                             <ContractActions 
+                               contract={document}
+                               onStatusChange={handleContractCreated}
+                               compact={true}
+                             />
+                           ) : (
+                             <>
+                               <Button variant="ghost" size="sm">
+                                 View
+                               </Button>
+                               <Button variant="ghost" size="sm">
+                                 Edit
+                               </Button>
+                             </>
+                           )}
+                         </div>
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -452,27 +462,6 @@ export default function ProjectDetails() {
           </CardContent>
         </Card>
 
-        {/* Contract Actions Panel */}
-        {project && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              {/* You can add contract preview or details here */}
-            </div>
-            <div>
-              <ContractActions 
-                contract={{
-                  id: 'sample-contract-id',
-                  title: `${project.name} Contract`,
-                  description: 'Contract for project services',
-                  signing_status: 'draft',
-                  created_at: new Date().toISOString(),
-                  amount: 10000
-                }}
-                onStatusChange={handleContractCreated}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Edit Project Modal */}
         {project && (
