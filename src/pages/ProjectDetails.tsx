@@ -12,7 +12,8 @@ import {
   Plus,
   FileText,
   FileSignature,
-  Receipt
+  Receipt,
+  Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -27,6 +28,7 @@ import {
 import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
+import { AddProjectModal } from "@/components/projects/AddProjectModal";
 
 interface Project {
   id: string;
@@ -66,6 +68,7 @@ export default function ProjectDetails() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
 
@@ -194,6 +197,11 @@ export default function ProjectDetails() {
     }
   };
 
+  const handleProjectUpdated = () => {
+    fetchProjectDetails();
+    setIsEditModalOpen(false);
+  };
+
   const formatAmount = (amount: number | null) => {
     if (!amount) return "—";
     return new Intl.NumberFormat('en-US', {
@@ -262,7 +270,17 @@ export default function ProjectDetails() {
         {/* Project Details Card */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Project Information</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Project Details</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditModalOpen(true)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -414,6 +432,16 @@ export default function ProjectDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Edit Project Modal */}
+        {project && (
+          <AddProjectModal
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            onProjectAdded={handleProjectUpdated}
+            editProject={project}
+          />
+        )}
       </div>
     </div>
   );
