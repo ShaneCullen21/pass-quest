@@ -130,14 +130,14 @@ export const FieldConfigModal: React.FC<FieldConfigModalProps> = ({
             <div className="space-y-2">
               <Label htmlFor="client-assignment">Assign to Client</Label>
               <Select
-                value={formData.clientId || ''}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, clientId: value || undefined }))}
+                value={formData.clientId || 'none'}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, clientId: value === 'none' ? undefined : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a client (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No specific client</SelectItem>
+                  <SelectItem value="none">No specific client</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
