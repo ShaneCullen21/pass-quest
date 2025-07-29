@@ -32,6 +32,20 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
     }));
   };
 
+  const validatePhone = (phone: string): boolean => {
+    if (!phone || phone.trim() === "") return true; // Optional field
+    // Allow various phone formats: (123) 456-7890, 123-456-7890, 123.456.7890, +1234567890, etc.
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$|^[\+]?[(]?[\d\s\-\.\(\)]{10,}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ""));
+  };
+
+  const validateAddress = (address: string): boolean => {
+    if (!address || address.trim() === "") return true; // Optional field
+    // Basic address validation: at least 5 characters and contains some letters and numbers or street names
+    return address.length >= 5 && /[a-zA-Z]/.test(address) && 
+           (/\d/.test(address) || /street|st|avenue|ave|road|rd|drive|dr|lane|ln|way|court|ct|place|pl|boulevard|blvd/i.test(address));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -39,6 +53,24 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
       toast({
         title: "Error",
         description: "Client name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.phone && !validatePhone(formData.phone)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.address && !validateAddress(formData.address)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid address (at least 5 characters with letters and numbers or street names)",
         variant: "destructive"
       });
       return;
