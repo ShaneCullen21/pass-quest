@@ -54,22 +54,23 @@ const Projects = () => {
     setProjectsLoading(true);
     
     // Add minimum loading time to show the nice animation
-    const [projectsData] = await Promise.all([
+    const [projectsData, clientsData] = await Promise.all([
       supabase
         .from("projects")
-        .select(`
-          *,
-          clients(name, company)
-        `)
+        .select("*")
         .order("created_at", { ascending: false }),
+      supabase
+        .from("clients")
+        .select("id, name, company"),
       new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading time
     ]);
 
     try {
-      const { data, error } = projectsData;
+      const { data: projects, error: projectsError } = projectsData;
+      const { data: clients, error: clientsError } = clientsData;
 
-      if (error) {
-        console.error("Error fetching projects:", error);
+      if (projectsError) {
+        console.error("Error fetching projects:", projectsError);
         toast({
           title: "Error",
           description: "Failed to load projects. Please try again.",
@@ -78,7 +79,25 @@ const Projects = () => {
         return;
       }
 
-      setProjects(data || []);
+      if (clientsError) {
+        console.error("Error fetching clients:", clientsError);
+      }
+
+      // Create a lookup map for clients
+      const clientsMap = new Map();
+      if (clients) {
+        clients.forEach(client => {
+          clientsMap.set(client.id, client);
+        });
+      }
+
+      // Attach client data to projects
+      const projectsWithClients = (projects || []).map(project => ({
+        ...project,
+        clients: project.clients_ids ? clientsMap.get(project.clients_ids) : null
+      }));
+
+      setProjects(projectsWithClients);
     } catch (error) {
       console.error("Error processing projects:", error);
       toast({
