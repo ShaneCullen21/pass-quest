@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,17 @@ interface AddClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClientAdded?: () => void;
+  editClient?: {
+    id: string;
+    name: string;
+    company: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+  } | null;
 }
 
-export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientModalProps) => {
+export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }: AddClientModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -24,6 +32,29 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const isEditMode = !!editClient;
+
+  // Pre-populate form data when editing
+  useEffect(() => {
+    if (editClient) {
+      setFormData({
+        name: editClient.name,
+        company: editClient.company || "",
+        email: editClient.email || "",
+        phone: editClient.phone || "",
+        address: editClient.address || ""
+      });
+    } else {
+      setFormData({
+        name: "",
+        company: "",
+        email: "",
+        phone: "",
+        address: ""
+      });
+    }
+  }, [editClient, open]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -79,43 +110,57 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase
-        .from('clients')
-        .insert({
-          name: formData.name.trim(),
-          company: formData.company.trim() || null,
-          email: formData.email.trim() || null,
-          phone: formData.phone.trim() || null,
-          address: formData.address.trim() || null,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        })
-        .select();
+      if (isEditMode && editClient) {
+        // Update existing client
+        const { error } = await supabase
+          .from('clients')
+          .update({
+            name: formData.name.trim(),
+            company: formData.company.trim() || null,
+            email: formData.email.trim() || null,
+            phone: formData.phone.trim() || null,
+            address: formData.address.trim() || null,
+          })
+          .eq('id', editClient.id);
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: "Client updated successfully"
+        });
+      } else {
+        // Add new client
+        const { error } = await supabase
+          .from('clients')
+          .insert({
+            name: formData.name.trim(),
+            company: formData.company.trim() || null,
+            email: formData.email.trim() || null,
+            phone: formData.phone.trim() || null,
+            address: formData.address.trim() || null,
+            user_id: (await supabase.auth.getUser()).data.user?.id
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: "Client added successfully"
+        });
       }
 
-      toast({
-        title: "Success",
-        description: "Client added successfully"
-      });
-
-      // Reset form
-      setFormData({
-        name: "",
-        company: "",
-        email: "",
-        phone: "",
-        address: ""
-      });
-      
       onOpenChange(false);
       onClientAdded?.();
     } catch (error) {
-      console.error('Error adding client:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} client:`, error);
       toast({
         title: "Error",
-        description: "Failed to add client. Please try again.",
+        description: `Failed to ${isEditMode ? 'update' : 'add'} client. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -139,7 +184,7 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
       <DialogContent className="sm:max-w-md bg-background border border-border shadow-lg">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold text-foreground">
-            Add new client
+            {isEditMode ? "Edit client" : "Add new client"}
           </DialogTitle>
           <Button
             variant="ghost"
@@ -228,7 +273,7 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded }: AddClientM
               disabled={isSubmitting}
               className="w-full bg-[hsl(15,78%,46%)] hover:bg-[hsl(15,78%,40%)] text-white font-medium"
             >
-              {isSubmitting ? "Adding..." : "Save & Continue"}
+              {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Client" : "Save & Continue")}
             </Button>
             <Button 
               type="button" 

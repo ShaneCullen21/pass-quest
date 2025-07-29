@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut } from "lucide-react";
+import { MoreHorizontal, Bell, Search, CircleHelp, Plus, User, LogOut, Edit, Trash2 } from "lucide-react";
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { AddClientModal } from "@/components/clients/AddClientModal";
+import { DeleteClientConfirmation } from "@/components/clients/DeleteClientConfirmation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 
 type Client = Tables<"clients">;
 
@@ -23,6 +26,9 @@ const Clients = () => {
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [clientsLoading, setClientsLoading] = useState(true);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const { toast } = useToast();
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
@@ -82,6 +88,37 @@ const Clients = () => {
   if (!user) {
     return null;
   }
+  const handleDeleteClient = async () => {
+    if (!deletingClient) return;
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', deletingClient.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Client deleted successfully"
+      });
+
+      fetchClients();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete client. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingClient(null);
+    }
+  };
+
   const { sortedData, sortConfig, handleSort } = useTableSort(clients);
 
   return (
@@ -231,9 +268,26 @@ const Clients = () => {
                       <TableCell className="text-muted-foreground">{client.phone || '-'}</TableCell>
                       <TableCell className="text-muted-foreground">{client.address || '-'}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setEditingClient(client)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => setDeletingClient(client)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -256,6 +310,23 @@ const Clients = () => {
         onClientAdded={() => {
           fetchClients();
         }}
+      />
+      
+      <AddClientModal
+        open={!!editingClient}
+        onOpenChange={(open) => !open && setEditingClient(null)}
+        editClient={editingClient}
+        onClientAdded={() => {
+          fetchClients();
+          setEditingClient(null);
+        }}
+      />
+      
+      <DeleteClientConfirmation
+        open={!!deletingClient}
+        onOpenChange={(open) => !open && setDeletingClient(null)}
+        onConfirm={handleDeleteClient}
+        clientName={deletingClient?.name || ""}
       />
     </div>
   );
