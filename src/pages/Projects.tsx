@@ -18,6 +18,34 @@ const Projects = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
 
+  // Move projects data and hooks to the top - before any early returns
+  const projects = [{
+    name: "Dream Wedding 2025",
+    client: "Sasha Sukhoruchko",
+    status: "CONTRACT SENT FOR SIGNATURE",
+    statusVariant: "default" as const,
+    location: "Chicago, IL",
+    date: "Feb 20-Apr 03, 2025"
+  }, {
+    name: "30s Anniversary - Tom & Amy",
+    client: "Martha Smith",
+    status: "PROPOSAL APPROVED",
+    statusVariant: "default" as const,
+    location: "Missoula, MN",
+    date: "Feb 24, 2025",
+    hasNotification: true
+  }, {
+    name: "2-days photoshoot",
+    client: "Holden Price",
+    status: "CONTRACT DRAFTED",
+    statusVariant: "secondary" as const,
+    location: "TBC",
+    date: "Mar 04-Mar 10, 2025",
+    hasMultiple: true
+  }];
+
+  const { sortedData, sortConfig, handleSort } = useTableSort(projects);
+
   const handleLogout = () => {
     setShowLogoutDialog(true);
   };
@@ -47,32 +75,6 @@ const Projects = () => {
   if (!user) {
     return null;
   }
-  const projects = [{
-    name: "Dream Wedding 2025",
-    client: "Sasha Sukhoruchko",
-    status: "CONTRACT SENT FOR SIGNATURE",
-    statusVariant: "default" as const,
-    location: "Chicago, IL",
-    date: "Feb 20-Apr 03, 2025"
-  }, {
-    name: "30s Anniversary - Tom & Amy",
-    client: "Martha Smith",
-    status: "PROPOSAL APPROVED",
-    statusVariant: "default" as const,
-    location: "Missoula, MN",
-    date: "Feb 24, 2025",
-    hasNotification: true
-  }, {
-    name: "2-days photoshoot",
-    client: "Holden Price",
-    status: "CONTRACT DRAFTED",
-    statusVariant: "secondary" as const,
-    location: "TBC",
-    date: "Mar 04-Mar 10, 2025",
-    hasMultiple: true
-  }];
-
-  const { sortedData, sortConfig, handleSort } = useTableSort(projects);
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background">
