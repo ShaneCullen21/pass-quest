@@ -11,12 +11,18 @@ import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { AddClientModal } from "@/components/clients/AddClientModal";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Client = Tables<"clients">;
 
 const Clients = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [clientsLoading, setClientsLoading] = useState(true);
 
   const handleLogout = () => {
     setShowLogoutDialog(true);
@@ -27,11 +33,40 @@ const Clients = () => {
     setShowLogoutDialog(false);
   };
 
+  const fetchClients = async () => {
+    if (!user) return;
+    
+    setClientsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching clients:", error);
+        return;
+      }
+
+      setClients(data || []);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    } finally {
+      setClientsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchClients();
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -47,42 +82,7 @@ const Clients = () => {
   if (!user) {
     return null;
   }
-  const clientProjects = [
-    {
-      projectName: "Mary and Brian wedding",
-      client: "Sasha Sukhoruchko",
-      status: "COMPLETED",
-      statusVariant: "default" as const,
-      startDate: "Jun 14, 2025",
-      endDate: "Jul 14, 2025"
-    },
-    {
-      projectName: "Dream Wedding 2025",
-      client: "Sasha Sukhoruchko",
-      status: "CONTRACT SENT FOR SIGNATURE",
-      statusVariant: "default" as const,
-      startDate: "Feb 20, 2025",
-      endDate: "Apr 03, 2025"
-    },
-    {
-      projectName: "30s Anniversary - Tom & Amy",
-      client: "Martha Smith",
-      status: "PROPOSAL APPROVED",
-      statusVariant: "default" as const,
-      startDate: "Feb 24, 2025",
-      endDate: "Feb 24, 2025"
-    },
-    {
-      projectName: "2-days photoshoot",
-      client: "Holden Price",
-      status: "CONTRACT DRAFTED",
-      statusVariant: "secondary" as const,
-      startDate: "Mar 04, 2025",
-      endDate: "Mar 10, 2025"
-    }
-  ];
-
-  const { sortedData, sortConfig, handleSort } = useTableSort(clientProjects);
+  const { sortedData, sortConfig, handleSort } = useTableSort(clients);
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,90 +153,94 @@ const Clients = () => {
 
         {/* Clients Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-border">
-                <SortableTableHeader 
-                  sortKey="projectName" 
-                  currentSortKey={sortConfig.key} 
-                  sortDirection={sortConfig.direction}
-                  onSort={handleSort}
-                >
-                  Project name
-                </SortableTableHeader>
-                <SortableTableHeader 
-                  sortKey="client" 
-                  currentSortKey={sortConfig.key} 
-                  sortDirection={sortConfig.direction}
-                  onSort={handleSort}
-                >
-                  Client
-                </SortableTableHeader>
-                <SortableTableHeader 
-                  sortKey="status" 
-                  currentSortKey={sortConfig.key} 
-                  sortDirection={sortConfig.direction}
-                  onSort={handleSort}
-                >
-                  Status
-                </SortableTableHeader>
-                <SortableTableHeader 
-                  sortKey="startDate" 
-                  currentSortKey={sortConfig.key} 
-                  sortDirection={sortConfig.direction}
-                  onSort={handleSort}
-                >
-                  Start date
-                </SortableTableHeader>
-                <SortableTableHeader 
-                  sortKey="endDate" 
-                  currentSortKey={sortConfig.key} 
-                  sortDirection={sortConfig.direction}
-                  onSort={handleSort}
-                >
-                  End date
-                </SortableTableHeader>
-                <TableHead className="text-muted-foreground font-medium">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedData.map((project, index) => (
-                <TableRow key={index} className="border-b border-border hover:bg-muted/50">
-                  <TableCell>
-                    <span className="text-foreground font-medium">
-                      {project.projectName}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-foreground">{project.client}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={project.statusVariant} 
-                      className={
-                        project.status === "COMPLETED" 
-                          ? "bg-green-100 text-green-800 border-green-200" 
-                          : project.status === "CONTRACT SENT FOR SIGNATURE" 
-                          ? "bg-yellow-100 text-yellow-800 border-yellow-200" 
-                          : project.status === "PROPOSAL APPROVED" 
-                          ? "bg-green-100 text-green-800 border-green-200" 
-                          : "bg-gray-100 text-gray-800 border-gray-200"
-                      }
-                    >
-                      {project.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{project.startDate}</TableCell>
-                  <TableCell className="text-muted-foreground">{project.endDate}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          {clientsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading clients...</p>
+              </div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-border">
+                  <SortableTableHeader 
+                    sortKey="name" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Name
+                  </SortableTableHeader>
+                  <SortableTableHeader 
+                    sortKey="company" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Company
+                  </SortableTableHeader>
+                  <SortableTableHeader 
+                    sortKey="email" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Email
+                  </SortableTableHeader>
+                  <SortableTableHeader 
+                    sortKey="phone" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Phone
+                  </SortableTableHeader>
+                  <SortableTableHeader 
+                    sortKey="address" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Address
+                  </SortableTableHeader>
+                  <TableHead className="text-muted-foreground font-medium">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sortedData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <p className="text-muted-foreground">No clients found. Add your first client to get started.</p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedData.map((client) => (
+                    <TableRow key={client.id} className="border-b border-border hover:bg-muted/50">
+                      <TableCell>
+                        <span className="text-foreground font-medium">
+                          {client.name}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-foreground">{client.company || '-'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-foreground">{client.email || '-'}</span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{client.phone || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">{client.address || '-'}</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </main>
       
@@ -250,8 +254,7 @@ const Clients = () => {
         open={showAddClientModal}
         onOpenChange={setShowAddClientModal}
         onClientAdded={() => {
-          // Refresh clients list when a client is added
-          // This could be enhanced with actual data fetching
+          fetchClients();
         }}
       />
     </div>
