@@ -3,10 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Type, PenTool, Calendar, CheckSquare } from "lucide-react";
 
+interface Client {
+  id: string;
+  name: string;
+  company: string;
+}
+
 interface FieldToolbarProps {
   selectedTool: string | null;
   onToolSelect: (tool: string | null) => void;
-  clients: string[];
+  clients: Client[];
 }
 
 const fieldTypes = [

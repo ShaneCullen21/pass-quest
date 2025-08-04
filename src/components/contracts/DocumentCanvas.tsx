@@ -33,7 +33,7 @@ interface DocumentCanvasProps {
   onFieldUpdate: (fieldId: string, updates: Partial<ContractField>) => void;
   onFieldDelete: (fieldId: string) => void;
   onFieldClick?: (field: ContractField) => void;
-  clients: { id: string; name: string; }[];
+  clients: { id: string; name: string; company?: string; }[];
   documentUrl?: string;
   showGrid?: boolean;
   snapToGrid?: boolean;

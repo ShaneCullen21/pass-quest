@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,12 @@ interface ContractField {
   name: string;
   isRequired: boolean;
   placeholder?: string;
+}
+
+interface Client {
+  id: string;
+  name: string;
+  company: string;
 }
 
 interface ContractEditorProps {
@@ -50,11 +56,40 @@ export const ContractEditor = ({
   const [selectedField, setSelectedField] = useState<ContractField | null>(null);
   const [showFieldConfig, setShowFieldConfig] = useState(false);
   const [showDocumentUpload, setShowDocumentUpload] = useState(false);
-  const [documentUrl, setDocumentUrl] = useState<string | undefined>(undefined);
+  const [documentUrl, setDocumentUrl] = useState<string | undefined>(contractData.documentUrl || undefined);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
+  const [clients, setClients] = useState<Client[]>([]);
   const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Fetch project clients
+  useEffect(() => {
+    const fetchProjectClients = async () => {
+      if (!contractData.selectedProject) return;
+
+      try {
+        const { data: project } = await supabase
+          .from('projects')
+          .select('client_ids')
+          .eq('id', contractData.selectedProject)
+          .single();
+
+        if (project?.client_ids && project.client_ids.length > 0) {
+          const { data: projectClients } = await supabase
+            .from('clients')
+            .select('id, name, company')
+            .in('id', project.client_ids);
+
+          setClients(projectClients || []);
+        }
+      } catch (error) {
+        console.error('Error fetching project clients:', error);
+      }
+    };
+
+    fetchProjectClients();
+  }, [contractData.selectedProject]);
 
   const handleAddField = useCallback((fieldType: string, position: { x: number; y: number }) => {
     const newField: ContractField = {
@@ -219,7 +254,7 @@ export const ContractEditor = ({
             <FieldToolbar
               selectedTool={selectedTool}
               onToolSelect={setSelectedTool}
-              clients={[]}
+              clients={clients}
             />
             
             <div className="flex flex-col gap-2">
@@ -260,7 +295,7 @@ export const ContractEditor = ({
             onFieldUpdate={handleFieldUpdate}
             onFieldDelete={handleFieldDelete}
             onFieldClick={handleFieldClick}
-            clients={[]}
+            clients={clients}
             documentUrl={documentUrl}
             showGrid={showGrid}
             snapToGrid={snapToGrid}
@@ -273,7 +308,7 @@ export const ContractEditor = ({
         isOpen={showFieldConfig}
         onClose={() => setShowFieldConfig(false)}
         field={selectedField}
-        clients={[]}
+        clients={clients}
         onSave={handleFieldUpdate}
       />
 

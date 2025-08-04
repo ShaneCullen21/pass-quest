@@ -147,8 +147,12 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                 Supports PDF, Word documents, and images up to 10MB
               </p>
               
-              <Label htmlFor="file-upload">
-                <Button variant="outline" className="cursor-pointer">
+              <div>
+                <Button 
+                  variant="outline" 
+                  className="cursor-pointer"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
                   Browse Files
                 </Button>
                 <Input
@@ -158,7 +162,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
                   onChange={handleFileInputChange}
                 />
-              </Label>
+              </div>
             </CardContent>
           </Card>
 
