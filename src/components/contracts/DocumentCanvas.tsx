@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Move, Type, PenTool, Calendar, CheckSquare, ZoomIn, ZoomOut, Grid, RotateCcw, RotateCw } from "lucide-react";
+import { PDFViewer } from "./PDFViewer";
 
 interface ContractField {
   id: string;
@@ -331,13 +332,28 @@ export const DocumentCanvas = forwardRef<HTMLDivElement, DocumentCanvasProps>(
               onMouseMove={handleCanvasMouseMove}
               onMouseUp={handleCanvasMouseUp}
               onWheel={handleWheel}
-              style={{
-                backgroundImage: documentUrl ? `url(${documentUrl})` : undefined,
-                backgroundSize: `${100 * zoom}%`,
-                backgroundPosition: `${pan.x}px ${pan.y}px`,
-                backgroundRepeat: 'no-repeat',
-              }}
             >
+              {/* Document background */}
+              {documentUrl && (
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  {documentUrl.includes('.pdf') || (window as any).currentDocumentType === 'application/pdf' ? (
+                    <PDFViewer url={documentUrl} className="w-full h-full" />
+                  ) : (
+                    <img 
+                      src={documentUrl} 
+                      alt="Contract document" 
+                      className="w-full h-full object-contain"
+                      draggable={false}
+                    />
+                  )}
+                </div>
+              )}
               {/* Grid overlay */}
               {showGrid && (
                 <div

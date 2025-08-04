@@ -11,11 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DocumentUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onDocumentUpload: (file: File, documentUrl: string) => void;
+  onDocumentUpload: (file: File, documentUrl: string, fileType: string) => void;
 }
 
 export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
@@ -26,6 +28,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const { user } = useAuth();
 
   const handleFileSelect = (file: File) => {
     // Validate file type
@@ -80,18 +83,31 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !user) return;
 
     setUploading(true);
     
     try {
-      // Create a temporary URL for the file (in a real app, you'd upload to Supabase Storage)
-      const documentUrl = URL.createObjectURL(selectedFile);
+      // Create unique filename
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('contract-documents')
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('contract-documents')
+        .getPublicUrl(data.path);
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onDocumentUpload(selectedFile, documentUrl);
+      onDocumentUpload(selectedFile, publicUrl, selectedFile.type);
       toast.success('Document uploaded successfully');
       onClose();
       setSelectedFile(null);

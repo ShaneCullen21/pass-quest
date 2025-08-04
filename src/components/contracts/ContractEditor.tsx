@@ -121,9 +121,10 @@ export const ContractEditor = ({
     setShowFieldConfig(true);
   };
 
-  const handleDocumentUpload = (file: File, documentUrl: string) => {
+  const handleDocumentUpload = (file: File, documentUrl: string, fileType: string) => {
     setDocumentUrl(documentUrl);
-    // In a real app, you would upload to Supabase Storage here
+    // Store the file type for proper rendering
+    (window as any).currentDocumentType = fileType;
   };
 
   const handleSaveContract = async () => {
