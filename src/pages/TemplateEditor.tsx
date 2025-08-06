@@ -5,18 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FieldPalette } from "@/components/contracts/FieldPalette";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { FileText, Save, X, ArrowLeft, Edit, Eye, MoreHorizontal } from "lucide-react";
 
-interface TemplateVariable {
-  id: string;
-  name: string;
-  placeholder: string;
-  type: 'text' | 'date' | 'number';
-}
 
 const TemplateEditor = () => {
   const navigate = useNavigate();
@@ -25,7 +20,6 @@ const TemplateEditor = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
-  const [variables, setVariables] = useState<TemplateVariable[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
@@ -57,7 +51,6 @@ const TemplateEditor = () => {
         setDescription(data.description || "");
         const templateData = data.template_data as any;
         setContent(templateData?.content || "");
-        setVariables(templateData?.variables || []);
       }
     } catch (error) {
       console.error('Error fetching template:', error);
@@ -68,28 +61,8 @@ const TemplateEditor = () => {
     }
   };
 
-  const addVariable = () => {
-    const newVariable: TemplateVariable = {
-      id: `var_${Date.now()}`,
-      name: "",
-      placeholder: "",
-      type: 'text',
-    };
-    setVariables(prev => [...prev, newVariable]);
-  };
-
-  const updateVariable = (id: string, updates: Partial<TemplateVariable>) => {
-    setVariables(prev => prev.map(variable => 
-      variable.id === id ? { ...variable, ...updates } : variable
-    ));
-  };
-
-  const removeVariable = (id: string) => {
-    setVariables(prev => prev.filter(variable => variable.id !== id));
-  };
-
-  const insertVariableIntoContent = (variableName: string) => {
-    const variableTag = `{{${variableName}}}`;
+  const handleFieldDrop = (fieldName: string) => {
+    const variableTag = `{{${fieldName}}}`;
     setContent(prev => prev + ` ${variableTag}`);
   };
 
@@ -109,7 +82,6 @@ const TemplateEditor = () => {
     try {
       const templateData = JSON.parse(JSON.stringify({
         content,
-        variables,
         created_at: new Date().toISOString(),
       }));
 
@@ -252,59 +224,9 @@ const TemplateEditor = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Variables Panel */}
+            {/* Field Palette */}
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Template Variables</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {variables.map((variable) => (
-                    <div key={variable.id} className="p-3 border rounded-lg space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Input
-                          placeholder="Variable name"
-                          value={variable.name}
-                          onChange={(e) => updateVariable(variable.id, { name: e.target.value })}
-                          className="text-xs"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeVariable(variable.id)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Input
-                        placeholder="Placeholder text"
-                        value={variable.placeholder}
-                        onChange={(e) => updateVariable(variable.id, { placeholder: e.target.value })}
-                        className="text-xs"
-                      />
-                      {variable.name && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => insertVariableIntoContent(variable.name)}
-                          className="w-full text-xs"
-                        >
-                          Insert {`{{${variable.name}}}`}
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    onClick={addVariable}
-                    className="w-full"
-                    size="sm"
-                  >
-                    Add Variable
-                  </Button>
-                </CardContent>
-              </Card>
+              <FieldPalette />
             </div>
 
             {/* Content Editor */}
@@ -336,6 +258,7 @@ const TemplateEditor = () => {
                 placeholder="Enter your contract template content here..."
                 documentSize={documentSize}
                 className="min-h-[600px]"
+                onFieldDrop={handleFieldDrop}
               />
             </div>
           </div>

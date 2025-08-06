@@ -34,6 +34,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   documentSize?: 'a4' | 'letter' | 'legal';
+  onFieldDrop?: (fieldName: string) => void;
 }
 
 const getDocumentClass = (size: string) => {
@@ -51,7 +52,8 @@ export const RichTextEditor = ({
   onChange,
   placeholder = "Start typing...",
   className = "",
-  documentSize = 'a4'
+  documentSize = 'a4',
+  onFieldDrop
 }: RichTextEditorProps) => {
   const editorConfig = useMemo(() => ({
     extensions: [
@@ -106,6 +108,23 @@ export const RichTextEditor = ({
       {children}
     </Button>
   );
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    try {
+      const fieldData = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (fieldData && fieldData.name && onFieldDrop) {
+        onFieldDrop(fieldData.name);
+      }
+    } catch (error) {
+      console.error('Error parsing dropped field data:', error);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
 
   return (
     <Card className={`border border-border ${className}`}>
@@ -259,7 +278,11 @@ export const RichTextEditor = ({
       </div>
 
       {/* Editor Content */}
-      <div className="bg-gray-50 p-4 min-h-[600px] overflow-auto">
+      <div 
+        className="bg-gray-50 p-4 min-h-[600px] overflow-auto"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
         <EditorContent editor={editor} />
       </div>
     </Card>
