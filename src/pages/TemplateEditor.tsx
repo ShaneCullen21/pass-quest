@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +28,7 @@ const TemplateEditor = () => {
   const [variables, setVariables] = useState<TemplateVariable[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
   const { user } = useAuth();
 
   const isEditMode = !!templateId;
@@ -273,18 +275,34 @@ const TemplateEditor = () => {
 
             {/* Content Editor */}
             <div className="lg:col-span-2 space-y-4">
-              <div>
-                <Label>Template Content</Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Use variables like {`{{client_name}}`} to create dynamic content
-                </p>
-                <RichTextEditor
-                  content={content}
-                  onChange={setContent}
-                  placeholder="Enter your contract template content here..."
-                  className="min-h-[400px]"
-                />
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Template Content</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Use variables like {`{{client_name}}`} to create dynamic content
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="document-size" className="text-sm">Document Size:</Label>
+                  <Select value={documentSize} onValueChange={(value: 'a4' | 'letter' | 'legal') => setDocumentSize(value)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="a4">A4</SelectItem>
+                      <SelectItem value="letter">Letter</SelectItem>
+                      <SelectItem value="legal">Legal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                placeholder="Enter your contract template content here..."
+                documentSize={documentSize}
+                className="min-h-[600px]"
+              />
             </div>
           </div>
         </div>
