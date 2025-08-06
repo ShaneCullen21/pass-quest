@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -36,6 +36,16 @@ interface RichTextEditorProps {
   documentSize?: 'a4' | 'letter' | 'legal';
 }
 
+const getDocumentClass = (size: string) => {
+  const baseClasses = 'prose prose-sm focus:outline-none p-8 bg-white min-h-[600px] mx-auto shadow-sm border rounded-md';
+  const sizeClasses = {
+    a4: 'max-w-[210mm] min-h-[297mm]',
+    letter: 'max-w-[8.5in] min-h-[11in]',
+    legal: 'max-w-[8.5in] min-h-[14in]'
+  };
+  return `${baseClasses} ${sizeClasses[size as keyof typeof sizeClasses]}`;
+};
+
 export const RichTextEditor = ({
   content,
   onChange,
@@ -43,17 +53,7 @@ export const RichTextEditor = ({
   className = "",
   documentSize = 'a4'
 }: RichTextEditorProps) => {
-  const getDocumentClass = (size: string) => {
-    const baseClasses = 'prose prose-sm focus:outline-none p-8 bg-white min-h-[600px] mx-auto shadow-sm border rounded-md';
-    const sizeClasses = {
-      a4: 'max-w-[210mm] min-h-[297mm]',
-      letter: 'max-w-[8.5in] min-h-[11in]',
-      legal: 'max-w-[8.5in] min-h-[14in]'
-    };
-    return `${baseClasses} ${sizeClasses[size as keyof typeof sizeClasses]}`;
-  };
-
-  const editor = useEditor({
+  const editorConfig = useMemo(() => ({
     extensions: [
       StarterKit.configure({
         heading: {
@@ -69,7 +69,7 @@ export const RichTextEditor = ({
       Underline,
     ],
     content,
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: any }) => {
       onChange(editor.getHTML());
     },
     editorProps: {
@@ -77,7 +77,9 @@ export const RichTextEditor = ({
         class: getDocumentClass(documentSize),
       },
     },
-  });
+  }), [content, documentSize, placeholder, onChange]);
+
+  const editor = useEditor(editorConfig);
 
   if (!editor) {
     return null;
