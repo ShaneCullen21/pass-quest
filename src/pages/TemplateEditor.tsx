@@ -9,7 +9,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { FileText, Save, X, ArrowLeft } from "lucide-react";
+import { FileText, Save, X, ArrowLeft, Edit, Eye, MoreHorizontal } from "lucide-react";
 
 interface TemplateVariable {
   id: string;
@@ -168,31 +168,65 @@ const TemplateEditor = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Templates
-            </Button>
+      {/* Navigation Header */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <nav className="flex items-center space-x-6 text-sm text-muted-foreground">
+              <span className="text-foreground font-medium">HOME</span>
+              <span>PROJECTS</span>
+              <span className="text-foreground font-medium">TEMPLATES</span>
+              <span>CLIENTS</span>
+              <span>REPORTS</span>
+            </nav>
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              <h1 className="text-2xl font-bold">
-                {isEditMode ? 'Edit Template' : 'Create New Template'}
-              </h1>
+              <span className="text-sm text-muted-foreground">Emily</span>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleBack}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : (isEditMode ? 'Update Template' : 'Create Template')}
-            </Button>
+        </div>
+      </div>
+
+      {/* Main Header */}
+      <div className="border-b bg-background">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-semibold">
+                  {title || (isEditMode ? 'Edit Template' : 'New Template')}
+                </h1>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Edit className="h-3 w-3" />
+                </Button>
+                {isEditMode && (
+                  <div className="ml-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      CUSTOMIZED TEMPLATE
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8">
+                <Eye className="h-4 w-4 mr-1" />
+                PREVIEW
+              </Button>
+              <Button onClick={handleSave} disabled={saving} size="sm" className="h-8">
+                {saving ? 'Saving...' : 'Save template'}
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="container mx-auto px-6 py-6">
 
         <div className="space-y-6">
           {/* Template Info */}
