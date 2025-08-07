@@ -38,6 +38,7 @@ export const TemplateSelector = ({ onTemplateSelect, onBack }: TemplateSelectorP
         .from('templates')
         .select('*')
         .eq('user_id', user.id)
+        .eq('template_type', 'customized')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
