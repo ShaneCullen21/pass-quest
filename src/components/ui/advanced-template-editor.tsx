@@ -140,12 +140,12 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
   // Load comments from database when template ID changes
   useEffect(() => {
-    if (masterTemplateId && user) {
-      // For customized templates, always load comments from master template
-      loadCommentsFromMaster();
-    } else if (templateId && user) {
-      // For master templates, load their own comments
+    if (templateId && user) {
+      // Always load comments from the template's own ID first
       loadComments();
+    } else if (masterTemplateId && user) {
+      // For new customized templates without an ID yet, load from master
+      loadCommentsFromMaster();
     }
   }, [templateId, masterTemplateId, user]);
 
@@ -201,7 +201,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
       if (data) {
         const formattedComments: Comment[] = data.map(comment => ({
-          id: comment.id + '_inherited', // Add suffix to avoid conflicts
+          id: comment.id,
           content: comment.content,
           author: comment.author,
           timestamp: new Date(comment.created_at),
@@ -216,6 +216,46 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       }
     } catch (error) {
       console.error('Error in loadCommentsFromMaster:', error);
+    }
+  };
+
+  // Function to copy comments from master template to customized template
+  const copyCommentsToCustomizedTemplate = async (customizedTemplateId: string) => {
+    if (!masterTemplateId || !user) return;
+
+    try {
+      // Get comments from master template
+      const { data: masterComments, error: loadError } = await supabase
+        .from('template_comments')
+        .select('*')
+        .eq('template_id', masterTemplateId);
+
+      if (loadError || !masterComments) {
+        console.error('Error loading master comments for copying:', loadError);
+        return;
+      }
+
+      // Copy comments to the customized template
+      const commentsToInsert = masterComments.map(comment => ({
+        template_id: customizedTemplateId,
+        user_id: user.id,
+        content: comment.content,
+        author: comment.author,
+        selected_text: comment.selected_text,
+        range_from: comment.range_from,
+        range_to: comment.range_to,
+        resolved: comment.resolved
+      }));
+
+      const { error: insertError } = await supabase
+        .from('template_comments')
+        .insert(commentsToInsert);
+
+      if (insertError) {
+        console.error('Error copying comments to customized template:', insertError);
+      }
+    } catch (error) {
+      console.error('Error in copyCommentsToCustomizedTemplate:', error);
     }
   };
 
@@ -249,8 +289,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         selectedText: selectedText
       };
 
-      // Save to database - prioritize customized template's own ID if available
-      const targetTemplateId = templateId || masterTemplateId;
+      // For customized templates, always save to the template's own ID
+      const targetTemplateId = templateId;
       
       if (targetTemplateId) {
         try {
@@ -269,7 +309,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
           if (error) {
             console.error('Error saving comment:', error);
-            // Still add to local state even if save fails
           }
         } catch (error) {
           console.error('Error in handleAddComment:', error);
@@ -282,12 +321,10 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       setSelectedRange(null);
       setSelectedText('');
     }
-  }, [selectedRange, selectedText, templateId, masterTemplateId, user]);
+  }, [selectedRange, selectedText, templateId, user]);
   const handleResolveComment = useCallback(async (commentId: string) => {
-    // Update in database only if it's not an inherited comment and we have a template ID
-    const targetTemplateId = templateId || masterTemplateId;
-    
-    if (targetTemplateId && user && !commentId.includes('_inherited')) {
+    // Update in database only if we have a template ID
+    if (templateId && user) {
       try {
         const { error } = await supabase
           .from('template_comments')
@@ -306,13 +343,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     setComments(prev => prev.map(comment => 
       comment.id === commentId ? { ...comment, resolved: true } : comment
     ));
-  }, [templateId, masterTemplateId, user]);
+  }, [templateId, user]);
 
   const handleUnresolveComment = useCallback(async (commentId: string) => {
-    // Update in database only if it's not an inherited comment and we have a template ID
-    const targetTemplateId = templateId || masterTemplateId;
-    
-    if (targetTemplateId && user && !commentId.includes('_inherited')) {
+    // Update in database only if we have a template ID
+    if (templateId && user) {
       try {
         const { error } = await supabase
           .from('template_comments')
@@ -331,7 +366,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     setComments(prev => prev.map(comment => 
       comment.id === commentId ? { ...comment, resolved: false } : comment
     ));
-  }, [templateId, masterTemplateId, user]);
+  }, [templateId, user]);
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
 

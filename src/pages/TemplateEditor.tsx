@@ -30,6 +30,48 @@ const TemplateEditor = () => {
   const {
     user
   } = useAuth();
+
+  // Function to copy comments from master template to new customized template
+  const copyCommentsToNewTemplate = async (newTemplateId: string, masterTemplateId: string) => {
+    if (!user) return;
+
+    try {
+      // Get comments from master template
+      const { data: masterComments, error: loadError } = await supabase
+        .from('template_comments')
+        .select('*')
+        .eq('template_id', masterTemplateId);
+
+      if (loadError || !masterComments) {
+        console.error('Error loading master comments for copying:', loadError);
+        return;
+      }
+
+      // Copy comments to the new customized template
+      const commentsToInsert = masterComments.map(comment => ({
+        template_id: newTemplateId,
+        user_id: user.id,
+        content: comment.content,
+        author: comment.author,
+        selected_text: comment.selected_text,
+        range_from: comment.range_from,
+        range_to: comment.range_to,
+        resolved: comment.resolved
+      }));
+
+      if (commentsToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from('template_comments')
+          .insert(commentsToInsert);
+
+        if (insertError) {
+          console.error('Error copying comments to customized template:', insertError);
+        }
+      }
+    } catch (error) {
+      console.error('Error in copyCommentsToNewTemplate:', error);
+    }
+  };
   useEffect(() => {
     const fetchTemplate = async () => {
       const searchParams = new URLSearchParams(location.search);
@@ -137,12 +179,22 @@ const TemplateEditor = () => {
         user_id: user?.id
       };
       let result;
+      let savedTemplateId = templateId;
+      
       if (templateId) {
         // Update existing template
         result = await supabase.from('templates').update(templateData).eq('id', templateId);
       } else {
         // Create new template
-        result = await supabase.from('templates').insert(templateData);
+        result = await supabase.from('templates').insert(templateData).select();
+        if (result.data && result.data[0]) {
+          savedTemplateId = result.data[0].id;
+          
+          // If this is a customized template being created for the first time, copy comments from master
+          if (templateType === 'customized' && masterTemplateId) {
+            await copyCommentsToNewTemplate(savedTemplateId, masterTemplateId);
+          }
+        }
       }
       if (result.error) {
         console.error('Error saving template:', result.error);
