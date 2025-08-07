@@ -420,8 +420,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
           </div>
         </div>
 
-        {/* Comments Panel - Fixed width with independent scrolling */}
-        {showComments && <div className="w-80 h-full overflow-hidden">
+        {/* Comments Panel - Same height as document area */}
+        {showComments && <div className="w-80 flex flex-col">
           <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onUnresolveComment={handleUnresolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
         </div>}
       </div>
