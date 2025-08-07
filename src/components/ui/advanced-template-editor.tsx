@@ -15,7 +15,7 @@ import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
 import { CommentForm } from './comment-form';
-import { PagedEditor } from './paged-editor';
+import { SmartPaginationEditor } from './smart-pagination-editor';
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
 
@@ -324,7 +324,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               />
             ) : (
               <>
-                <PagedEditor
+                <SmartPaginationEditor
                   editor={editor}
                   onMouseUp={handleSelection}
                 />
