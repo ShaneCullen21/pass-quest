@@ -17,11 +17,15 @@ import '../ui/document-styles.css';
 interface ReadOnlyDocumentViewerProps {
   content: string;
   className?: string;
+  signingFields?: any[];
+  currentClientId?: string;
 }
 
 export const ReadOnlyDocumentViewer: React.FC<ReadOnlyDocumentViewerProps> = ({
   content,
-  className
+  className,
+  signingFields = [],
+  currentClientId
 }) => {
   const extensions = useMemo(() => [
     StarterKit.configure({

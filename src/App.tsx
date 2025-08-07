@@ -17,6 +17,7 @@ import DocumentEditor from "./pages/DocumentEditor";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import DocumentSigning from "./pages/DocumentSigning";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/templates/new" element={<TemplateEditor />} />
             <Route path="/templates/edit" element={<TemplateEditor />} />
             <Route path="/contracts/document-editor" element={<DocumentEditor />} />
+            <Route path="/sign/:documentId" element={<DocumentSigning />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/reports" element={<Reports />} />

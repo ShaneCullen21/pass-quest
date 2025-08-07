@@ -12,6 +12,7 @@ import { ArrowLeft, User, Users, Save, Send } from "lucide-react";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
 import { ResizableField } from "@/components/contracts/ResizableField";
+import { SignatureOrderModal } from "@/components/contracts/SignatureOrderModal";
 
 interface Template {
   id: string;
@@ -30,7 +31,7 @@ interface Project {
 interface Client {
   id: string;
   name: string;
-  email?: string;
+  email: string;
   company?: string;
 }
 
@@ -61,6 +62,8 @@ const DocumentEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [existingDocument, setExistingDocument] = useState<any>(null);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [isSendingSignature, setIsSendingSignature] = useState(false);
   const isEditingMode = !!documentId;
 
   useEffect(() => {
@@ -348,17 +351,53 @@ const DocumentEditor = () => {
     }
   };
 
-  const handleSendForSignature = async () => {
-    if (!template || !project) return;
+  const handleSendForSignature = () => {
+    if (clients.length < 2) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient Clients",
+        description: "You need at least 2 clients to send for signature.",
+      });
+      return;
+    }
+    setShowSignatureModal(true);
+  };
 
-    // First save the document
-    await handleSave();
-    
-    // TODO: Implement send for signature functionality
-    toast({
-      title: "Coming Soon",
-      description: "Send for signature functionality will be implemented soon!"
-    });
+  const handleConfirmSendSignature = async (firstSignerId: string, secondSignerId: string) => {
+    setIsSendingSignature(true);
+    try {
+      // Save document first to ensure it's up to date
+      await handleSave();
+
+      const { data, error } = await supabase.functions.invoke('send-signature-email', {
+        body: {
+          documentId: existingDocument?.id || 'new',
+          firstSignerId,
+          secondSignerId,
+          documentTitle: template?.title || 'Untitled Document'
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Signature Request Sent!",
+        description: "The first signer will receive an email with the signing link.",
+      });
+
+      setShowSignatureModal(false);
+      navigate(`/projects/${project?.id}`);
+
+    } catch (error: any) {
+      console.error('Error sending signature request:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to send signature request",
+      });
+    } finally {
+      setIsSendingSignature(false);
+    }
   };
 
   const handleBack = () => {
@@ -572,6 +611,14 @@ const DocumentEditor = () => {
             </Card>
           </div>
         </div>
+
+        <SignatureOrderModal
+          isOpen={showSignatureModal}
+          onClose={() => setShowSignatureModal(false)}
+          clients={clients}
+          onSendForSignature={handleConfirmSendSignature}
+          isLoading={isSendingSignature}
+        />
       </div>
     </div>
   );
