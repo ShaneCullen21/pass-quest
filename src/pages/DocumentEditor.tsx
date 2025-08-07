@@ -102,9 +102,20 @@ const DocumentEditor = () => {
         setExistingDocument(document);
         
         // If document has content, use it; otherwise create basic content
-        const documentContent = document.document_content as any;
-        const content = documentContent?.content || 
-                       `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>`;
+        let documentContent;
+        let content;
+        
+        try {
+          // Parse the JSON string from database
+          documentContent = typeof document.document_content === 'string' 
+            ? JSON.parse(document.document_content) 
+            : document.document_content;
+          content = documentContent?.content || 
+                   `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>`;
+        } catch (e) {
+          console.error('Error parsing document content:', e);
+          content = `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>`;
+        }
         
         templateData = {
           id: document.id,
@@ -113,12 +124,17 @@ const DocumentEditor = () => {
         };
 
         // Load existing signing fields if any
-        const fieldData = document.field_data as any;
-        console.log('Loading existing document:', document);
-        console.log('Field data:', fieldData);
-        if (fieldData?.signing_fields) {
-          console.log('Setting signing fields:', fieldData.signing_fields);
-          setSigningFields(fieldData.signing_fields);
+        try {
+          const fieldData = typeof document.field_data === 'string' 
+            ? JSON.parse(document.field_data) 
+            : document.field_data;
+          console.log('Parsed field data:', fieldData);
+          if (fieldData?.signing_fields) {
+            console.log('Setting signing fields:', fieldData.signing_fields);
+            setSigningFields(fieldData.signing_fields);
+          }
+        } catch (e) {
+          console.error('Error parsing field data:', e);
         }
       } else if (templateId) {
         // Fetch template for new document
