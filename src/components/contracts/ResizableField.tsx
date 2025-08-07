@@ -7,7 +7,7 @@ import { useResizable } from '@/hooks/useResizable';
 interface ResizableFieldProps {
   id: string;
   type: 'name' | 'signature' | 'date';
-  clientName: string;
+  clientId: string;
   position: { x: number; y: number };
   width: number;
   height: number;
@@ -16,10 +16,22 @@ interface ResizableFieldProps {
   onDelete: (id: string) => void;
 }
 
-const fieldColors = {
-  name: "border-blue-500 bg-blue-100 text-blue-800",
-  signature: "border-green-500 bg-green-100 text-green-800", 
-  date: "border-orange-500 bg-orange-100 text-orange-800"
+// Client colors - each client gets a unique color
+const clientColors = [
+  "border-blue-500 bg-blue-100 text-blue-800",
+  "border-green-500 bg-green-100 text-green-800", 
+  "border-orange-500 bg-orange-100 text-orange-800",
+  "border-purple-500 bg-purple-100 text-purple-800",
+  "border-pink-500 bg-pink-100 text-pink-800",
+  "border-indigo-500 bg-indigo-100 text-indigo-800",
+  "border-teal-500 bg-teal-100 text-teal-800",
+  "border-red-500 bg-red-100 text-red-800"
+];
+
+const getClientColor = (clientId: string) => {
+  // Use a simple hash to get consistent color for each client
+  const hash = clientId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+  return clientColors[hash % clientColors.length];
 };
 
 const fieldMinSizes = {
@@ -31,7 +43,7 @@ const fieldMinSizes = {
 export const ResizableField: React.FC<ResizableFieldProps> = ({
   id,
   type,
-  clientName,
+  clientId,
   position,
   width,
   height,
@@ -70,7 +82,7 @@ export const ResizableField: React.FC<ResizableFieldProps> = ({
 
   return (
     <div
-      className={`absolute border-2 rounded-lg flex items-center justify-center text-xs font-medium transition-all select-none resize-field ${fieldColors[type]} ${
+      className={`absolute border-2 rounded-lg flex items-center justify-center text-xs font-medium transition-all select-none resize-field ${getClientColor(clientId)} ${
         (isResizing || isDragging) ? 'shadow-lg z-50' : 'hover:shadow-md z-20'
       }`}
       style={{
@@ -82,14 +94,9 @@ export const ResizableField: React.FC<ResizableFieldProps> = ({
       }}
       onMouseDown={(e) => handleMouseDown(e)}
     >
-      {/* Field Content */}
-      <div className="flex flex-col items-center justify-center text-center px-2 py-1 pointer-events-none">
-        <div className="capitalize font-semibold">
-          {type === 'signature' ? 'Sign' : type}
-        </div>
-        <div className="text-xs opacity-75 truncate max-w-full">
-          {clientName}
-        </div>
+      {/* Field Content - Only show field type */}
+      <div className="capitalize font-semibold pointer-events-none">
+        {type === 'signature' ? 'Sign' : type}
       </div>
 
       {/* Delete Button */}
@@ -128,14 +135,6 @@ export const ResizableField: React.FC<ResizableFieldProps> = ({
           handleMouseDown(e, 'se');
         }}
       />
-
-      {/* Field Type Badge */}
-      <Badge 
-        variant="secondary" 
-        className="absolute -top-2 -left-2 text-xs z-30 pointer-events-none"
-      >
-        {type}
-      </Badge>
     </div>
   );
 };

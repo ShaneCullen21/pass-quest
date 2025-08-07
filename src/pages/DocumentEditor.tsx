@@ -457,7 +457,7 @@ const DocumentEditor = () => {
                         key={field.id}
                         id={field.id}
                         type={field.type}
-                        clientName={getClientName(field.clientId)}
+                        clientId={field.clientId}
                         position={field.position}
                         width={field.width}
                         height={field.height}
