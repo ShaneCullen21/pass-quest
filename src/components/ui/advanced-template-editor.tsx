@@ -125,11 +125,12 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
   // Load comments from database when template ID changes
   useEffect(() => {
-    if (templateId && user) {
-      loadComments();
-    } else if (masterTemplateId && user) {
-      // Load comments from master template for customized templates
+    if (masterTemplateId && user) {
+      // For customized templates, always load comments from master template
       loadCommentsFromMaster();
+    } else if (templateId && user) {
+      // For master templates, load their own comments
+      loadComments();
     }
   }, [templateId, masterTemplateId, user]);
 

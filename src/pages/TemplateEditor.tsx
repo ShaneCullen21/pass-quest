@@ -157,7 +157,13 @@ const TemplateEditor = () => {
         title: "Success",
         description: templateId ? "Template updated successfully!" : "Template created successfully!"
       });
-      navigate('/templates');
+      
+      // Navigate to the appropriate templates tab based on template type
+      if (templateType === 'customized') {
+        navigate('/templates?tab=customized');
+      } else {
+        navigate('/templates');
+      }
     } catch (error) {
       console.error('Error in handleSave:', error);
       toast({
@@ -198,7 +204,12 @@ const TemplateEditor = () => {
   };
 
   const handleBack = () => {
-    navigate('/templates');
+    // Navigate to the appropriate templates tab based on template type
+    if (templateType === 'customized') {
+      navigate('/templates?tab=customized');
+    } else {
+      navigate('/templates');
+    }
   };
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
