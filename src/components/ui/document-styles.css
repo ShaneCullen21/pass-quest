@@ -5,8 +5,20 @@
 }
 
 .document-page {
-  break-after: page;
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto 30px auto; /* 30px spacing between pages */
+  padding: 1in;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  page-break-after: always;
+  overflow: hidden; /* Prevent content from spilling over */
   position: relative;
+}
+
+.document-page:last-child {
+  margin-bottom: 0;
 }
 
 /* Page break styling */
@@ -20,19 +32,12 @@
   padding: 0;
 }
 
-.page-break::before {
-  content: '';
-  display: block;
-  height: 1px;
-  background: #ccc;
-  margin: 20px 0;
-  border: 1px dashed #999;
-}
-
 /* TipTap Editor content styling */
 .ProseMirror {
   outline: none;
-  min-height: calc(11in - 2in); /* Full page height minus margins */
+  height: auto !important;
+  min-height: 9in; /* Content area height */
+  overflow: visible !important; /* Allow content to flow naturally */
   overflow-wrap: break-word;
   word-wrap: break-word;
   white-space: pre-wrap;
