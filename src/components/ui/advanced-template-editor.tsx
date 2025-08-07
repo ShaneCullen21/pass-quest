@@ -75,28 +75,43 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
-  const extensions = useMemo(() => [StarterKit.configure({
-    heading: {
-      levels: [1, 2, 3, 4, 5],
+  const extensions = useMemo(() => [
+    StarterKit.configure({
+      heading: {
+        levels: [1, 2, 3, 4, 5],
+        HTMLAttributes: {
+          class: 'heading-style'
+        }
+      },
+      // Disable built-in underline and hard-break from StarterKit to avoid duplicates
+      underline: false,
+      hardBreak: false
+    }),
+    Placeholder.configure({
+      placeholder
+    }),
+    TextAlign.configure({
+      types: ['heading', 'paragraph']
+    }),
+    Underline,
+    TextStyle,
+    Color,
+    Highlight.configure({
+      multicolor: true
+    }),
+    FontFamily.configure({
+      types: ['textStyle']
+    }),
+    FontSize.configure({
+      types: ['textStyle']
+    }),
+    HardBreak.configure({
       HTMLAttributes: {
-        class: 'heading-style'
+        class: 'page-break'
       }
-    }
-  }), Placeholder.configure({
-    placeholder
-  }), TextAlign.configure({
-    types: ['heading', 'paragraph']
-  }), Underline, TextStyle, Color, Highlight.configure({
-    multicolor: true
-  }), FontFamily.configure({
-    types: ['textStyle']
-  }), FontSize.configure({
-    types: ['textStyle']
-  }), HardBreak.configure({
-    HTMLAttributes: {
-      class: 'page-break'
-    }
-  }), Typography], [placeholder]);
+    }),
+    Typography
+  ], [placeholder]);
   const editor = useEditor({
     extensions,
     content,
@@ -223,7 +238,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   }, [content, autoSave, saveStatus, title]);
   const handleAddComment = useCallback(async (commentText: string) => {
-    if (selectedRange && selectedText && templateId && user) {
+    if (selectedRange && selectedText && user) {
       const newComment: Comment = {
         id: Date.now().toString(),
         content: commentText,
@@ -234,27 +249,31 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         selectedText: selectedText
       };
 
-      // Save to database
-      try {
-        const { error } = await supabase
-          .from('template_comments')
-          .insert({
-            template_id: templateId,
-            user_id: user.id,
-            content: commentText,
-            author: 'You',
-            selected_text: selectedText,
-            range_from: selectedRange.from,
-            range_to: selectedRange.to,
-            resolved: false
-          });
+      // Save to database - prioritize customized template's own ID if available
+      const targetTemplateId = templateId || masterTemplateId;
+      
+      if (targetTemplateId) {
+        try {
+          const { error } = await supabase
+            .from('template_comments')
+            .insert({
+              template_id: targetTemplateId,
+              user_id: user.id,
+              content: commentText,
+              author: 'You',
+              selected_text: selectedText,
+              range_from: selectedRange.from,
+              range_to: selectedRange.to,
+              resolved: false
+            });
 
-        if (error) {
-          console.error('Error saving comment:', error);
-          // Still add to local state even if save fails
+          if (error) {
+            console.error('Error saving comment:', error);
+            // Still add to local state even if save fails
+          }
+        } catch (error) {
+          console.error('Error in handleAddComment:', error);
         }
-      } catch (error) {
-        console.error('Error in handleAddComment:', error);
       }
 
       setComments(prev => [...prev, newComment]);
@@ -263,9 +282,12 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       setSelectedRange(null);
       setSelectedText('');
     }
-  }, [selectedRange, selectedText, templateId, user]);
+  }, [selectedRange, selectedText, templateId, masterTemplateId, user]);
   const handleResolveComment = useCallback(async (commentId: string) => {
-    if (templateId && user && !commentId.includes('_inherited')) {
+    // Update in database only if it's not an inherited comment and we have a template ID
+    const targetTemplateId = templateId || masterTemplateId;
+    
+    if (targetTemplateId && user && !commentId.includes('_inherited')) {
       try {
         const { error } = await supabase
           .from('template_comments')
@@ -281,14 +303,16 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       }
     }
 
-    setComments(prev => prev.map(comment => comment.id === commentId ? {
-      ...comment,
-      resolved: true
-    } : comment));
-  }, [templateId, user]);
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId ? { ...comment, resolved: true } : comment
+    ));
+  }, [templateId, masterTemplateId, user]);
 
   const handleUnresolveComment = useCallback(async (commentId: string) => {
-    if (templateId && user && !commentId.includes('_inherited')) {
+    // Update in database only if it's not an inherited comment and we have a template ID
+    const targetTemplateId = templateId || masterTemplateId;
+    
+    if (targetTemplateId && user && !commentId.includes('_inherited')) {
       try {
         const { error } = await supabase
           .from('template_comments')
@@ -304,11 +328,10 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       }
     }
 
-    setComments(prev => prev.map(comment => comment.id === commentId ? {
-      ...comment,
-      resolved: false
-    } : comment));
-  }, [templateId, user]);
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId ? { ...comment, resolved: false } : comment
+    ));
+  }, [templateId, masterTemplateId, user]);
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
 

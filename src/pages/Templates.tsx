@@ -35,6 +35,7 @@ const Templates = () => {
   const [loading2, setLoading2] = useState(true);
   const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('master'); // Track active tab
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     templateId: string;
@@ -46,6 +47,15 @@ const Templates = () => {
     templateTitle: '',
     templateType: 'master'
   });
+
+  // Check URL parameters on mount to set the correct tab
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tab = searchParams.get('tab');
+    if (tab === 'customized') {
+      setActiveTab('customized');
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -198,7 +208,7 @@ const Templates = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="master" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-between items-center mb-4">
             <TabsList className="grid w-fit grid-cols-2">
               <TabsTrigger value="master">Master Templates</TabsTrigger>
