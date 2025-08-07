@@ -13,6 +13,7 @@ import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { NewTemplateModal } from "@/components/templates/NewTemplateModal";
+import { DeleteTemplateConfirmation } from "@/components/templates/DeleteTemplateConfirmation";
 
 interface Template {
   id: string;
@@ -34,6 +35,17 @@ const Templates = () => {
   const [loading2, setLoading2] = useState(true);
   const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    templateId: string;
+    templateTitle: string;
+    templateType: 'master' | 'customized';
+  }>({
+    isOpen: false,
+    templateId: '',
+    templateTitle: '',
+    templateType: 'master'
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -105,6 +117,12 @@ const Templates = () => {
         description: "Template deleted successfully.",
       });
       fetchTemplates();
+      setDeleteConfirmation({
+        isOpen: false,
+        templateId: '',
+        templateTitle: '',
+        templateType: 'master'
+      });
     } catch (error) {
       console.error('Error deleting template:', error);
       toast({
@@ -113,6 +131,30 @@ const Templates = () => {
         description: "Failed to delete template. Please try again.",
       });
     }
+  };
+
+  const handleDeleteClick = (template: Template) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      templateId: template.id,
+      templateTitle: template.title,
+      templateType: template.template_type
+    });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmation.templateId) {
+      handleDeleteTemplate(deleteConfirmation.templateId);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      templateId: '',
+      templateTitle: '',
+      templateType: 'master'
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -223,16 +265,7 @@ const Templates = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
-                                className="flex items-center gap-1 flex-1"
-                              >
-                                <FileText className="h-3 w-3" />
-                                Create Document
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteTemplate(template.id)}
+                                onClick={() => handleDeleteClick(template)}
                                 className="flex items-center gap-1"
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -305,7 +338,7 @@ const Templates = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDeleteTemplate(template.id)}
+                                onClick={() => handleDeleteClick(template)}
                                 className="flex items-center gap-1"
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -335,6 +368,14 @@ const Templates = () => {
         <NewTemplateModal 
           isOpen={showNewTemplateModal}
           onClose={() => setShowNewTemplateModal(false)}
+        />
+
+        <DeleteTemplateConfirmation
+          isOpen={deleteConfirmation.isOpen}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          templateTitle={deleteConfirmation.templateTitle}
+          templateType={deleteConfirmation.templateType}
         />
       </main>
     </div>
