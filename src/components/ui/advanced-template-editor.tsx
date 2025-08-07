@@ -316,10 +316,18 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
     // Focus the editor and select the text range
     editor.commands.focus();
-    editor.commands.setTextSelection({
-      from: comment.range.from,
-      to: comment.range.to
-    });
+    
+    // Try to select the text range, but handle cases where range might be invalid
+    try {
+      editor.commands.setTextSelection({
+        from: comment.range.from,
+        to: comment.range.to
+      });
+    } catch (error) {
+      console.warn('Could not select text range for comment:', error);
+      // Fallback: just focus the editor
+      editor.commands.focus();
+    }
 
     // Remove highlight after 3 seconds
     setTimeout(() => {
