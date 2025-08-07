@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/templates/new" element={<TemplateEditor />} />
             <Route path="/templates/edit" element={<TemplateEditor />} />
             <Route path="/contracts/document-editor" element={<DocumentEditor />} />
+            <Route path="/contracts/editor/:contractId" element={<ContractEditor />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/reports" element={<Reports />} />
