@@ -50,6 +50,7 @@ const DocumentEditor = () => {
   const [searchParams] = useSearchParams();
 
   const templateId = searchParams.get('templateId');
+  const documentId = searchParams.get('documentId');
   const projectId = searchParams.get('projectId');
 
   const [template, setTemplate] = useState<Template | null>(null);
@@ -59,36 +60,74 @@ const DocumentEditor = () => {
   const [signingFields, setSigningFields] = useState<SigningField[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [existingDocument, setExistingDocument] = useState<any>(null);
+  const isEditingMode = !!documentId;
 
   useEffect(() => {
-    if (!templateId || !projectId || !user) {
+    if ((!templateId && !documentId) || !projectId || !user) {
       navigate('/templates?tab=customized');
       return;
     }
 
     fetchData();
-  }, [templateId, projectId, user, navigate]);
+  }, [templateId, documentId, projectId, user, navigate]);
 
   const fetchData = async () => {
-    if (!templateId || !projectId || !user) return;
+    if ((!templateId && !documentId) || !projectId || !user) return;
 
     setLoading(true);
     try {
-      // Fetch template
-      const { data: templateData, error: templateError } = await supabase
-        .from('templates')
-        .select('*')
-        .eq('id', templateId)
-        .eq('user_id', user.id)
-        .single();
+      let templateData = null;
+      
+      if (isEditingMode && documentId) {
+        // Load existing document from proposals table
+        const { data: document, error: documentError } = await supabase
+          .from('proposals')
+          .select('*')
+          .eq('id', documentId)
+          .eq('user_id', user.id)
+          .single();
 
-      if (templateError) {
-        console.error('Error fetching template:', templateError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Template not found"
-        });
+        if (documentError) {
+          console.error('Error fetching document:', documentError);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Document not found"
+          });
+          navigate('/templates?tab=customized');
+          return;
+        }
+        
+        setExistingDocument(document);
+        // For now, create a mock template structure from the document
+        templateData = {
+          id: document.id,
+          title: document.title,
+          template_data: { content: `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>` }
+        };
+      } else if (templateId) {
+        // Fetch template for new document
+        const { data: template, error: templateError } = await supabase
+          .from('templates')
+          .select('*')
+          .eq('id', templateId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (templateError) {
+          console.error('Error fetching template:', templateError);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Template not found"
+          });
+          navigate('/templates?tab=customized');
+          return;
+        }
+        
+        templateData = template;
+      } else {
         navigate('/templates?tab=customized');
         return;
       }

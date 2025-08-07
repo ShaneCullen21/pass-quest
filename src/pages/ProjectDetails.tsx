@@ -137,13 +137,7 @@ export default function ProjectDetails() {
 
       if (proposalsError) throw proposalsError;
 
-      // Fetch contracts
-      const { data: contracts, error: contractsError } = await supabase
-        .from("contracts")
-        .select("*")
-        .eq("project_id", id);
-
-      if (contractsError) throw contractsError;
+      // Note: Contracts are no longer used - only proposals and invoices
 
       // Fetch invoices
       const { data: invoices, error: invoicesError } = await supabase
@@ -156,7 +150,6 @@ export default function ProjectDetails() {
       // Combine all documents
       const allDocuments: Document[] = [
         ...(proposals || []).map(p => ({ ...p, type: 'proposal' as const })),
-        ...(contracts || []).map(c => ({ ...c, type: 'contract' as const })),
         ...(invoices || []).map(i => ({ ...i, type: 'invoice' as const }))
       ];
 
@@ -435,12 +428,9 @@ export default function ProjectDetails() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => {
-                                if (document.type === 'contract') {
-                                  // Navigate to document editor for contracts
-                                  navigate(`/contracts/document-editor?templateId=${document.id}&projectId=${id}`);
-                                } else if (document.type === 'proposal') {
-                                  // For now, just show a message - you could implement proposal editor later
-                                  toast.error('Proposal editor not yet implemented');
+                                if (document.type === 'proposal') {
+                                  // Navigate to document editor for proposals
+                                  navigate(`/document-editor?documentId=${document.id}&projectId=${id}`);
                                 } else if (document.type === 'invoice') {
                                   // For now, just show a message - you could implement invoice editor later
                                   toast.error('Invoice editor not yet implemented');
