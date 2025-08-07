@@ -209,26 +209,16 @@ const TemplateEditor = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8">
-                <Eye className="h-4 w-4 mr-1" />
-                PREVIEW
-              </Button>
               <Button onClick={handleSave} disabled={saving} size="sm" className="h-8">
                 {saving ? 'Saving...' : 'Save template'}
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-6">
-        <div className="space-y-6">
-          {/* Template Info */}
-          
-
+      <div className="container mx-auto px-6">
+        <div className="space-y-0">
           <div className="w-full">
             <AdvancedTemplateEditor content={content} onChange={setContent} onSave={handleSave} title={title || "Untitled Template"} isSaving={saving} placeholder="Start writing your template content..." />
           </div>

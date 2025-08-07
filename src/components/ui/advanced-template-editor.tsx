@@ -54,7 +54,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [showComments, setShowComments] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [showCommentIcon, setShowCommentIcon] = useState(false);
@@ -242,7 +241,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   }
   return <div className="h-full flex flex-col bg-gray-50">
       {/* Toolbar */}
-      {!showPreview && <AdvancedToolbar editor={editor} availableFonts={FONTS} comments={comments} showComments={showComments} onToggleComments={() => setShowComments(!showComments)} />}
+      <AdvancedToolbar editor={editor} availableFonts={FONTS} comments={comments} showComments={showComments} onToggleComments={() => setShowComments(!showComments)} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
@@ -250,13 +249,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments ? "max-w-none" : "")}>
           <div className={cn("mx-auto flex gap-4", showComments ? "max-w-none" : "max-w-4xl")}>
             <div className={cn(showComments ? "flex-1" : "w-full")}>
-              {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
-              width: '8.5in',
-              minHeight: '11in'
-            }} dangerouslySetInnerHTML={{
-              __html: content
-            }} /> : <>
-                  <PagedEditor editor={editor} onMouseUp={handleSelection} />
+              <PagedEditor editor={editor} onMouseUp={handleSelection} />
                   
                   {/* Comment Icon */}
                   {showCommentIcon && <div className="fixed" style={{
@@ -273,9 +266,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
                   {/* Comment Form */}
                   {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
                 top: commentIconPosition.top + 40,
-                right: (window.innerWidth - 320) / 2
-              }} />}
-                </>}
+              right: (window.innerWidth - 320) / 2
+            }} />}
             </div>
 
             {/* Comments Panel - Inside document area */}
