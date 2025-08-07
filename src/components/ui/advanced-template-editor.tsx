@@ -18,17 +18,18 @@ import { CommentForm } from './comment-form';
 import { PagedEditor } from './paged-editor';
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
-
 export interface Comment {
   id: string;
   content: string;
   author: string;
   timestamp: Date;
   resolved: boolean;
-  range: { from: number; to: number };
+  range: {
+    from: number;
+    to: number;
+  };
   selectedText: string;
 }
-
 interface AdvancedTemplateEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -39,19 +40,7 @@ interface AdvancedTemplateEditorProps {
   title?: string;
   isSaving?: boolean;
 }
-
-const FONTS = [
-  'Arial',
-  'Times New Roman', 
-  'Helvetica',
-  'Georgia',
-  'Verdana',
-  'Courier New',
-  'Comic Sans MS',
-  'Impact',
-  'Trebuchet MS',
-];
-
+const FONTS = ['Arial', 'Times New Roman', 'Helvetica', 'Georgia', 'Verdana', 'Courier New', 'Comic Sans MS', 'Impact', 'Trebuchet MS'];
 export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   content,
   onChange,
@@ -60,7 +49,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   className,
   autoSave = true,
   title = "Template",
-  isSaving = false,
+  isSaving = false
 }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [showComments, setShowComments] = useState(false);
@@ -68,66 +57,61 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [wordCount, setWordCount] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [showCommentIcon, setShowCommentIcon] = useState(false);
-  const [commentIconPosition, setCommentIconPosition] = useState({ top: 0, right: 0 });
-  const [selectedRange, setSelectedRange] = useState<{ from: number; to: number } | null>(null);
+  const [commentIconPosition, setCommentIconPosition] = useState({
+    top: 0,
+    right: 0
+  });
+  const [selectedRange, setSelectedRange] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
-
-  const extensions = useMemo(() => [
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3, 4, 5],
-        HTMLAttributes: {
-          class: 'heading-style',
-        },
-      },
-    }),
-    Placeholder.configure({
-      placeholder,
-    }),
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-    }),
-    Underline,
-    TextStyle,
-    Color,
-    Highlight.configure({
-      multicolor: true,
-    }),
-    FontFamily.configure({
-      types: ['textStyle'],
-    }),
-    HardBreak.configure({
+  const extensions = useMemo(() => [StarterKit.configure({
+    heading: {
+      levels: [1, 2, 3, 4, 5],
       HTMLAttributes: {
-        class: 'page-break',
-      },
-    }),
-    Typography,
-  ], [placeholder]);
-
+        class: 'heading-style'
+      }
+    }
+  }), Placeholder.configure({
+    placeholder
+  }), TextAlign.configure({
+    types: ['heading', 'paragraph']
+  }), Underline, TextStyle, Color, Highlight.configure({
+    multicolor: true
+  }), FontFamily.configure({
+    types: ['textStyle']
+  }), HardBreak.configure({
+    HTMLAttributes: {
+      class: 'page-break'
+    }
+  }), Typography], [placeholder]);
   const editor = useEditor({
     extensions,
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none',
-      },
+        class: 'prose prose-lg max-w-none focus:outline-none'
+      }
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({
+      editor
+    }) => {
       const html = editor.getHTML();
       onChange(html);
-      
+
       // Update word count
       const text = editor.getText();
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       setWordCount(words);
-      
+
       // Auto-save status
       if (autoSave) {
         setSaveStatus('unsaved');
       }
-    },
+    }
   });
 
   // Auto-save functionality
@@ -138,9 +122,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         // Save to localStorage
         localStorage.setItem(`template-${title}-autosave`, JSON.stringify({
           content,
-          timestamp: Date.now(),
+          timestamp: Date.now()
         }));
-        
         setTimeout(() => {
           setSaveStatus('saved');
         }, 500);
@@ -149,7 +132,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       return () => clearTimeout(timeoutId);
     }
   }, [content, autoSave, saveStatus, title]);
-
   const handleAddComment = useCallback((commentText: string) => {
     if (selectedRange && selectedText) {
       const newComment: Comment = {
@@ -159,7 +141,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         timestamp: new Date(),
         resolved: false,
         range: selectedRange,
-        selectedText: selectedText,
+        selectedText: selectedText
       };
       setComments(prev => [...prev, newComment]);
       setShowCommentForm(false);
@@ -168,51 +150,50 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       setSelectedText('');
     }
   }, [selectedRange, selectedText]);
-
   const handleResolveComment = useCallback((commentId: string) => {
-    setComments(prev => 
-      prev.map(comment => 
-        comment.id === commentId 
-          ? { ...comment, resolved: true }
-          : comment
-      )
-    );
+    setComments(prev => prev.map(comment => comment.id === commentId ? {
+      ...comment,
+      resolved: true
+    } : comment));
   }, []);
-
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
-    
+
     // Highlight the text temporarily
     setHighlightedCommentId(comment.id);
-    
+
     // Focus the editor and select the text range
     editor.commands.focus();
     editor.commands.setTextSelection({
       from: comment.range.from,
       to: comment.range.to
     });
-    
+
     // Remove highlight after 3 seconds
     setTimeout(() => {
       setHighlightedCommentId(null);
     }, 3000);
   }, [editor]);
-
   const handleSelection = useCallback(() => {
     if (!editor) return;
-    
-    const { from, to } = editor.state.selection;
+    const {
+      from,
+      to
+    } = editor.state.selection;
     if (from !== to) {
       const selectedText = editor.state.doc.textBetween(from, to);
-      
+
       // Get the position of the selection for centering the comment popup
       const coords = editor.view.coordsAtPos(to);
       const viewportWidth = window.innerWidth;
-      
       setSelectedText(selectedText);
-      setSelectedRange({ from, to });
+      setSelectedRange({
+        from,
+        to
+      });
       setCommentIconPosition({
-        top: coords.top + 20, // Position below the selected text
+        top: coords.top + 20,
+        // Position below the selected text
         right: (viewportWidth - 320) / 2 // Center horizontally (320px is form width)
       });
       setShowCommentIcon(true);
@@ -223,45 +204,44 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       setSelectedText('');
     }
   }, [editor]);
-
   const handleCommentIconClick = () => {
     setShowCommentForm(true);
     setShowCommentIcon(false);
   };
-
   const handleCommentCancel = () => {
     setShowCommentForm(false);
     setShowCommentIcon(false);
     setSelectedRange(null);
     setSelectedText('');
   };
-
   const getSaveStatusText = () => {
     switch (saveStatus) {
-      case 'saving': return 'Saving...';
-      case 'unsaved': return 'Unsaved changes';
-      case 'saved': return 'All changes saved';
+      case 'saving':
+        return 'Saving...';
+      case 'unsaved':
+        return 'Unsaved changes';
+      case 'saved':
+        return 'All changes saved';
     }
   };
-
   const getSaveStatusColor = () => {
     switch (saveStatus) {
-      case 'saving': return 'text-blue-600';
-      case 'unsaved': return 'text-orange-600';
-      case 'saved': return 'text-green-600';
+      case 'saving':
+        return 'text-blue-600';
+      case 'unsaved':
+        return 'text-orange-600';
+      case 'saved':
+        return 'text-green-600';
     }
   };
-
   if (!editor) {
     return <div className="flex items-center justify-center h-96">Loading editor...</div>;
   }
-
-  return (
-    <div className="h-full flex flex-col bg-gray-50">
+  return <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>{wordCount} words</span>
             <span>•</span>
@@ -270,115 +250,62 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowComments(!showComments)} className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             Comments ({comments.filter(c => !c.resolved).length})
           </Button>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
             {showPreview ? 'Edit' : 'Preview'}
           </Button>
           
-          {onSave && (
-            <Button
-              onClick={onSave}
-              disabled={isSaving}
-              className="flex items-center gap-2"
-            >
+          {onSave && <Button onClick={onSave} disabled={isSaving} className="flex items-center gap-2">
               <Save className="h-4 w-4" />
               {isSaving ? 'Saving...' : 'Save'}
-            </Button>
-          )}
+            </Button>}
         </div>
       </div>
 
       {/* Toolbar */}
-      {!showPreview && (
-        <AdvancedToolbar editor={editor} availableFonts={FONTS} />
-      )}
+      {!showPreview && <AdvancedToolbar editor={editor} availableFonts={FONTS} />}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Editor Area */}
-        <div className={cn(
-          "flex-1 overflow-auto bg-gray-100 p-8",
-          showComments && "mr-80"
-        )}>
+        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments && "mr-80")}>
           <div className="max-w-4xl mx-auto">
-            {showPreview ? (
-              <div 
-                className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]"
-                style={{ width: '8.5in', minHeight: '11in' }}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            ) : (
-              <>
-                <PagedEditor
-                  editor={editor}
-                  onMouseUp={handleSelection}
-                />
+            {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
+            width: '8.5in',
+            minHeight: '11in'
+          }} dangerouslySetInnerHTML={{
+            __html: content
+          }} /> : <>
+                <PagedEditor editor={editor} onMouseUp={handleSelection} />
                 
                 {/* Comment Icon */}
-                {showCommentIcon && (
-                  <div 
-                    className="fixed"
-                    style={{ 
-                      top: commentIconPosition.top,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      zIndex: 10
-                    }}
-                  >
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleCommentIconClick}
-                      className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
-                      title="Add comment"
-                    >
+                {showCommentIcon && <div className="fixed" style={{
+              top: commentIconPosition.top,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10
+            }}>
+                    <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
                       <MessageCircle className="h-4 w-4 text-white" />
                     </Button>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Comment Form */}
-                {showCommentForm && selectedText && (
-                  <CommentForm
-                    selectedText={selectedText}
-                    onSave={handleAddComment}
-                    onCancel={handleCommentCancel}
-                    position={{
-                      top: commentIconPosition.top + 40,
-                      right: (window.innerWidth - 320) / 2
-                    }}
-                  />
-                )}
-              </>
-            )}
+                {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
+              top: commentIconPosition.top + 40,
+              right: (window.innerWidth - 320) / 2
+            }} />}
+              </>}
           </div>
         </div>
 
         {/* Comments Panel */}
-        {showComments && (
-          <CommentsPanel
-            comments={comments}
-            onResolveComment={handleResolveComment}
-            onCommentClick={handleCommentClick}
-            onClose={() => setShowComments(false)}
-          />
-        )}
+        {showComments && <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />}
       </div>
-    </div>
-  );
+    </div>;
 };

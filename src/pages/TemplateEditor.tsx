@@ -227,26 +227,10 @@ const TemplateEditor = () => {
       <div className="container mx-auto px-6 py-6">
         <div className="space-y-6">
           {/* Template Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Template Title</Label>
-              <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter template title..." />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." />
-            </div>
-          </div>
+          
 
           <div className="w-full">
-            <AdvancedTemplateEditor
-              content={content}
-              onChange={setContent}
-              onSave={handleSave}
-              title={title || "Untitled Template"}
-              isSaving={saving}
-              placeholder="Start writing your template content..."
-            />
+            <AdvancedTemplateEditor content={content} onChange={setContent} onSave={handleSave} title={title || "Untitled Template"} isSaving={saving} placeholder="Start writing your template content..." />
           </div>
         </div>
       </div>
