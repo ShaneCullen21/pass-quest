@@ -72,6 +72,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [selectedRange, setSelectedRange] = useState<{ from: number; to: number } | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -177,6 +178,25 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       )
     );
   }, []);
+
+  const handleCommentClick = useCallback((comment: Comment) => {
+    if (!editor) return;
+    
+    // Highlight the text temporarily
+    setHighlightedCommentId(comment.id);
+    
+    // Focus the editor and select the text range
+    editor.commands.focus();
+    editor.commands.setTextSelection({
+      from: comment.range.from,
+      to: comment.range.to
+    });
+    
+    // Remove highlight after 3 seconds
+    setTimeout(() => {
+      setHighlightedCommentId(null);
+    }, 3000);
+  }, [editor]);
 
   const handleSelection = useCallback(() => {
     if (!editor) return;
@@ -354,6 +374,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
           <CommentsPanel
             comments={comments}
             onResolveComment={handleResolveComment}
+            onCommentClick={handleCommentClick}
             onClose={() => setShowComments(false)}
           />
         )}

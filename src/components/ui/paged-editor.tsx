@@ -12,51 +12,41 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
   className,
   onMouseUp 
 }) => {
-  const [pages, setPages] = useState<string[]>(['']);
+  const [pageCount, setPageCount] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Calculate pages based on content height
+  // Monitor content changes and calculate required pages
   useEffect(() => {
     if (!editor) return;
 
-    const calculatePages = () => {
-      const content = editor.getHTML();
-      const tempDiv = document.createElement('div');
-      tempDiv.style.width = '6.5in'; // 8.5in - 2in margins
-      tempDiv.style.fontFamily = 'Times New Roman, serif';
-      tempDiv.style.fontSize = '12px';
-      tempDiv.style.lineHeight = '1.6';
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.visibility = 'hidden';
-      tempDiv.innerHTML = content;
+    const updatePageCount = () => {
+      // Create a temporary div to measure content height
+      const tempContainer = document.createElement('div');
+      tempContainer.style.width = '6.5in'; // Content width (8.5in - 2in margins)
+      tempContainer.style.fontFamily = 'Times New Roman, serif';
+      tempContainer.style.fontSize = '12px';
+      tempContainer.style.lineHeight = '1.6';
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
+      tempContainer.innerHTML = editor.getHTML();
       
-      document.body.appendChild(tempDiv);
+      document.body.appendChild(tempContainer);
       
-      const pageHeight = 9 * 96; // 9 inches in pixels (11in - 2in margins) at 96 DPI
-      const contentHeight = tempDiv.scrollHeight;
-      const numPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+      // Calculate pages needed (9in content height per page at 96 DPI)
+      const pageContentHeight = 9 * 96; // 9 inches in pixels
+      const totalHeight = tempContainer.scrollHeight;
+      const requiredPages = Math.max(1, Math.ceil(totalHeight / pageContentHeight));
       
-      document.body.removeChild(tempDiv);
-      
-      // For now, we'll put all content on the first page
-      // In a real implementation, you'd split content across pages
-      const newPages = [content];
-      for (let i = 1; i < numPages; i++) {
-        newPages.push(''); // Empty pages for now
-      }
-      
-      setPages(newPages);
+      document.body.removeChild(tempContainer);
+      setPageCount(requiredPages);
     };
 
-    const handleUpdate = () => {
-      calculatePages();
-    };
-
-    editor.on('update', handleUpdate);
-    calculatePages();
+    editor.on('update', updatePageCount);
+    updatePageCount();
 
     return () => {
-      editor.off('update', handleUpdate);
+      editor.off('update', updatePageCount);
     };
   }, [editor]);
 
@@ -71,7 +61,7 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
       }}
       onMouseUp={onMouseUp}
     >
-      {pages.map((pageContent, index) => (
+      {Array.from({ length: pageCount }, (_, index) => (
         <div 
           key={index}
           className="document-page"
@@ -87,12 +77,20 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
             overflow: 'hidden'
           }}
         >
-          {index === 0 ? (
-            // First page contains the editor
-            <div className="h-full overflow-hidden">
+          {index === 0 && (
+            // Only first page contains the actual editor
+            <div 
+              className="h-full overflow-visible"
+              style={{ 
+                height: '9in', // Content area height (11in - 2in margins)
+              }}
+            >
               <div 
                 className={`tiptap-editor ${className || ''}`}
-                style={{ height: '100%', overflow: 'hidden' }}
+                style={{ 
+                  height: 'auto',
+                  minHeight: '9in',
+                }}
                 ref={(el) => {
                   if (el && editor.view.dom.parentNode !== el) {
                     el.appendChild(editor.view.dom);
@@ -100,16 +98,11 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
                 }}
               />
             </div>
-          ) : (
-            // Subsequent pages for overflow content (placeholder for now)
-            <div className="h-full flex items-center justify-center text-gray-400">
-              <p>Page {index + 1} - Content overflow would appear here</p>
-            </div>
           )}
           
           {/* Page number */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
-            Page {index + 1} of {pages.length}
+            Page {index + 1} of {pageCount}
           </div>
         </div>
       ))}

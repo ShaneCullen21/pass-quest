@@ -35,8 +35,9 @@
 /* TipTap Editor content styling */
 .ProseMirror {
   outline: none;
-  height: 100%; /* Fill the page container */
-  overflow: hidden; /* Prevent content overflow */
+  height: auto !important;
+  min-height: 9in; /* Content area height */
+  overflow: visible !important; /* Allow content to flow naturally */
   overflow-wrap: break-word;
   word-wrap: break-word;
   white-space: pre-wrap;
