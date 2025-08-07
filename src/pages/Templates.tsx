@@ -214,7 +214,7 @@ const Templates = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/templates/${template.id}/edit`)}
+                                onClick={() => navigate(`/templates/new?id=${template.id}`)}
                                 className="flex items-center gap-1 flex-1"
                               >
                                 <Edit className="h-3 w-3" />
@@ -287,7 +287,7 @@ const Templates = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/templates/${template.id}/edit`)}
+                                onClick={() => navigate(`/templates/new?id=${template.id}`)}
                                 className="flex items-center gap-1 flex-1"
                               >
                                 <Edit className="h-3 w-3" />
