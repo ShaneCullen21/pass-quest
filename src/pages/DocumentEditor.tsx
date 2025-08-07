@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Users, Save } from "lucide-react";
+import { ArrowLeft, User, Users, Save, Send } from "lucide-react";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
 import { ResizableField } from "@/components/contracts/ResizableField";
@@ -263,10 +263,11 @@ const DocumentEditor = () => {
 
       toast({
         title: "Success",
-        description: "Document created successfully!"
+        description: "Document saved successfully!"
       });
 
-      navigate(`/contracts/editor/${contractData.id}`);
+      // Navigate back to project details
+      navigate(`/projects/${project.id}`);
     } catch (error) {
       console.error('Error in handleSave:', error);
       toast({
@@ -279,8 +280,25 @@ const DocumentEditor = () => {
     }
   };
 
+  const handleSendForSignature = async () => {
+    if (!template || !project) return;
+
+    // First save the document
+    await handleSave();
+    
+    // TODO: Implement send for signature functionality
+    toast({
+      title: "Coming Soon",
+      description: "Send for signature functionality will be implemented soon!"
+    });
+  };
+
   const handleBack = () => {
-    navigate('/templates?tab=customized');
+    if (project) {
+      navigate(`/projects/${project.id}`);
+    } else {
+      navigate('/templates?tab=customized');
+    }
   };
 
   if (loading) {
@@ -317,9 +335,13 @@ const DocumentEditor = () => {
               <Badge variant="secondary">Document Setup</Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSave} disabled={saving} size="sm" className="h-8">
+              <Button onClick={handleSave} disabled={saving} variant="outline" size="sm" className="h-8">
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Creating...' : 'Create Document'}
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+              <Button onClick={handleSendForSignature} disabled={saving} size="sm" className="h-8">
+                <Send className="h-4 w-4 mr-2" />
+                Send for Signature
               </Button>
             </div>
           </div>

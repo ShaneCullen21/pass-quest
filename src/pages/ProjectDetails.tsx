@@ -31,7 +31,7 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
 
-import { ContractActions } from "@/components/contracts/ContractActions";
+
 
 interface Project {
   id: string;
@@ -350,14 +350,6 @@ export default function ProjectDetails() {
                   <Plus className="mr-2 h-4 w-4" />
                   Add Proposal
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => navigate(`/projects/${id}/contracts/new`)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Contract
-                </Button>
                 <Button size="sm" variant="outline">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Invoice
@@ -434,39 +426,31 @@ export default function ProjectDetails() {
                       <TableCell>
                         {format(new Date(document.created_at), "MMM dd, yyyy")}
                       </TableCell>
-                       <TableCell>
-                         <div className="flex gap-2">
-                           {document.type === 'contract' ? (
-                              <ContractActions 
-                                contract={document}
-                                onStatusChange={handleContractCreated}
-                                compact={true}
-                                projectId={id}
-                              />
-                            ) : (
-                              <>
-                                <Button variant="ghost" size="sm">
-                                  View
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => {
-                                     if (document.type === 'proposal') {
-                                       // For now, just show a message - you could implement proposal editor later
-                                       toast.error('Proposal editor not yet implemented');
-                                     } else if (document.type === 'invoice') {
-                                       // For now, just show a message - you could implement invoice editor later
-                                       toast.error('Invoice editor not yet implemented');
-                                     }
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                              </>
-                            )}
-                         </div>
-                       </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm">
+                              View
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                if (document.type === 'contract') {
+                                  // Navigate to document editor for contracts
+                                  navigate(`/contracts/document-editor?templateId=${document.id}&projectId=${id}`);
+                                } else if (document.type === 'proposal') {
+                                  // For now, just show a message - you could implement proposal editor later
+                                  toast.error('Proposal editor not yet implemented');
+                                } else if (document.type === 'invoice') {
+                                  // For now, just show a message - you could implement invoice editor later
+                                  toast.error('Invoice editor not yet implemented');
+                                }
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
