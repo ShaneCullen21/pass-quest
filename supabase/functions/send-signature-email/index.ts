@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { error: updateError } = await supabase
       .from('documents')
       .update({
-        signing_status: 'pending_first_signature',
+        signing_status: 'sent for signatures',
         field_data: {
           signing_order: [
             { client_id: firstSignerId, token: firstSignerToken, status: 'pending' },
