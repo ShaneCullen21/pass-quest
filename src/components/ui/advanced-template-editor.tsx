@@ -64,6 +64,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [selectedText, setSelectedText] = useState<{text: string; range: {from: number; to: number}} | null>(null);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [commentPosition, setCommentPosition] = useState({ x: 0, y: 0 });
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -135,21 +138,22 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   }, [content, autoSave, saveStatus, title]);
 
-  const handleAddComment = useCallback((selectedText: string, range: { from: number; to: number }) => {
-    const commentText = prompt('Add a comment:');
-    if (commentText) {
+  const handleAddComment = useCallback((commentText: string) => {
+    if (commentText && selectedText) {
       const newComment: Comment = {
         id: Date.now().toString(),
         content: commentText,
         author: 'You',
         timestamp: new Date(),
         resolved: false,
-        range,
-        selectedText,
+        range: selectedText.range,
+        selectedText: selectedText.text,
       };
       setComments(prev => [...prev, newComment]);
+      setSelectedText(null);
+      setShowCommentForm(false);
     }
-  }, []);
+  }, [selectedText]);
 
   const handleResolveComment = useCallback((commentId: string) => {
     setComments(prev => 
@@ -161,19 +165,26 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     );
   }, []);
 
-  const handleSelection = useCallback(() => {
+  const handleSelection = useCallback((event: MouseEvent) => {
     if (!editor) return;
     
     const { from, to } = editor.state.selection;
     if (from !== to) {
-      const selectedText = editor.state.doc.textBetween(from, to);
-      const shouldAddComment = window.confirm(`Add comment to: "${selectedText.slice(0, 50)}${selectedText.length > 50 ? '...' : ''}"?`);
+      const text = editor.state.doc.textBetween(from, to);
+      setSelectedText({ text, range: { from, to } });
       
-      if (shouldAddComment) {
-        handleAddComment(selectedText, { from, to });
+      // Position the comment icon on the right side
+      const rect = window.getSelection()?.getRangeAt(0)?.getBoundingClientRect();
+      if (rect) {
+        setCommentPosition({
+          x: rect.right + 20,
+          y: rect.top + (rect.height / 2)
+        });
       }
+    } else {
+      setSelectedText(null);
     }
-  }, [editor, handleAddComment]);
+  }, [editor]);
 
   const getSaveStatusText = () => {
     switch (saveStatus) {
@@ -267,7 +278,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               <div 
                 className="bg-white shadow-lg relative"
                 style={{ width: '8.5in', minHeight: '11in' }}
-                onMouseUp={handleSelection}
+                onMouseUp={handleSelection as any}
               >
                 {/* Page margins indicator */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -304,6 +315,67 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
           />
         )}
       </div>
+
+      {/* Comment Icon */}
+      {selectedText && (
+        <div
+          className="fixed z-50 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-lg transition-colors"
+          style={{
+            left: `${commentPosition.x}px`,
+            top: `${commentPosition.y - 16}px`,
+          }}
+          onClick={() => setShowCommentForm(true)}
+        >
+          <MessageSquare className="h-4 w-4" />
+        </div>
+      )}
+
+      {/* Comment Form Popup */}
+      {showCommentForm && selectedText && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-3">Add Comment</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              "{selectedText.text.slice(0, 100)}{selectedText.text.length > 100 ? '...' : ''}"
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const commentText = formData.get('comment') as string;
+                if (commentText.trim()) {
+                  handleAddComment(commentText.trim());
+                }
+              }}
+            >
+              <textarea
+                name="comment"
+                placeholder="Enter your comment..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows={4}
+                autoFocus
+                required
+              />
+              <div className="flex gap-3 mt-4">
+                <Button type="submit" className="flex-1">
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowCommentForm(false);
+                    setSelectedText(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
