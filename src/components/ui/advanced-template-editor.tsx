@@ -19,6 +19,8 @@ import { CommentForm } from './comment-form';
 import { PagedEditor } from './paged-editor';
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 export interface Comment {
   id: string;
   content: string;
@@ -40,6 +42,8 @@ interface AdvancedTemplateEditorProps {
   autoSave?: boolean;
   title?: string;
   isSaving?: boolean;
+  templateId?: string;
+  masterTemplateId?: string;
 }
 const FONTS = ['Arial', 'Times New Roman', 'Helvetica', 'Georgia', 'Verdana', 'Courier New', 'Comic Sans MS', 'Impact', 'Trebuchet MS'];
 export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
@@ -50,8 +54,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   className,
   autoSave = true,
   title = "Template",
-  isSaving = false
+  isSaving = false,
+  templateId,
+  masterTemplateId
 }) => {
+  const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [showComments, setShowComments] = useState(true);
   const [wordCount, setWordCount] = useState(0);
@@ -116,6 +123,86 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   });
 
+  // Load comments from database when template ID changes
+  useEffect(() => {
+    if (templateId && user) {
+      loadComments();
+    } else if (masterTemplateId && user) {
+      // Load comments from master template for customized templates
+      loadCommentsFromMaster();
+    }
+  }, [templateId, masterTemplateId, user]);
+
+  const loadComments = async () => {
+    if (!templateId || !user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('template_comments')
+        .select('*')
+        .eq('template_id', templateId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading comments:', error);
+        return;
+      }
+
+      if (data) {
+        const formattedComments: Comment[] = data.map(comment => ({
+          id: comment.id,
+          content: comment.content,
+          author: comment.author,
+          timestamp: new Date(comment.created_at),
+          resolved: comment.resolved,
+          range: {
+            from: comment.range_from,
+            to: comment.range_to
+          },
+          selectedText: comment.selected_text
+        }));
+        setComments(formattedComments);
+      }
+    } catch (error) {
+      console.error('Error in loadComments:', error);
+    }
+  };
+
+  const loadCommentsFromMaster = async () => {
+    if (!masterTemplateId || !user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('template_comments')
+        .select('*')
+        .eq('template_id', masterTemplateId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading master comments:', error);
+        return;
+      }
+
+      if (data) {
+        const formattedComments: Comment[] = data.map(comment => ({
+          id: comment.id + '_inherited', // Add suffix to avoid conflicts
+          content: comment.content,
+          author: comment.author,
+          timestamp: new Date(comment.created_at),
+          resolved: comment.resolved,
+          range: {
+            from: comment.range_from,
+            to: comment.range_to
+          },
+          selectedText: comment.selected_text
+        }));
+        setComments(formattedComments);
+      }
+    } catch (error) {
+      console.error('Error in loadCommentsFromMaster:', error);
+    }
+  };
+
   // Auto-save functionality
   useEffect(() => {
     if (autoSave && saveStatus === 'unsaved') {
@@ -134,8 +221,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       return () => clearTimeout(timeoutId);
     }
   }, [content, autoSave, saveStatus, title]);
-  const handleAddComment = useCallback((commentText: string) => {
-    if (selectedRange && selectedText) {
+  const handleAddComment = useCallback(async (commentText: string) => {
+    if (selectedRange && selectedText && templateId && user) {
       const newComment: Comment = {
         id: Date.now().toString(),
         content: commentText,
@@ -145,26 +232,82 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         range: selectedRange,
         selectedText: selectedText
       };
+
+      // Save to database
+      try {
+        const { error } = await supabase
+          .from('template_comments')
+          .insert({
+            template_id: templateId,
+            user_id: user.id,
+            content: commentText,
+            author: 'You',
+            selected_text: selectedText,
+            range_from: selectedRange.from,
+            range_to: selectedRange.to,
+            resolved: false
+          });
+
+        if (error) {
+          console.error('Error saving comment:', error);
+          // Still add to local state even if save fails
+        }
+      } catch (error) {
+        console.error('Error in handleAddComment:', error);
+      }
+
       setComments(prev => [...prev, newComment]);
       setShowCommentForm(false);
       setShowCommentIcon(false);
       setSelectedRange(null);
       setSelectedText('');
     }
-  }, [selectedRange, selectedText]);
-  const handleResolveComment = useCallback((commentId: string) => {
+  }, [selectedRange, selectedText, templateId, user]);
+  const handleResolveComment = useCallback(async (commentId: string) => {
+    if (templateId && user && !commentId.includes('_inherited')) {
+      try {
+        const { error } = await supabase
+          .from('template_comments')
+          .update({ resolved: true })
+          .eq('id', commentId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error resolving comment:', error);
+        }
+      } catch (error) {
+        console.error('Error in handleResolveComment:', error);
+      }
+    }
+
     setComments(prev => prev.map(comment => comment.id === commentId ? {
       ...comment,
       resolved: true
     } : comment));
-  }, []);
+  }, [templateId, user]);
 
-  const handleUnresolveComment = useCallback((commentId: string) => {
+  const handleUnresolveComment = useCallback(async (commentId: string) => {
+    if (templateId && user && !commentId.includes('_inherited')) {
+      try {
+        const { error } = await supabase
+          .from('template_comments')
+          .update({ resolved: false })
+          .eq('id', commentId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error unresolving comment:', error);
+        }
+      } catch (error) {
+        console.error('Error in handleUnresolveComment:', error);
+      }
+    }
+
     setComments(prev => prev.map(comment => comment.id === commentId ? {
       ...comment,
       resolved: false
     } : comment));
-  }, []);
+  }, [templateId, user]);
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
 

@@ -265,7 +265,16 @@ const TemplateEditor = () => {
       <div className="container mx-auto px-6">
         <div className="space-y-0">
           <div className="w-full">
-            <AdvancedTemplateEditor content={content} onChange={setContent} onSave={handleSave} title={title || "Untitled Template"} isSaving={saving} placeholder="Start writing your template content..." />
+            <AdvancedTemplateEditor 
+              content={content} 
+              onChange={setContent} 
+              onSave={handleSave} 
+              title={title || "Untitled Template"} 
+              isSaving={saving} 
+              placeholder="Start writing your template content..." 
+              templateId={new URLSearchParams(location.search).get('id') || undefined}
+              masterTemplateId={masterTemplateId || undefined}
+            />
           </div>
         </div>
       </div>

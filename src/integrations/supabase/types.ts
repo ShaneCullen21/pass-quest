@@ -329,6 +329,48 @@ export type Database = {
         }
         Relationships: []
       }
+      template_comments: {
+        Row: {
+          author: string
+          content: string
+          created_at: string
+          id: string
+          range_from: number
+          range_to: number
+          resolved: boolean
+          selected_text: string
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author: string
+          content: string
+          created_at?: string
+          id?: string
+          range_from: number
+          range_to: number
+          resolved?: boolean
+          selected_text: string
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string
+          id?: string
+          range_from?: number
+          range_to?: number
+          resolved?: boolean
+          selected_text?: string
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       templates: {
         Row: {
           category: string | null
