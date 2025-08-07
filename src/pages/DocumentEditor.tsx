@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, User, Users, Save } from "lucide-react";
-import { DraggableField } from "@/components/contracts/DraggableField";
+import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 
 interface Template {
   id: string;
@@ -374,17 +374,17 @@ const DocumentEditor = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <DraggableField
+                  <DocumentDraggableField
                     fieldType="name"
                     label="Name Field"
                     onDrop={handleFieldDrop}
                   />
-                  <DraggableField
+                  <DocumentDraggableField
                     fieldType="signature"
                     label="Signature Field"
                     onDrop={handleFieldDrop}
                   />
-                  <DraggableField
+                  <DocumentDraggableField
                     fieldType="date"
                     label="Date Field"
                     onDrop={handleFieldDrop}

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { AddProjectModal } from "@/components/projects/AddProjectModal";
 
 interface Project {
   id: string;
@@ -37,13 +38,10 @@ export const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-  const [showNewProject, setShowNewProject] = useState(false);
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [creatingProject, setCreatingProject] = useState(false);
 
-  // New project form state
-  const [newProjectName, setNewProjectName] = useState("");
-  const [newProjectLocation, setNewProjectLocation] = useState("");
+  // Remove the new project form state since we're using the existing modal
 
   useEffect(() => {
     if (isOpen && user) {
@@ -86,55 +84,25 @@ export const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({
     }
   };
 
-  const handleCreateProject = async () => {
-    if (!user || !newProjectName.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Project name is required"
-      });
-      return;
-    }
-
-    setCreatingProject(true);
+  const handleProjectAdded = async () => {
+    setShowNewProjectModal(false);
+    await fetchProjects(); // Refresh the projects list
+    
+    // Get the most recently created project and select it
     try {
       const { data, error } = await supabase
         .from('projects')
-        .insert({
-          name: newProjectName.trim(),
-          location: newProjectLocation.trim() || null,
-          user_id: user.id,
-          status: 'active'
-        })
-        .select()
+        .select('id')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
-
-      if (error) {
-        console.error('Error creating project:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to create project"
-        });
-        return;
+      
+      if (!error && data) {
+        setSelectedProjectId(data.id);
       }
-
-      toast({
-        title: "Success",
-        description: "Project created successfully"
-      });
-
-      // Proceed with the new project
-      onProjectSelect(data.id);
     } catch (error) {
-      console.error('Error in handleCreateProject:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred"
-      });
-    } finally {
-      setCreatingProject(false);
+      console.error('Error selecting new project:', error);
     }
   };
 
@@ -163,10 +131,8 @@ export const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {!showNewProject ? (
-            <>
-              {/* Existing Projects */}
-              <div>
+          {/* Existing Projects */}
+          <div>
                 <Label className="text-base font-medium">Choose an existing project</Label>
                 <p className="text-sm text-muted-foreground mb-4">
                   Select a project to associate this document with
@@ -221,82 +187,38 @@ export const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({
                 )}
               </div>
 
-              {/* Create New Project Button */}
-              <div className="pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNewProject(true)}
-                  className="w-full flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Project
-                </Button>
-              </div>
+          {/* Create New Project Button */}
+          <div className="pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowNewProjectModal(true)}
+              className="w-full flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create New Project
+            </Button>
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4">
-                <Button variant="outline" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleProceed}
-                  disabled={!selectedProjectId}
-                >
-                  Continue to Document Editor
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* New Project Form */}
-              <div>
-                <Label className="text-base font-medium">Create New Project</Label>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Enter details for your new project
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="projectName">Project Name *</Label>
-                    <Input
-                      id="projectName"
-                      value={newProjectName}
-                      onChange={(e) => setNewProjectName(e.target.value)}
-                      placeholder="Enter project name"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="projectLocation">Location (Optional)</Label>
-                    <Input
-                      id="projectLocation"
-                      value={newProjectLocation}
-                      onChange={(e) => setNewProjectLocation(e.target.value)}
-                      placeholder="Enter project location"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons for New Project */}
-              <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowNewProject(false)}
-                  disabled={creatingProject}
-                >
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleCreateProject}
-                  disabled={!newProjectName.trim() || creatingProject}
-                >
-                  {creatingProject ? 'Creating...' : 'Create & Continue'}
-                </Button>
-              </div>
-            </>
-          )}
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleProceed}
+              disabled={!selectedProjectId}
+            >
+              Continue to Document Editor
+            </Button>
+          </div>
         </div>
+
+        {/* Add Project Modal */}
+        <AddProjectModal
+          open={showNewProjectModal}
+          onOpenChange={setShowNewProjectModal}
+          onProjectAdded={handleProjectAdded}
+        />
       </DialogContent>
     </Dialog>
   );
