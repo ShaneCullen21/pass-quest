@@ -242,37 +242,10 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   }
   return <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-gray-900">Customized Template</h1>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>{wordCount} words</span>
-            <span>•</span>
-            <span className={getSaveStatusColor()}>{getSaveStatusText()}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            {showPreview ? 'Edit' : 'Preview'}
-          </Button>
-          
-          {onSave && <Button onClick={onSave} disabled={isSaving} className="flex items-center gap-2">
-              <Save className="h-4 w-4" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>}
-        </div>
-      </div>
+      
 
       {/* Toolbar */}
-      {!showPreview && <AdvancedToolbar 
-        editor={editor} 
-        availableFonts={FONTS} 
-        comments={comments}
-        showComments={showComments}
-        onToggleComments={() => setShowComments(!showComments)}
-      />}
+      {!showPreview && <AdvancedToolbar editor={editor} availableFonts={FONTS} comments={comments} showComments={showComments} onToggleComments={() => setShowComments(!showComments)} />}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
