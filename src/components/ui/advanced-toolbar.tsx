@@ -21,12 +21,16 @@ import {
   Palette,
   Highlighter,
   Type,
-  Minus
+  Minus,
+  MessageSquare
 } from 'lucide-react';
 
 interface AdvancedToolbarProps {
   editor: Editor;
   availableFonts: string[];
+  comments: any[];
+  showComments: boolean;
+  onToggleComments: () => void;
 }
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72];
@@ -42,12 +46,12 @@ const HIGHLIGHT_COLORS = [
   '#FF9900', '#FF0000', '#0000FF', '#CCCCCC', '#000000'
 ];
 
-export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availableFonts }) => {
+export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availableFonts, comments, showComments, onToggleComments }) => {
   const [textColorOpen, setTextColorOpen] = useState(false);
   const [highlightColorOpen, setHighlightColorOpen] = useState(false);
 
   const setFontSize = (size: number) => {
-    editor.chain().focus().setMark('textStyle', { fontSize: `${size}px` }).run();
+    editor.chain().focus().setFontSize(`${size}px`).run();
   };
 
   const setFontFamily = (font: string) => {
@@ -73,7 +77,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
     editor.chain()
       .focus()
       .setHeading({ level })
-      .setMark('textStyle', { fontSize: sizes[level] })
+      .setFontSize(sizes[level])
       .run();
   };
 
@@ -326,6 +330,19 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
         >
           <Minus className="h-4 w-4" />
         </Button>
+
+        {/* Comments Button - Far Right */}
+        <div className="ml-auto">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onToggleComments}
+            className={cn("h-8 w-8 p-0", showComments && 'bg-gray-100')}
+            title={`${showComments ? 'Hide' : 'Show'} Comments`}
+          >
+            <MessageSquare className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Highlight } from '@tiptap/extension-highlight';
 import { FontFamily } from '@tiptap/extension-font-family';
+import { FontSize } from '@tiptap/extension-font-size';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { Typography } from '@tiptap/extension-typography';
 import { cn } from '@/lib/utils';
@@ -82,6 +83,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   }), Underline, TextStyle, Color, Highlight.configure({
     multicolor: true
   }), FontFamily.configure({
+    types: ['textStyle']
+  }), FontSize.configure({
     types: ['textStyle']
   }), HardBreak.configure({
     HTMLAttributes: {
@@ -241,7 +244,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          
+          <h1 className="text-lg font-semibold text-gray-900">Customized Template</h1>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>{wordCount} words</span>
             <span>•</span>
@@ -250,11 +253,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowComments(!showComments)} className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Comments ({comments.filter(c => !c.resolved).length})
-          </Button>
-          
           <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
             {showPreview ? 'Edit' : 'Preview'}
@@ -268,7 +266,13 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       </div>
 
       {/* Toolbar */}
-      {!showPreview && <AdvancedToolbar editor={editor} availableFonts={FONTS} />}
+      {!showPreview && <AdvancedToolbar 
+        editor={editor} 
+        availableFonts={FONTS} 
+        comments={comments}
+        showComments={showComments}
+        onToggleComments={() => setShowComments(!showComments)}
+      />}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
