@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/ui/navigation";
-import { Plus, Edit, FileText, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -228,7 +228,7 @@ const Templates = () => {
                     No master templates found. Create your first master template to get started.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
                     {getFilteredTemplates('master')
                       .sort((a, b) => {
                         if (sortBy === 'name') {
@@ -237,39 +237,52 @@ const Templates = () => {
                         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
                       })
                       .map((template) => (
-                        <Card key={template.id} className="hover:shadow-lg transition-shadow">
-                          <CardHeader>
-                            <CardTitle className="flex items-center justify-between">
-                              <span className="truncate">{template.title}</span>
-                              <Badge variant="default">Master</Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {template.description || 'No description provided'}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Created: {formatDate(template.created_at)}</span>
-                              <span>Updated: {formatDate(template.updated_at)}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/templates/new?id=${template.id}`)}
-                                className="flex items-center gap-1 flex-1"
-                              >
-                                <Edit className="h-3 w-3" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteClick(template)}
-                                className="flex items-center gap-1"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                        <Card key={template.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4 flex-1">
+                                {/* Preview Image */}
+                                <div className="w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <FileIcon className="h-6 w-6 text-gray-400" />
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                    <Badge variant="default">Master</Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                                    {template.description || 'No description provided'}
+                                  </p>
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span>Created: {formatDate(template.created_at)}</span>
+                                    <span>Updated: {formatDate(template.updated_at)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Actions */}
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/templates/new?id=${template.id}`)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(template)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                  Delete
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -292,7 +305,7 @@ const Templates = () => {
                     No customized templates found. Create a customized template from a master template to get started.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
                     {getFilteredTemplates('customized')
                       .sort((a, b) => {
                         if (sortBy === 'name') {
@@ -301,48 +314,61 @@ const Templates = () => {
                         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
                       })
                       .map((template) => (
-                        <Card key={template.id} className="hover:shadow-lg transition-shadow">
-                          <CardHeader>
-                            <CardTitle className="flex items-center justify-between">
-                              <span className="truncate">{template.title}</span>
-                              <Badge variant="secondary">Customized</Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {template.description || 'No description provided'}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Created: {formatDate(template.created_at)}</span>
-                              <span>Updated: {formatDate(template.updated_at)}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/templates/new?id=${template.id}`)}
-                                className="flex items-center gap-1 flex-1"
-                              >
-                                <Edit className="h-3 w-3" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
-                                className="flex items-center gap-1 flex-1"
-                              >
-                                <FileText className="h-3 w-3" />
-                                Create Document
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteClick(template)}
-                                className="flex items-center gap-1"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                        <Card key={template.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4 flex-1">
+                                {/* Preview Image */}
+                                <div className="w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <FileIcon className="h-6 w-6 text-gray-400" />
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                    <Badge variant="secondary">Customized</Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                                    {template.description || 'No description provided'}
+                                  </p>
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span>Created: {formatDate(template.created_at)}</span>
+                                    <span>Updated: {formatDate(template.updated_at)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Actions */}
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/templates/new?id=${template.id}`)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <FileText className="h-3 w-3" />
+                                  Create Document
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(template)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                  Delete
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
