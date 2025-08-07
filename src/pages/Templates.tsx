@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { NewTemplateModal } from "@/components/templates/NewTemplateModal";
 import { DeleteTemplateConfirmation } from "@/components/templates/DeleteTemplateConfirmation";
+import { ProjectSelectionModal } from "@/components/contracts/ProjectSelectionModal";
 
 interface Template {
   id: string;
@@ -36,6 +37,8 @@ const Templates = () => {
   const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('master'); // Track active tab
+  const [showProjectSelection, setShowProjectSelection] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     templateId: string;
@@ -165,6 +168,16 @@ const Templates = () => {
       templateTitle: '',
       templateType: 'master'
     });
+  };
+
+  const handleCreateDocument = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setShowProjectSelection(true);
+  };
+
+  const handleProjectSelect = (projectId: string) => {
+    setShowProjectSelection(false);
+    navigate(`/contracts/document-editor?templateId=${selectedTemplateId}&projectId=${projectId}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -363,7 +376,7 @@ const Templates = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
+                                  onClick={() => handleCreateDocument(template.id)}
                                   className="flex items-center gap-1"
                                 >
                                   <FileText className="h-3 w-3" />
@@ -404,6 +417,13 @@ const Templates = () => {
         <NewTemplateModal 
           isOpen={showNewTemplateModal}
           onClose={() => setShowNewTemplateModal(false)}
+        />
+
+        <ProjectSelectionModal
+          isOpen={showProjectSelection}
+          onClose={() => setShowProjectSelection(false)}
+          onProjectSelect={handleProjectSelect}
+          templateId={selectedTemplateId}
         />
 
         <DeleteTemplateConfirmation
