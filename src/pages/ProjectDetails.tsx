@@ -31,6 +31,7 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
+import { TemplateSelector } from "@/components/contracts/TemplateSelector";
 
 
 
@@ -74,6 +75,7 @@ export default function ProjectDetails() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
@@ -227,6 +229,11 @@ export default function ProjectDetails() {
     }
   };
 
+  const handleTemplateSelect = (templateId: string) => {
+    setIsTemplateSelectorOpen(false);
+    navigate(`/document-editor?projectId=${id}&templateId=${templateId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -355,6 +362,14 @@ export default function ProjectDetails() {
             <div className="flex items-center justify-between">
               <CardTitle>Documents</CardTitle>
               <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => setIsTemplateSelectorOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Document
+                </Button>
                 <Button size="sm" variant="outline">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Proposal
@@ -476,6 +491,18 @@ export default function ProjectDetails() {
             onProjectAdded={handleProjectUpdated}
             editProject={project}
           />
+        )}
+
+        {/* Template Selector Modal */}
+        {isTemplateSelectorOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+              <TemplateSelector
+                onTemplateSelect={handleTemplateSelect}
+                onBack={() => setIsTemplateSelectorOpen(false)}
+              />
+            </div>
+          </div>
         )}
 
         {/* Delete Document Confirmation */}
