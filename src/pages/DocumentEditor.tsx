@@ -285,7 +285,7 @@ const DocumentEditor = () => {
         const { error: updateError } = await supabase
           .from('documents')
           .update({
-            title: `${template.title} - ${project.name}`,
+            title: template.title,
             description: `Document created from template: ${template.title}`,
             document_content: documentContentJson,
             field_data: fieldDataJson,
@@ -307,7 +307,7 @@ const DocumentEditor = () => {
         const { data: documentData, error: documentError } = await supabase
           .from('documents')
           .insert({
-            title: `${template.title} - ${project.name}`,
+            title: template.title,
             description: `Document created from template: ${template.title}`,
             project_id: project.id,
             template_id: template.id,
