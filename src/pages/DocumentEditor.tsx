@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Users, Save, Send } from "lucide-react";
+import { ArrowLeft, User, Users, Save, Send, Palette } from "lucide-react";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
 import { ResizableField } from "@/components/contracts/ResizableField";
@@ -64,6 +64,7 @@ const DocumentEditor = () => {
   const [existingDocument, setExistingDocument] = useState<any>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [isSendingSignature, setIsSendingSignature] = useState(false);
+  const [clientColors, setClientColors] = useState<{ [clientId: string]: string }>({});
   const isEditingMode = !!documentId;
 
   useEffect(() => {
@@ -502,6 +503,40 @@ const DocumentEditor = () => {
                     </SelectContent>
                   </Select>
                 )}
+                
+                {/* Color Picker for Selected Client */}
+                {selectedClientId && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Label className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Palette className="h-4 w-4" />
+                      Field Color
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { color: '#ef4444', name: 'Red' },
+                        { color: '#f97316', name: 'Orange' },
+                        { color: '#eab308', name: 'Yellow' },
+                        { color: '#22c55e', name: 'Green' },
+                        { color: '#3b82f6', name: 'Blue' },
+                        { color: '#a855f7', name: 'Purple' },
+                        { color: '#ec4899', name: 'Pink' },
+                        { color: '#6b7280', name: 'Gray' }
+                      ].map(({ color, name }) => (
+                        <button
+                          key={color}
+                          onClick={() => setClientColors(prev => ({ ...prev, [selectedClientId]: color }))}
+                          className={`w-8 h-8 rounded-full border-2 transition-all ${
+                            clientColors[selectedClientId] === color
+                              ? 'border-primary shadow-md scale-110'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          title={name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -519,16 +554,19 @@ const DocumentEditor = () => {
                     fieldType="name"
                     label="Name Field"
                     onDrop={handleFieldDrop}
+                    color={clientColors[selectedClientId]}
                   />
                   <DocumentDraggableField
                     fieldType="signature"
                     label="Signature Field"
                     onDrop={handleFieldDrop}
+                    color={clientColors[selectedClientId]}
                   />
                   <DocumentDraggableField
                     fieldType="date"
                     label="Date Field"
                     onDrop={handleFieldDrop}
+                    color={clientColors[selectedClientId]}
                   />
                 </CardContent>
               </Card>
@@ -582,18 +620,19 @@ const DocumentEditor = () => {
                   {/* Overlay for Field Positioning */}
                   <div className="absolute inset-0 pointer-events-auto z-10">
                     {signingFields.map(field => (
-                      <ResizableField
-                        key={field.id}
-                        id={field.id}
-                        type={field.type}
-                        clientId={field.clientId}
-                        position={field.position}
-                        width={field.width}
-                        height={field.height}
-                        onMove={handleFieldMove}
-                        onResize={handleFieldResize}
-                        onDelete={handleFieldDelete}
-                      />
+                        <ResizableField
+                         key={field.id}
+                         id={field.id}
+                         type={field.type}
+                         clientId={field.clientId}
+                         position={field.position}
+                         width={field.width}
+                         height={field.height}
+                         onMove={handleFieldMove}
+                         onResize={handleFieldResize}
+                         onDelete={handleFieldDelete}
+                         color={clientColors[field.clientId]}
+                       />
                     ))}
                   </div>
 

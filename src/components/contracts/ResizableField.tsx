@@ -14,6 +14,7 @@ interface ResizableFieldProps {
   onMove: (id: string, newPosition: { x: number; y: number }) => void;
   onResize: (id: string, newWidth: number, newHeight: number) => void;
   onDelete: (id: string) => void;
+  color?: string;
 }
 
 // Client colors - each client gets a unique color
@@ -49,7 +50,8 @@ export const ResizableField: React.FC<ResizableFieldProps> = ({
   height,
   onMove,
   onResize,
-  onDelete
+  onDelete,
+  color
 }) => {
   const {
     dimensions,
@@ -80,18 +82,29 @@ export const ResizableField: React.FC<ResizableFieldProps> = ({
     { direction: 'w', cursor: 'w-resize', className: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2' }
   ];
 
+  const customStyle = color ? {
+    borderColor: color,
+    backgroundColor: `${color}20`, // 20 is hex for low opacity
+    color: color,
+    left: dimensions.x,
+    top: dimensions.y,
+    width: dimensions.width,
+    height: dimensions.height,
+    cursor: isDragging ? 'move' : 'default'
+  } : {
+    left: dimensions.x,
+    top: dimensions.y,
+    width: dimensions.width,
+    height: dimensions.height,
+    cursor: isDragging ? 'move' : 'default'
+  };
+
   return (
     <div
-      className={`absolute border-2 rounded-lg flex items-center justify-center text-xs font-medium transition-all select-none resize-field ${getClientColor(clientId)} ${
+      className={`absolute border-2 rounded-lg flex items-center justify-center text-xs font-medium transition-all select-none resize-field ${!color ? getClientColor(clientId) : ''} ${
         (isResizing || isDragging) ? 'shadow-lg z-50' : 'hover:shadow-md z-20'
       }`}
-      style={{
-        left: dimensions.x,
-        top: dimensions.y,
-        width: dimensions.width,
-        height: dimensions.height,
-        cursor: isDragging ? 'move' : 'default'
-      }}
+      style={customStyle}
       onMouseDown={(e) => handleMouseDown(e)}
     >
       {/* Field Content - Only show field type */}

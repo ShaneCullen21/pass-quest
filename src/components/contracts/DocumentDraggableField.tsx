@@ -6,6 +6,7 @@ interface DocumentDraggableFieldProps {
   fieldType: 'name' | 'signature' | 'date';
   label: string;
   onDrop: (fieldType: 'name' | 'signature' | 'date', position: { x: number; y: number }) => void;
+  color?: string;
 }
 
 const fieldIcons = {
@@ -23,7 +24,8 @@ const fieldColors = {
 export const DocumentDraggableField: React.FC<DocumentDraggableFieldProps> = ({
   fieldType,
   label,
-  onDrop
+  onDrop,
+  color
 }) => {
   const Icon = fieldIcons[fieldType];
 
@@ -47,19 +49,25 @@ export const DocumentDraggableField: React.FC<DocumentDraggableFieldProps> = ({
     }
   };
 
+  const customStyle = color ? {
+    borderColor: color,
+    backgroundColor: `${color}15`, // 15 is hex for low opacity
+  } : {};
+
   return (
     <Card 
-      className={`cursor-grab active:cursor-grabbing transition-all hover:shadow-md ${fieldColors[fieldType]}`}
+      className={`cursor-grab active:cursor-grabbing transition-all hover:shadow-md ${!color ? fieldColors[fieldType] : 'border-2'}`}
+      style={customStyle}
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <CardContent className="p-3">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4" />
-          <span className="font-medium text-sm">{label}</span>
+          <Icon className="h-4 w-4" style={color ? { color } : {}} />
+          <span className="font-medium text-sm" style={color ? { color } : {}}>{label}</span>
         </div>
-        <p className="text-xs opacity-75 mt-1">
+        <p className="text-xs opacity-75 mt-1" style={color ? { color } : {}}>
           Drag to document
         </p>
       </CardContent>
