@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Editor } from '@tiptap/react';
 
 interface SmartPaginationEditorProps {
@@ -11,6 +11,7 @@ interface PageData {
   id: string;
   content: string;
   height: number;
+  editorInstance?: Editor;
 }
 
 export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({ 
@@ -19,10 +20,13 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
   onMouseUp 
 }) => {
   const [pages, setPages] = useState<PageData[]>([{ id: '1', content: '', height: 0 }]);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const editorMountedRef = useRef<boolean>(false);
+  const heightObserverRef = useRef<ResizeObserver | null>(null);
+  const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Page dimensions (at 96 DPI)
   const PAGE_HEIGHT_INCHES = 11.5;
@@ -41,7 +45,42 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
     return measureRef.current.scrollHeight;
   }, []);
 
-  // Split content into pages
+  // Check if current editor content exceeds page height
+  const checkContentOverflow = useCallback(() => {
+    if (!editorContainerRef.current || !editor) return false;
+    
+    const editorElement = editorContainerRef.current.querySelector('.ProseMirror');
+    if (!editorElement) return false;
+    
+    const contentHeight = editorElement.scrollHeight;
+    return contentHeight > CONTENT_HEIGHT_PX;
+  }, [editor, CONTENT_HEIGHT_PX]);
+
+  // Split content at optimal breakpoints
+  const findOptimalSplitPoint = useCallback((content: string, maxHeight: number): number => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/html');
+    const elements = Array.from(doc.body.children);
+    
+    let accumulatedContent = '';
+    let lastSafeIndex = 0;
+    
+    for (let i = 0; i < elements.length; i++) {
+      const testContent = accumulatedContent + elements[i].outerHTML;
+      const testHeight = measureContentHeight(testContent);
+      
+      if (testHeight > maxHeight) {
+        return lastSafeIndex;
+      }
+      
+      accumulatedContent = testContent;
+      lastSafeIndex = i + 1;
+    }
+    
+    return elements.length;
+  }, [measureContentHeight]);
+
+  // Split content into pages with proper overflow handling
   const splitContentIntoPages = useCallback((content: string): PageData[] => {
     if (!content.trim()) {
       return [{ id: '1', content: '', height: 0 }];
@@ -52,66 +91,90 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
     const elements = Array.from(doc.body.children);
     
     const pages: PageData[] = [];
-    let currentPageContent = '';
-    let currentPageHeight = 0;
     let pageNumber = 1;
+    let remainingElements = [...elements];
 
-    for (const element of elements) {
-      const elementHtml = element.outerHTML;
-      const testContent = currentPageContent + elementHtml;
-      const testHeight = measureContentHeight(testContent);
-
-      if (testHeight > CONTENT_HEIGHT_PX && currentPageContent) {
-        // Current element would overflow, save current page and start new one
-        pages.push({
-          id: pageNumber.toString(),
-          content: currentPageContent,
-          height: currentPageHeight
-        });
-        
-        pageNumber++;
-        currentPageContent = elementHtml;
-        currentPageHeight = measureContentHeight(elementHtml);
-      } else {
-        // Element fits on current page
-        currentPageContent = testContent;
-        currentPageHeight = testHeight;
-      }
-    }
-
-    // Add the last page
-    if (currentPageContent || pages.length === 0) {
+    while (remainingElements.length > 0) {
+      const splitIndex = findOptimalSplitPoint(
+        remainingElements.map(el => el.outerHTML).join(''), 
+        CONTENT_HEIGHT_PX
+      );
+      
+      const pageElements = remainingElements.slice(0, splitIndex || 1);
+      const pageContent = pageElements.map(el => el.outerHTML).join('');
+      const pageHeight = measureContentHeight(pageContent);
+      
       pages.push({
         id: pageNumber.toString(),
-        content: currentPageContent,
-        height: currentPageHeight
+        content: pageContent,
+        height: pageHeight
       });
+      
+      remainingElements = remainingElements.slice(splitIndex || 1);
+      pageNumber++;
     }
 
-    return pages;
-  }, [measureContentHeight, CONTENT_HEIGHT_PX]);
+    return pages.length > 0 ? pages : [{ id: '1', content: '', height: 0 }];
+  }, [findOptimalSplitPoint, measureContentHeight, CONTENT_HEIGHT_PX]);
 
-  // Handle editor updates
+  // Handle content overflow by creating new pages
+  const handleContentOverflow = useCallback(() => {
+    if (!editor) return;
+    
+    const fullContent = editor.getHTML();
+    const newPages = splitContentIntoPages(fullContent);
+    
+    if (newPages.length > pages.length) {
+      // Content has grown, update pages
+      setPages(newPages);
+      
+      // Update editor to show only first page content
+      const firstPageContent = newPages[0]?.content || '';
+      if (firstPageContent !== editor.getHTML()) {
+        editor.commands.setContent(firstPageContent, { emitUpdate: false });
+      }
+    }
+  }, [editor, pages.length, splitContentIntoPages]);
+
+  // Handle editor updates with debouncing
   useEffect(() => {
     if (!editor) return;
 
     const handleUpdate = () => {
-      const content = editor.getHTML();
-      const newPages = splitContentIntoPages(content);
-      setPages(newPages);
+      // Clear existing timeout
+      if (contentUpdateTimeoutRef.current) {
+        clearTimeout(contentUpdateTimeoutRef.current);
+      }
+      
+      // Debounce content updates
+      contentUpdateTimeoutRef.current = setTimeout(() => {
+        const content = editor.getHTML();
+        const newPages = splitContentIntoPages(content);
+        setPages(newPages);
+        
+        // Check for overflow and handle pagination
+        if (checkContentOverflow()) {
+          handleContentOverflow();
+        }
+      }, 100);
     };
 
     // Initial setup
-    handleUpdate();
+    const content = editor.getHTML();
+    const initialPages = splitContentIntoPages(content);
+    setPages(initialPages);
     
     editor.on('update', handleUpdate);
     
     return () => {
       editor.off('update', handleUpdate);
+      if (contentUpdateTimeoutRef.current) {
+        clearTimeout(contentUpdateTimeoutRef.current);
+      }
     };
-  }, [editor, splitContentIntoPages]);
+  }, [editor, splitContentIntoPages, checkContentOverflow, handleContentOverflow]);
 
-  // Mount editor on first page
+  // Mount editor and setup height observer
   useEffect(() => {
     if (!editor || !editorContainerRef.current || editorMountedRef.current) return;
 
@@ -119,8 +182,30 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
     if (!editorContainer.contains(editor.view.dom)) {
       editorContainer.appendChild(editor.view.dom);
       editorMountedRef.current = true;
+      
+      // Setup ResizeObserver for real-time height monitoring
+      heightObserverRef.current = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const contentHeight = entry.target.scrollHeight;
+          if (contentHeight > CONTENT_HEIGHT_PX) {
+            handleContentOverflow();
+          }
+        }
+      });
+      
+      // Observe the editor content
+      const proseMirrorElement = editor.view.dom;
+      if (proseMirrorElement) {
+        heightObserverRef.current.observe(proseMirrorElement);
+      }
     }
-  }, [editor, pages]);
+    
+    return () => {
+      if (heightObserverRef.current) {
+        heightObserverRef.current.disconnect();
+      }
+    };
+  }, [editor, pages, handleContentOverflow, CONTENT_HEIGHT_PX]);
 
   return (
     <div className="w-full">
@@ -175,7 +260,8 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
                 style={{
                   width: `${CONTENT_WIDTH_PX}px`,
                   height: `${CONTENT_HEIGHT_PX}px`,
-                  overflow: 'hidden'
+                  overflow: 'auto', // Allow scrolling while content is being split
+                  maxHeight: `${CONTENT_HEIGHT_PX}px`
                 }}
               >
                 {/* TipTap editor will be mounted here */}
