@@ -7,6 +7,7 @@ import { Comment } from './advanced-template-editor';
 interface CommentsPanelProps {
   comments: Comment[];
   onResolveComment: (commentId: string) => void;
+  onUnresolveComment: (commentId: string) => void;
   onCommentClick: (comment: Comment) => void;
   onClose: () => void;
 }
@@ -14,6 +15,7 @@ interface CommentsPanelProps {
 export const CommentsPanel: React.FC<CommentsPanelProps> = ({
   comments,
   onResolveComment,
+  onUnresolveComment,
   onCommentClick,
   onClose,
 }) => {
@@ -47,13 +49,14 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
 
       {/* Comments List */}
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-6">
           {/* Active Comments */}
           {activeComments.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
+              <h4 className="text-sm font-medium text-gray-700 mb-4">
                 Active Comments
               </h4>
+              <div className="space-y-4">
               {activeComments.map(comment => (
                 <div
                   key={comment.id}
@@ -90,6 +93,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   </Button>
                 </div>
               ))}
+              </div>
             </div>
           )}
 
@@ -105,10 +109,11 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
 
           {/* Resolved Comments */}
           {resolvedComments.length > 0 && (
-            <div className="pt-4 border-t border-gray-200">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
+            <div className="pt-6 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-700 mb-4">
                 Resolved Comments ({resolvedComments.length})
               </h4>
+              <div className="space-y-4">
               {resolvedComments.map(comment => (
                 <div
                   key={comment.id}
@@ -122,12 +127,21 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   <p className="text-sm text-gray-700 mb-2">
                     {comment.content}
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-400">
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
                     <span>{comment.author}</span>
                     <span>Resolved • {formatTimestamp(comment.timestamp)}</span>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onUnresolveComment(comment.id)}
+                    className="w-full flex items-center gap-2 text-xs"
+                  >
+                    Unresolve
+                  </Button>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </div>

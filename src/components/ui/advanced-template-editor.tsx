@@ -158,6 +158,13 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       resolved: true
     } : comment));
   }, []);
+
+  const handleUnresolveComment = useCallback((commentId: string) => {
+    setComments(prev => prev.map(comment => comment.id === commentId ? {
+      ...comment,
+      resolved: false
+    } : comment));
+  }, []);
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
 
@@ -272,7 +279,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
             {/* Comments Panel - Inside document area */}
             {showComments && <div className="w-80">
-              <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
+              <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onUnresolveComment={handleUnresolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
             </div>}
           </div>
         </div>
