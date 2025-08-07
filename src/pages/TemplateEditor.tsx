@@ -25,6 +25,8 @@ const TemplateEditor = () => {
   const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
   const [templateType, setTemplateType] = useState<'master' | 'customized'>('master');
   const [masterTemplateId, setMasterTemplateId] = useState<string | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editableTitle, setEditableTitle] = useState("");
   const {
     user
   } = useAuth();
@@ -63,6 +65,7 @@ const TemplateEditor = () => {
           }
           if (data) {
             setTitle(data.title);
+            setEditableTitle(data.title);
             setDescription(data.description || '');
             setContent((data.template_data as any)?.content || '');
             setTemplateType(data.template_type as 'master' | 'customized' || 'master');
@@ -93,6 +96,7 @@ const TemplateEditor = () => {
           if (data) {
             setContent((data.template_data as any)?.content || '');
             setTitle(`${data.title} (Customized)`);
+            setEditableTitle(`${data.title} (Customized)`);
             setDescription(data.description || '');
           }
         } catch (error) {
@@ -165,6 +169,34 @@ const TemplateEditor = () => {
       setSaving(false);
     }
   };
+
+  const handleEditTitle = () => {
+    setEditableTitle(title);
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = () => {
+    if (editableTitle.trim()) {
+      setTitle(editableTitle.trim());
+    } else {
+      setEditableTitle(title);
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEditTitle = () => {
+    setEditableTitle(title);
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      handleCancelEditTitle();
+    }
+  };
+
   const handleBack = () => {
     navigate('/templates');
   };
@@ -190,15 +222,28 @@ const TemplateEditor = () => {
               </Button>
               <div className="flex items-center gap-2">
                 <div>
-                  <h1 className="text-lg font-semibold">
-                    {title || (templateType === 'master' ? 'New Master Template' : 'New Customized Template')}
-                  </h1>
-                  <p className="text-xs text-muted-foreground">
-                    {templateType === 'master' ? 'Master Template' : 'Customized Template'}
-                    {templateType === 'customized' && ' (based on master template)'}
-                  </p>
+                  {isEditingTitle ? (
+                    <Input
+                      value={editableTitle}
+                      onChange={(e) => setEditableTitle(e.target.value)}
+                      onBlur={handleSaveTitle}
+                      onKeyDown={handleTitleKeyDown}
+                      className="text-lg font-semibold border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0"
+                      autoFocus
+                    />
+                  ) : (
+                    <h1 className="text-lg font-semibold">
+                      {title || (templateType === 'master' ? 'New Master Template' : 'New Customized Template')}
+                    </h1>
+                  )}
                 </div>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={handleEditTitle}
+                  disabled={isEditingTitle}
+                >
                   <Edit className="h-3 w-3" />
                 </Button>
                 <div className="ml-2">
