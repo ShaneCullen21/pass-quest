@@ -11,6 +11,7 @@ import { FontFamily } from '@tiptap/extension-font-family';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { Typography } from '@tiptap/extension-typography';
 import { cn } from '@/lib/utils';
+import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
 import { Button } from './button';
@@ -69,6 +70,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     StarterKit.configure({
       heading: {
         levels: [1, 2, 3, 4, 5],
+        HTMLAttributes: {
+          class: 'heading-style',
+        },
       },
     }),
     Placeholder.configure({
@@ -86,7 +90,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     FontFamily.configure({
       types: ['textStyle'],
     }),
-    HardBreak,
+    HardBreak.configure({
+      HTMLAttributes: {
+        class: 'page-break',
+      },
+    }),
     Typography,
   ], [placeholder]);
 
@@ -95,8 +103,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none min-h-[800px] p-8',
-        style: 'min-height: 11in; width: 8.5in; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: white;',
+        class: 'prose prose-lg max-w-none focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
@@ -263,30 +270,34 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               />
             ) : (
               <div 
-                className="bg-white shadow-lg relative"
-                style={{ width: '8.5in', minHeight: '11in' }}
+                className="document-container"
+                style={{ 
+                  background: '#f5f5f5',
+                  padding: '20px',
+                  minHeight: '100vh'
+                }}
                 onMouseUp={handleSelection}
               >
-                {/* Page margins indicator */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div 
-                    className="border border-dashed border-gray-300"
-                    style={{ 
-                      margin: '1in',
-                      height: 'calc(100% - 2in)',
-                      width: 'calc(100% - 2in)'
-                    }}
+                <div 
+                  className="document-page bg-white shadow-lg relative page-break-container"
+                  style={{ 
+                    width: '8.5in', 
+                    minHeight: '11in',
+                    margin: '0 auto 20px auto',
+                    padding: '1in',
+                    pageBreakAfter: 'always',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <EditorContent 
+                    editor={editor} 
+                    className="min-h-full"
                   />
-                </div>
-                
-                <EditorContent 
-                  editor={editor} 
-                  className={className}
-                />
-                
-                {/* Page number */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
-                  Page 1 of 1
+                  
+                  {/* Page number */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
+                    Page 1
+                  </div>
                 </div>
               </div>
             )}
