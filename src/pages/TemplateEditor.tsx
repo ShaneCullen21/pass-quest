@@ -11,11 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Save, X, ArrowLeft, Edit, Eye, MoreHorizontal } from "lucide-react";
-
 const TemplateEditor = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -24,8 +25,9 @@ const TemplateEditor = () => {
   const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
   const [templateType, setTemplateType] = useState<'master' | 'customized'>('master');
   const [masterTemplateId, setMasterTemplateId] = useState<string | null>(null);
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   useEffect(() => {
     const fetchTemplate = async () => {
       const searchParams = new URLSearchParams(location.search);
@@ -33,44 +35,37 @@ const TemplateEditor = () => {
       const type = searchParams.get('type') as 'master' | 'customized';
       const masterId = searchParams.get('masterId');
       const name = searchParams.get('name');
-      
       if (type) {
         setTemplateType(type);
       }
-      
       if (masterId) {
         setMasterTemplateId(masterId);
       }
-      
       if (name) {
         setTitle(name);
       }
-      
       if (templateId) {
         // Editing existing template
         setLoading(true);
         try {
-          const { data, error } = await supabase
-            .from('templates')
-            .select('*')
-            .eq('id', templateId)
-            .single();
-
+          const {
+            data,
+            error
+          } = await supabase.from('templates').select('*').eq('id', templateId).single();
           if (error) {
             console.error('Error fetching template:', error);
             toast({
               variant: "destructive",
               title: "Error",
-              description: "Failed to load template",
+              description: "Failed to load template"
             });
             return;
           }
-
           if (data) {
             setTitle(data.title);
             setDescription(data.description || '');
             setContent((data.template_data as any)?.content || '');
-            setTemplateType((data.template_type as 'master' | 'customized') || 'master');
+            setTemplateType(data.template_type as 'master' | 'customized' || 'master');
             setMasterTemplateId(data.master_template_id);
           }
         } catch (error) {
@@ -82,22 +77,19 @@ const TemplateEditor = () => {
         // Creating customized template from master
         setLoading(true);
         try {
-          const { data, error } = await supabase
-            .from('templates')
-            .select('*')
-            .eq('id', masterId)
-            .single();
-
+          const {
+            data,
+            error
+          } = await supabase.from('templates').select('*').eq('id', masterId).single();
           if (error) {
             console.error('Error fetching master template:', error);
             toast({
               variant: "destructive",
               title: "Error",
-              description: "Failed to load master template",
+              description: "Failed to load master template"
             });
             return;
           }
-
           if (data) {
             setContent((data.template_data as any)?.content || '');
             setTitle(`${data.title} (Customized)`);
@@ -110,31 +102,25 @@ const TemplateEditor = () => {
         }
       }
     };
-
     fetchTemplate();
   }, [location.search, toast]);
-
   const handleFieldDrop = (fieldName: string) => {
     const variableTag = `{{${fieldName}}}`;
     setContent(prev => prev + ` ${variableTag}`);
   };
-
   const handleSave = async () => {
     if (!title.trim()) {
       toast({
         variant: "destructive",
         title: "Title Required",
-        description: "Please enter a title for your template.",
+        description: "Please enter a title for your template."
       });
       return;
     }
-
     setSaving(true);
-    
     try {
       const searchParams = new URLSearchParams(location.search);
       const templateId = searchParams.get('id');
-      
       const templateData = {
         title: title.trim(),
         description: description.trim(),
@@ -146,83 +132,53 @@ const TemplateEditor = () => {
         master_template_id: masterTemplateId,
         user_id: user?.id
       };
-
       let result;
       if (templateId) {
         // Update existing template
-        result = await supabase
-          .from('templates')
-          .update(templateData)
-          .eq('id', templateId);
+        result = await supabase.from('templates').update(templateData).eq('id', templateId);
       } else {
         // Create new template
-        result = await supabase
-          .from('templates')
-          .insert(templateData);
+        result = await supabase.from('templates').insert(templateData);
       }
-
       if (result.error) {
         console.error('Error saving template:', result.error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to save template. Please try again.",
+          description: "Failed to save template. Please try again."
         });
         return;
       }
-
       toast({
         title: "Success",
-        description: templateId ? "Template updated successfully!" : "Template created successfully!",
+        description: templateId ? "Template updated successfully!" : "Template created successfully!"
       });
-      
       navigate('/templates');
     } catch (error) {
       console.error('Error in handleSave:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: "An unexpected error occurred. Please try again."
       });
     } finally {
       setSaving(false);
     }
   };
-
   const handleBack = () => {
     navigate('/templates');
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading template...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Navigation Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <nav className="flex items-center space-x-6 text-sm text-muted-foreground">
-              <span className="text-foreground font-medium">HOME</span>
-              <span>PROJECTS</span>
-              <span className="text-foreground font-medium">TEMPLATES</span>
-              <span>CLIENTS</span>
-              <span>REPORTS</span>
-            </nav>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Emily</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Main Header */}
       <div className="border-b bg-background">
@@ -246,11 +202,7 @@ const TemplateEditor = () => {
                   <Edit className="h-3 w-3" />
                 </Button>
                 <div className="ml-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
-                    templateType === 'master' 
-                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                      : 'bg-purple-50 text-purple-700 border-purple-200'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
                 </div>
@@ -278,21 +230,11 @@ const TemplateEditor = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Template Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter template title..."
-              />
+              <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter template title..." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description (Optional)</Label>
-              <Input
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description..."
-              />
+              <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." />
             </div>
           </div>
 
@@ -325,20 +267,11 @@ const TemplateEditor = () => {
                   </Select>
                 </div>
               </div>
-              <RichTextEditor
-                content={content}
-                onChange={setContent}
-                placeholder="Enter your template content here..."
-                documentSize={documentSize}
-                className="min-h-[600px]"
-                onFieldDrop={handleFieldDrop}
-              />
+              <RichTextEditor content={content} onChange={setContent} placeholder="Enter your template content here..." documentSize={documentSize} className="min-h-[600px]" onFieldDrop={handleFieldDrop} />
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default TemplateEditor;
