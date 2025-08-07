@@ -395,37 +395,35 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Editor Area */}
-        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments ? "max-w-none" : "")}>
-          <div className={cn("mx-auto flex gap-4", showComments ? "max-w-none" : "max-w-4xl")}>
-            <div className={cn(showComments ? "flex-1" : "w-full")}>
-              <PagedEditor editor={editor} onMouseUp={handleSelection} />
-                  
-                  {/* Comment Icon */}
-                  {showCommentIcon && <div className="fixed" style={{
-                top: commentIconPosition.top,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 10
-              }}>
-                      <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
-                        <MessageCircle className="h-4 w-4 text-white" />
-                      </Button>
-                    </div>}
+        {/* Document Editor */}
+        <div className="flex-1 overflow-auto bg-gray-100 p-8">
+          <div className="mx-auto max-w-4xl">
+            <PagedEditor editor={editor} onMouseUp={handleSelection} />
+                
+            {/* Comment Icon */}
+            {showCommentIcon && <div className="fixed" style={{
+              top: commentIconPosition.top,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10
+            }}>
+              <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
+                <MessageCircle className="h-4 w-4 text-white" />
+              </Button>
+            </div>}
 
-                  {/* Comment Form */}
-                  {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
-                top: commentIconPosition.top + 40,
+            {/* Comment Form */}
+            {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
+              top: commentIconPosition.top + 40,
               right: (window.innerWidth - 320) / 2
             }} />}
-            </div>
-
-            {/* Comments Panel - Inside document area */}
-            {showComments && <div className="w-80">
-              <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onUnresolveComment={handleUnresolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
-            </div>}
           </div>
         </div>
+
+        {/* Comments Panel - Fixed width with independent scrolling */}
+        {showComments && <div className="w-80 h-full overflow-hidden">
+          <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onUnresolveComment={handleUnresolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
+        </div>}
       </div>
     </div>;
 };
