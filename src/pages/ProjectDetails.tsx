@@ -231,7 +231,7 @@ export default function ProjectDetails() {
 
   const handleTemplateSelect = (templateId: string) => {
     setIsTemplateSelectorOpen(false);
-    navigate(`/document-editor?projectId=${id}&templateId=${templateId}`);
+    navigate(`/contracts/document-editor?projectId=${id}&templateId=${templateId}`);
   };
 
   if (isLoading) {
