@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FieldPalette } from "@/components/contracts/FieldPalette";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { AdvancedTemplateEditor } from "@/components/ui/advanced-template-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -238,37 +238,15 @@ const TemplateEditor = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Field Palette */}
-            <div className="space-y-4">
-              <FieldPalette />
-            </div>
-
-            {/* Content Editor */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Template Content</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Use variables like {`{{client_name}}`} to create dynamic content
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="document-size" className="text-sm">Document Size:</Label>
-                  <Select value={documentSize} onValueChange={(value: 'a4' | 'letter' | 'legal') => setDocumentSize(value)}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="a4">A4</SelectItem>
-                      <SelectItem value="letter">Letter</SelectItem>
-                      <SelectItem value="legal">Legal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <RichTextEditor content={content} onChange={setContent} placeholder="Enter your template content here..." documentSize={documentSize} className="min-h-[600px]" onFieldDrop={handleFieldDrop} />
-            </div>
+          <div className="w-full">
+            <AdvancedTemplateEditor
+              content={content}
+              onChange={setContent}
+              onSave={handleSave}
+              title={title || "Untitled Template"}
+              isSaving={saving}
+              placeholder="Start writing your template content..."
+            />
           </div>
         </div>
       </div>
