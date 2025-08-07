@@ -73,8 +73,12 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
     editor.chain()
       .focus()
       .setHeading({ level })
-      .updateAttributes('heading', { style: `font-size: ${sizes[level]}; font-weight: bold;` })
       .run();
+    
+    // Apply font size directly after setting heading
+    setTimeout(() => {
+      editor.chain().focus().setFontSize(sizes[level]).run();
+    }, 0);
   };
 
   const insertPageBreak = () => {

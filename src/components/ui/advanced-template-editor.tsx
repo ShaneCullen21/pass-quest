@@ -72,6 +72,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     StarterKit.configure({
       heading: {
         levels: [1, 2, 3, 4, 5],
+        HTMLAttributes: {
+          style: 'font-weight: bold;'
+        }
       },
     }),
     Placeholder.configure({
@@ -98,8 +101,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none min-h-[800px] p-8',
-        style: 'min-height: 11in; width: 8.5in; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: white;',
+        class: 'prose prose-lg max-w-none focus:outline-none min-h-[800px]',
+        style: 'min-height: 11in; width: 8.5in; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: white; padding: 1in;',
       },
     },
     onUpdate: ({ editor }) => {
@@ -173,12 +176,12 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       const text = editor.state.doc.textBetween(from, to);
       setSelectedText({ text, range: { from, to } });
       
-      // Position the comment icon on the right side
+      // Position the comment popup under the selected text
       const rect = window.getSelection()?.getRangeAt(0)?.getBoundingClientRect();
       if (rect) {
         setCommentPosition({
-          x: rect.right + 20,
-          y: rect.top + (rect.height / 2)
+          x: rect.left + (rect.width / 2),
+          y: rect.bottom + 10
         });
       }
     } else {
@@ -321,8 +324,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         <div
           className="fixed z-50 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-lg transition-colors"
           style={{
-            left: `${commentPosition.x}px`,
-            top: `${commentPosition.y - 16}px`,
+            left: `${commentPosition.x - 16}px`,
+            top: `${commentPosition.y}px`,
+            transform: 'translateX(-50%)'
           }}
           onClick={() => setShowCommentForm(true)}
         >
@@ -332,8 +336,14 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
       {/* Comment Form Popup */}
       {showCommentForm && selectedText && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-sm mx-4 shadow-xl">
+        <div
+          className="fixed z-50 bg-white rounded-lg p-6 w-96 shadow-xl border"
+          style={{
+            left: `${commentPosition.x}px`,
+            top: `${commentPosition.y + 40}px`,
+            transform: 'translateX(-50%)'
+          }}
+        >
             <h3 className="text-lg font-semibold mb-3">Add Comment</h3>
             <p className="text-sm text-gray-600 mb-4">
               "{selectedText.text.slice(0, 100)}{selectedText.text.length > 100 ? '...' : ''}"
@@ -374,7 +384,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
     </div>
   );
