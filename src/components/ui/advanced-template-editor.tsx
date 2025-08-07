@@ -244,7 +244,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
       {/* Toolbar */}
       {!showPreview && (
-        <AdvancedToolbar editor={editor} availableFonts={FONTS} />
+        <div className="sticky top-0 z-10">
+          <AdvancedToolbar editor={editor} availableFonts={FONTS} />
+        </div>
       )}
 
       {/* Main Content Area */}

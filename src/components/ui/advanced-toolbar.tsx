@@ -73,7 +73,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
     editor.chain()
       .focus()
       .setHeading({ level })
-      .setFontSize(sizes[level])
+      .updateAttributes('heading', { style: `font-size: ${sizes[level]}; font-weight: bold;` })
       .run();
   };
 
