@@ -66,9 +66,13 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="text-xs text-gray-500 mb-1">
-                        "{comment.selectedText.length > 30 
-                          ? comment.selectedText.substring(0, 30) + '...' 
-                          : comment.selectedText}"
+                        {comment.selectedText ? (
+                          `"${comment.selectedText.length > 30 
+                            ? comment.selectedText.substring(0, 30) + '...' 
+                            : comment.selectedText}"`
+                        ) : (
+                          <span className="italic text-gray-400">Referenced text no longer exists</span>
+                        )}
                       </div>
                       <p className="text-sm text-gray-900 mb-2">
                         {comment.content}
@@ -120,9 +124,13 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-2 opacity-75"
                 >
                   <div className="text-xs text-gray-500 mb-1">
-                    "{comment.selectedText.length > 30 
-                      ? comment.selectedText.substring(0, 30) + '...' 
-                      : comment.selectedText}"
+                    {comment.selectedText ? (
+                      `"${comment.selectedText.length > 30 
+                        ? comment.selectedText.substring(0, 30) + '...' 
+                        : comment.selectedText}"`
+                    ) : (
+                      <span className="italic text-gray-400">Referenced text no longer exists</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-700 mb-2">
                     {comment.content}

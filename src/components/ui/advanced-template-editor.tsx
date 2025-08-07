@@ -338,19 +338,30 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     // Highlight the text temporarily
     setHighlightedCommentId(comment.id);
 
-    // Focus the editor and select the text range
+    // Focus the editor and try to select the text range
     editor.commands.focus();
     
-    // Try to select the text range, but handle cases where range might be invalid
-    try {
-      editor.commands.setTextSelection({
-        from: comment.range.from,
-        to: comment.range.to
-      });
-    } catch (error) {
-      console.warn('Could not select text range for comment:', error);
-      // Fallback: just focus the editor
-      editor.commands.focus();
+    // Check if the range is still valid in the current document
+    const docSize = editor.state.doc.content.size;
+    const { from, to } = comment.range;
+    
+    if (from >= 0 && to <= docSize && from < to) {
+      // Range is valid, try to select it
+      try {
+        const currentText = editor.state.doc.textBetween(from, to);
+        // If the text matches what was originally selected, highlight it
+        if (currentText === comment.selectedText) {
+          editor.commands.setTextSelection({ from, to });
+        } else {
+          // Text has changed, just focus without selection
+          console.log('Referenced text has been modified or moved');
+        }
+      } catch (error) {
+        console.warn('Could not select text range for comment:', error);
+      }
+    } else {
+      // Range is invalid (text was likely deleted)
+      console.log('Referenced text no longer exists in the document');
     }
 
     // Remove highlight after 3 seconds
