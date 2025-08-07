@@ -73,7 +73,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
-  const [isPageFull, setIsPageFull] = useState(false);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -114,51 +113,9 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       attributes: {
         class: 'prose prose-lg max-w-none focus:outline-none',
       },
-      handleKeyDown: (view, event) => {
-        // Check if page is full and prevent new content
-        if (isPageFull && !['Backspace', 'Delete', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-          event.preventDefault();
-          const warningElement = document.getElementById('overflow-warning');
-          if (warningElement) {
-            warningElement.style.display = 'block';
-            setTimeout(() => {
-              warningElement.style.display = 'none';
-            }, 2000);
-          }
-          return true;
-        }
-        return false;
-      },
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      
-      // Check content height to prevent overflow
-      const checkContentHeight = () => {
-        const editorElement = editor.view.dom.parentElement;
-        if (editorElement) {
-          const contentHeight = editorElement.scrollHeight;
-          const containerHeight = editorElement.clientHeight;
-          
-          if (contentHeight > containerHeight) {
-            setIsPageFull(true);
-            const warningElement = document.getElementById('overflow-warning');
-            if (warningElement) {
-              warningElement.style.display = 'block';
-            }
-          } else {
-            setIsPageFull(false);
-            const warningElement = document.getElementById('overflow-warning');
-            if (warningElement) {
-              warningElement.style.display = 'none';
-            }
-          }
-        }
-      };
-      
-      // Delay the height check to allow DOM to update
-      setTimeout(checkContentHeight, 10);
-      
       onChange(html);
       
       // Update word count
@@ -369,41 +326,15 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               <>
                 {/* Single Page Editor Container */}
                 <div 
-                  className="document-page mx-auto bg-white shadow-lg"
+                  className="document-page mx-auto bg-white shadow-lg min-h-[11in]"
                   style={{ 
                     width: '8.5in', 
-                    height: '11in',
                     padding: '1in',
-                    boxSizing: 'border-box',
-                    overflow: 'hidden',
-                    position: 'relative'
+                    boxSizing: 'border-box'
                   }}
                   onMouseUp={handleSelection}
                 >
-                  <div 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <EditorContent 
-                      editor={editor}
-                      style={{
-                        height: '100%',
-                        overflow: 'hidden'
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Overflow Warning */}
-                  <div 
-                    className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200"
-                    style={{ display: 'none' }}
-                    id="overflow-warning"
-                  >
-                    Page limit reached - no more content can be added
-                  </div>
+                  <EditorContent editor={editor} />
                 </div>
                 
                 {/* Comment Icon */}
