@@ -13,7 +13,8 @@ import {
   FileText,
   FileSignature,
   Receipt,
-  Edit
+  Edit,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
+import { DeleteProjectConfirmation } from "@/components/projects/DeleteProjectConfirmation";
 
 
 
@@ -72,6 +74,7 @@ export default function ProjectDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
@@ -201,6 +204,29 @@ export default function ProjectDetails() {
     }).format(amount);
   };
 
+  const handleDeleteProject = async () => {
+    if (!project) return;
+    
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", project.id);
+
+      if (error) throw error;
+
+      toast("Project deleted successfully");
+      navigate("/projects");
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      showToast({
+        title: "Error",
+        description: "Failed to delete project",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -250,6 +276,24 @@ export default function ProjectDetails() {
               Back to Projects
             </Button>
             <h1 className="text-3xl font-bold">{project.name}</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
           </div>
         </div>
 
@@ -442,6 +486,16 @@ export default function ProjectDetails() {
             onOpenChange={setIsEditModalOpen}
             onProjectAdded={handleProjectUpdated}
             editProject={project}
+          />
+        )}
+
+        {/* Delete Project Confirmation */}
+        {project && (
+          <DeleteProjectConfirmation
+            open={isDeleteModalOpen}
+            onOpenChange={setIsDeleteModalOpen}
+            onConfirm={handleDeleteProject}
+            projectName={project.name}
           />
         )}
 
