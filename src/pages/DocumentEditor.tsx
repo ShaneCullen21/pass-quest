@@ -114,7 +114,10 @@ const DocumentEditor = () => {
 
         // Load existing signing fields if any
         const fieldData = document.field_data as any;
+        console.log('Loading existing document:', document);
+        console.log('Field data:', fieldData);
         if (fieldData?.signing_fields) {
+          console.log('Setting signing fields:', fieldData.signing_fields);
           setSigningFields(fieldData.signing_fields);
         }
       } else if (templateId) {
