@@ -11,13 +11,10 @@ import { FontFamily } from '@tiptap/extension-font-family';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { Typography } from '@tiptap/extension-typography';
 import { cn } from '@/lib/utils';
-import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
-import { CommentForm } from './comment-form';
-
 import { Button } from './button';
-import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
+import { MessageSquare, Eye, Save } from 'lucide-react';
 
 export interface Comment {
   id: string;
@@ -67,20 +64,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
-  const [showCommentIcon, setShowCommentIcon] = useState(false);
-  const [commentIconPosition, setCommentIconPosition] = useState({ top: 0, right: 0 });
-  const [selectedRange, setSelectedRange] = useState<{ from: number; to: number } | null>(null);
-  const [selectedText, setSelectedText] = useState('');
-  const [showCommentForm, setShowCommentForm] = useState(false);
-  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
       heading: {
         levels: [1, 2, 3, 4, 5],
-        HTMLAttributes: {
-          class: 'heading-style',
-        },
       },
     }),
     Placeholder.configure({
@@ -98,11 +86,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     FontFamily.configure({
       types: ['textStyle'],
     }),
-    HardBreak.configure({
-      HTMLAttributes: {
-        class: 'page-break',
-      },
-    }),
+    HardBreak,
     Typography,
   ], [placeholder]);
 
@@ -111,7 +95,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none',
+        class: 'prose prose-lg max-w-none focus:outline-none min-h-[800px] p-8',
+        style: 'min-height: 11in; width: 8.5in; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: white;',
       },
     },
     onUpdate: ({ editor }) => {
@@ -150,24 +135,21 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   }, [content, autoSave, saveStatus, title]);
 
-  const handleAddComment = useCallback((commentText: string) => {
-    if (selectedRange && selectedText) {
+  const handleAddComment = useCallback((selectedText: string, range: { from: number; to: number }) => {
+    const commentText = prompt('Add a comment:');
+    if (commentText) {
       const newComment: Comment = {
         id: Date.now().toString(),
         content: commentText,
         author: 'You',
         timestamp: new Date(),
         resolved: false,
-        range: selectedRange,
-        selectedText: selectedText,
+        range,
+        selectedText,
       };
       setComments(prev => [...prev, newComment]);
-      setShowCommentForm(false);
-      setShowCommentIcon(false);
-      setSelectedRange(null);
-      setSelectedText('');
     }
-  }, [selectedRange, selectedText]);
+  }, []);
 
   const handleResolveComment = useCallback((commentId: string) => {
     setComments(prev => 
@@ -179,62 +161,19 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     );
   }, []);
 
-  const handleCommentClick = useCallback((comment: Comment) => {
-    if (!editor) return;
-    
-    // Highlight the text temporarily
-    setHighlightedCommentId(comment.id);
-    
-    // Focus the editor and select the text range
-    editor.commands.focus();
-    editor.commands.setTextSelection({
-      from: comment.range.from,
-      to: comment.range.to
-    });
-    
-    // Remove highlight after 3 seconds
-    setTimeout(() => {
-      setHighlightedCommentId(null);
-    }, 3000);
-  }, [editor]);
-
   const handleSelection = useCallback(() => {
     if (!editor) return;
     
     const { from, to } = editor.state.selection;
     if (from !== to) {
       const selectedText = editor.state.doc.textBetween(from, to);
+      const shouldAddComment = window.confirm(`Add comment to: "${selectedText.slice(0, 50)}${selectedText.length > 50 ? '...' : ''}"?`);
       
-      // Get the position of the selection for centering the comment popup
-      const coords = editor.view.coordsAtPos(to);
-      const viewportWidth = window.innerWidth;
-      
-      setSelectedText(selectedText);
-      setSelectedRange({ from, to });
-      setCommentIconPosition({
-        top: coords.top + 20, // Position below the selected text
-        right: (viewportWidth - 320) / 2 // Center horizontally (320px is form width)
-      });
-      setShowCommentIcon(true);
-    } else {
-      setShowCommentIcon(false);
-      setShowCommentForm(false);
-      setSelectedRange(null);
-      setSelectedText('');
+      if (shouldAddComment) {
+        handleAddComment(selectedText, { from, to });
+      }
     }
-  }, [editor]);
-
-  const handleCommentIconClick = () => {
-    setShowCommentForm(true);
-    setShowCommentIcon(false);
-  };
-
-  const handleCommentCancel = () => {
-    setShowCommentForm(false);
-    setShowCommentIcon(false);
-    setSelectedRange(null);
-    setSelectedText('');
-  };
+  }, [editor, handleAddComment]);
 
   const getSaveStatusText = () => {
     switch (saveStatus) {
@@ -323,56 +262,33 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
                 dangerouslySetInnerHTML={{ __html: content }}
               />
             ) : (
-              <>
-                {/* Single Page Editor Container */}
-                <div 
-                  className="document-page mx-auto bg-white shadow-lg min-h-[11in]"
-                  style={{ 
-                    width: '8.5in', 
-                    padding: '1in',
-                    boxSizing: 'border-box'
-                  }}
-                  onMouseUp={handleSelection}
-                >
-                  <EditorContent editor={editor} />
-                </div>
-                
-                {/* Comment Icon */}
-                {showCommentIcon && (
+              <div 
+                className="bg-white shadow-lg relative"
+                style={{ width: '8.5in', minHeight: '11in' }}
+                onMouseUp={handleSelection}
+              >
+                {/* Page margins indicator */}
+                <div className="absolute inset-0 pointer-events-none">
                   <div 
-                    className="fixed"
+                    className="border border-dashed border-gray-300"
                     style={{ 
-                      top: commentIconPosition.top,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      zIndex: 10
-                    }}
-                  >
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleCommentIconClick}
-                      className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
-                      title="Add comment"
-                    >
-                      <MessageCircle className="h-4 w-4 text-white" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Comment Form */}
-                {showCommentForm && selectedText && (
-                  <CommentForm
-                    selectedText={selectedText}
-                    onSave={handleAddComment}
-                    onCancel={handleCommentCancel}
-                    position={{
-                      top: commentIconPosition.top + 40,
-                      right: (window.innerWidth - 320) / 2
+                      margin: '1in',
+                      height: 'calc(100% - 2in)',
+                      width: 'calc(100% - 2in)'
                     }}
                   />
-                )}
-              </>
+                </div>
+                
+                <EditorContent 
+                  editor={editor} 
+                  className={className}
+                />
+                
+                {/* Page number */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
+                  Page 1 of 1
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -382,7 +298,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
           <CommentsPanel
             comments={comments}
             onResolveComment={handleResolveComment}
-            onCommentClick={handleCommentClick}
             onClose={() => setShowComments(false)}
           />
         )}

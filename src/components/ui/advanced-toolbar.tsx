@@ -73,12 +73,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
     editor.chain()
       .focus()
       .setHeading({ level })
-      .run();
-    // Apply font size and bold styling
-    editor.chain()
-      .focus()
       .setFontSize(sizes[level])
-      .toggleBold()
       .run();
   };
 
@@ -87,7 +82,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 p-3 sticky top-0 z-50 shadow-sm">
+    <div className="bg-white border-b border-gray-200 p-3">
       <div className="flex items-center gap-1 flex-wrap">
         {/* Undo/Redo */}
         <Button
