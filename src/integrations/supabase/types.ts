@@ -337,7 +337,9 @@ export type Database = {
           document_url: string | null
           id: string
           is_public: boolean | null
+          master_template_id: string | null
           template_data: Json | null
+          template_type: string
           title: string
           updated_at: string
           user_id: string
@@ -349,7 +351,9 @@ export type Database = {
           document_url?: string | null
           id?: string
           is_public?: boolean | null
+          master_template_id?: string | null
           template_data?: Json | null
+          template_type?: string
           title: string
           updated_at?: string
           user_id: string
@@ -361,12 +365,22 @@ export type Database = {
           document_url?: string | null
           id?: string
           is_public?: boolean | null
+          master_template_id?: string | null
           template_data?: Json | null
+          template_type?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "templates_master_template_id_fkey"
+            columns: ["master_template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

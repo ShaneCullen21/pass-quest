@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
-
-import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { Navigation } from "@/components/ui/navigation";
+import { Plus, Edit, FileText, Trash2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
+import { NewTemplateModal } from "@/components/templates/NewTemplateModal";
 
 interface Template {
   id: string;
@@ -21,14 +22,18 @@ interface Template {
   created_at: string;
   updated_at: string;
   template_data?: any;
+  template_type: 'master' | 'customized';
+  master_template_id?: string;
 }
 
 const Templates = () => {
-  const { user, loading, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [loading2, setLoading2] = useState(true);
+  const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
+  const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,7 +43,6 @@ const Templates = () => {
     }
   }, [user, loading, navigate]);
 
-  // Refresh templates when user returns from editor
   useEffect(() => {
     const handleFocus = () => {
       if (user) {
@@ -52,26 +56,40 @@ const Templates = () => {
 
   const fetchTemplates = async () => {
     if (!user) return;
-
+    
     try {
-      setTemplatesLoading(true);
       const { data, error } = await supabase
         .from('templates')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching templates:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load templates. Please try again.",
+        });
+        return;
+      }
 
-      setTemplates(data || []);
+      setTemplates((data || []) as Template[]);
     } catch (error) {
-      console.error('Error fetching templates:', error);
-      toast.error('Failed to load templates');
+      console.error('Error in fetchTemplates:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred while loading templates.",
+      });
     } finally {
-      setTemplatesLoading(false);
+      setLoading2(false);
     }
   };
 
+  const getFilteredTemplates = (templateType: 'master' | 'customized') => {
+    return templates.filter(template => template.template_type === templateType);
+  };
 
   const handleDeleteTemplate = async (templateId: string) => {
     try {
@@ -82,20 +100,23 @@ const Templates = () => {
 
       if (error) throw error;
 
-      toast.success('Template deleted successfully');
+      toast({
+        title: "Success",
+        description: "Template deleted successfully.",
+      });
       fetchTemplates();
     } catch (error) {
       console.error('Error deleting template:', error);
-      toast.error('Failed to delete template');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete template. Please try again.",
+      });
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return format(new Date(dateString), 'MMM dd, yyyy');
   };
 
   if (loading) {
@@ -115,159 +136,207 @@ const Templates = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <Navigation />
-            
-            {/* Desktop User Actions */}
-            <div className="hidden sm:flex items-center space-x-3">
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
-                <Search className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
-                <CircleHelp className="h-5 w-5" />
-              </Button>
-              
-              <div className="ml-4">
-                <ProfileDropdown />
-              </div>
-            </div>
-
-            {/* Mobile User Actions */}
-            <div className="sm:hidden">
+            <div className="flex items-center space-x-4">
               <ProfileDropdown />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-foreground">Templates</h1>
-          <Button onClick={() => navigate('/templates/new')}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowNewTemplateModal(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
             Create Template
           </Button>
         </div>
 
-        {/* Tabs and Sort */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <Tabs defaultValue="customized" className="w-auto">
-              <TabsList className="bg-muted">
-                <TabsTrigger value="purchased" className="text-muted-foreground data-[state=active]:text-foreground">
-                  Purchased templates
-                </TabsTrigger>
-                <TabsTrigger value="customized" className="text-muted-foreground data-[state=active]:text-foreground">
-                  Customized templates
-                </TabsTrigger>
-                <TabsTrigger value="free" className="text-muted-foreground data-[state=active]:text-foreground">
-                  Free templates
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <Tabs defaultValue="master" className="w-full">
+          <div className="flex justify-between items-center mb-4">
+            <TabsList className="grid w-fit grid-cols-2">
+              <TabsTrigger value="master">Master Templates</TabsTrigger>
+              <TabsTrigger value="customized">Customized Templates</TabsTrigger>
+            </TabsList>
             
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground">SORT BY</span>
-              <Select defaultValue="last-added">
-                <SelectTrigger className="w-36 border-input">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="last-added">Last added</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={sortBy} onValueChange={(value: 'name' | 'date') => setSortBy(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Date Created</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
 
-        {/* Template Cards */}
-        <div className="grid gap-6 mb-16">
-          {templatesLoading ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading templates...</p>
-            </div>
-          ) : templates.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No templates found</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Create your first template to get started
-              </p>
-            </div>
-          ) : (
-            templates.map((template) => (
-              <Card key={template.id} className="border border-border">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-6">
-                    {/* Template Preview */}
-                    <div className="w-32 h-24 bg-muted rounded-lg flex-shrink-0"></div>
-                    
-                    {/* Template Info */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {template.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Last updated on {formatDate(template.updated_at)}
-                      </p>
-                      {template.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {template.description}
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex flex-col space-y-2 flex-shrink-0">
-                      <Button 
-                        variant="outline" 
-                        className="w-36"
-                        onClick={() => navigate(`/templates/edit?id=${template.id}`)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit template
-                      </Button>
-                      <Button variant="outline" className="w-36">
-                        Create document
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="w-36"
-                        onClick={() => handleDeleteTemplate(template.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </div>
+          <TabsContent value="master" className="space-y-4">
+            {loading2 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading templates...
+              </div>
+            ) : (
+              <>
+                {getFilteredTemplates('master').length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No master templates found. Create your first master template to get started.
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {getFilteredTemplates('master')
+                      .sort((a, b) => {
+                        if (sortBy === 'name') {
+                          return a.title.localeCompare(b.title);
+                        }
+                        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                      })
+                      .map((template) => (
+                        <Card key={template.id} className="hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                              <span className="truncate">{template.title}</span>
+                              <Badge variant="default">Master</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {template.description || 'No description provided'}
+                            </p>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Created: {formatDate(template.created_at)}</span>
+                              <span>Updated: {formatDate(template.updated_at)}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/templates/${template.id}/edit`)}
+                                className="flex items-center gap-1 flex-1"
+                              >
+                                <Edit className="h-3 w-3" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
+                                className="flex items-center gap-1 flex-1"
+                              >
+                                <FileText className="h-3 w-3" />
+                                Create Document
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
 
-        {/* Cannot find section */}
-        <div className="text-center py-16 border-t border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Cannot find what you need?
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Find more legal templates created by the team of experts from The Legal Page
+          <TabsContent value="customized" className="space-y-4">
+            {loading2 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading templates...
+              </div>
+            ) : (
+              <>
+                {getFilteredTemplates('customized').length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No customized templates found. Create a customized template from a master template to get started.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {getFilteredTemplates('customized')
+                      .sort((a, b) => {
+                        if (sortBy === 'name') {
+                          return a.title.localeCompare(b.title);
+                        }
+                        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                      })
+                      .map((template) => (
+                        <Card key={template.id} className="hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                              <span className="truncate">{template.title}</span>
+                              <Badge variant="secondary">Customized</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {template.description || 'No description provided'}
+                            </p>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Created: {formatDate(template.created_at)}</span>
+                              <span>Updated: {formatDate(template.updated_at)}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/templates/${template.id}/edit`)}
+                                className="flex items-center gap-1 flex-1"
+                              >
+                                <Edit className="h-3 w-3" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/contracts/new?templateId=${template.id}`)}
+                                className="flex items-center gap-1 flex-1"
+                              >
+                                <FileText className="h-3 w-3" />
+                                Create Document
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Marketplace Section */}
+        <div className="mt-12 p-6 bg-muted/50 rounded-lg border">
+          <h2 className="text-xl font-semibold mb-2">Need More Templates?</h2>
+          <p className="text-muted-foreground mb-4">
+            Explore our template marketplace for professionally designed templates across various industries.
           </p>
-          <Button variant="link" className="text-primary underline">
-            Visit Our Marketplace
+          <Button variant="outline">
+            Browse Marketplace
           </Button>
         </div>
-      </main>
 
+        <NewTemplateModal 
+          isOpen={showNewTemplateModal}
+          onClose={() => setShowNewTemplateModal(false)}
+        />
+      </main>
     </div>
   );
 };

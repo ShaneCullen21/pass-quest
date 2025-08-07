@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,57 +9,110 @@ import { FieldPalette } from "@/components/contracts/FieldPalette";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { FileText, Save, X, ArrowLeft, Edit, Eye, MoreHorizontal } from "lucide-react";
-
 
 const TemplateEditor = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const templateId = searchParams.get('id');
+  const location = useLocation();
+  const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
-  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
+  const [templateType, setTemplateType] = useState<'master' | 'customized'>('master');
+  const [masterTemplateId, setMasterTemplateId] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const isEditMode = !!templateId;
-
   useEffect(() => {
-    if (templateId) {
-      fetchTemplate();
-    }
-  }, [templateId]);
-
-  const fetchTemplate = async () => {
-    if (!templateId) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('templates')
-        .select('*')
-        .eq('id', templateId)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setTitle(data.title);
-        setDescription(data.description || "");
-        const templateData = data.template_data as any;
-        setContent(templateData?.content || "");
+    const fetchTemplate = async () => {
+      const searchParams = new URLSearchParams(location.search);
+      const templateId = searchParams.get('id');
+      const type = searchParams.get('type') as 'master' | 'customized';
+      const masterId = searchParams.get('masterId');
+      const name = searchParams.get('name');
+      
+      if (type) {
+        setTemplateType(type);
       }
-    } catch (error) {
-      console.error('Error fetching template:', error);
-      toast.error('Failed to load template');
-      navigate('/templates');
-    } finally {
-      setLoading(false);
-    }
-  };
+      
+      if (masterId) {
+        setMasterTemplateId(masterId);
+      }
+      
+      if (name) {
+        setTitle(name);
+      }
+      
+      if (templateId) {
+        // Editing existing template
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('templates')
+            .select('*')
+            .eq('id', templateId)
+            .single();
+
+          if (error) {
+            console.error('Error fetching template:', error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to load template",
+            });
+            return;
+          }
+
+          if (data) {
+            setTitle(data.title);
+            setDescription(data.description || '');
+            setContent((data.template_data as any)?.content || '');
+            setTemplateType((data.template_type as 'master' | 'customized') || 'master');
+            setMasterTemplateId(data.master_template_id);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else if (type === 'customized' && masterId) {
+        // Creating customized template from master
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('templates')
+            .select('*')
+            .eq('id', masterId)
+            .single();
+
+          if (error) {
+            console.error('Error fetching master template:', error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to load master template",
+            });
+            return;
+          }
+
+          if (data) {
+            setContent((data.template_data as any)?.content || '');
+            setTitle(`${data.title} (Customized)`);
+            setDescription(data.description || '');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchTemplate();
+  }, [location.search, toast]);
 
   const handleFieldDrop = (fieldName: string) => {
     const variableTag = `{{${fieldName}}}`;
@@ -68,56 +121,69 @@ const TemplateEditor = () => {
 
   const handleSave = async () => {
     if (!title.trim()) {
-      toast.error("Please enter a template title");
-      return;
-    }
-
-    if (!content.trim()) {
-      toast.error("Please add some content to the template");
+      toast({
+        variant: "destructive",
+        title: "Title Required",
+        description: "Please enter a title for your template.",
+      });
       return;
     }
 
     setSaving(true);
-
+    
     try {
-      const templateData = JSON.parse(JSON.stringify({
-        content,
-        created_at: new Date().toISOString(),
-      }));
+      const searchParams = new URLSearchParams(location.search);
+      const templateId = searchParams.get('id');
+      
+      const templateData = {
+        title: title.trim(),
+        description: description.trim(),
+        template_data: {
+          content,
+          document_size: documentSize
+        },
+        template_type: templateType,
+        master_template_id: masterTemplateId,
+        user_id: user?.id
+      };
 
-      if (isEditMode && templateId) {
-        const { error } = await supabase
+      let result;
+      if (templateId) {
+        // Update existing template
+        result = await supabase
           .from('templates')
-          .update({
-            title: title.trim(),
-            description: description.trim() || null,
-            template_data: templateData,
-          })
+          .update(templateData)
           .eq('id', templateId);
-
-        if (error) throw error;
-
-        toast.success("Template updated successfully");
       } else {
-        const { error } = await supabase
+        // Create new template
+        result = await supabase
           .from('templates')
-          .insert({
-            user_id: user?.id,
-            title: title.trim(),
-            description: description.trim() || null,
-            template_data: templateData,
-            category: 'contract',
-          });
-
-        if (error) throw error;
-
-        toast.success("Template created successfully");
+          .insert(templateData);
       }
 
+      if (result.error) {
+        console.error('Error saving template:', result.error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save template. Please try again.",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: templateId ? "Template updated successfully!" : "Template created successfully!",
+      });
+      
       navigate('/templates');
     } catch (error) {
-      console.error('Error saving template:', error);
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} template`);
+      console.error('Error in handleSave:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -167,19 +233,27 @@ const TemplateEditor = () => {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold">
-                  {title || (isEditMode ? 'Edit Template' : 'New Template')}
-                </h1>
+                <div>
+                  <h1 className="text-lg font-semibold">
+                    {title || (templateType === 'master' ? 'New Master Template' : 'New Customized Template')}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    {templateType === 'master' ? 'Master Template' : 'Customized Template'}
+                    {templateType === 'customized' && ' (based on master template)'}
+                  </p>
+                </div>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                   <Edit className="h-3 w-3" />
                 </Button>
-                {isEditMode && (
-                  <div className="ml-2">
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                      CUSTOMIZED TEMPLATE
-                    </span>
-                  </div>
-                )}
+                <div className="ml-2">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                    templateType === 'master' 
+                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                      : 'bg-purple-50 text-purple-700 border-purple-200'
+                  }`}>
+                    {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -199,7 +273,6 @@ const TemplateEditor = () => {
       </div>
 
       <div className="container mx-auto px-6 py-6">
-
         <div className="space-y-6">
           {/* Template Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -255,7 +328,7 @@ const TemplateEditor = () => {
               <RichTextEditor
                 content={content}
                 onChange={setContent}
-                placeholder="Enter your contract template content here..."
+                placeholder="Enter your template content here..."
                 documentSize={documentSize}
                 className="min-h-[600px]"
                 onFieldDrop={handleFieldDrop}
