@@ -15,7 +15,6 @@ import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
 import { CommentForm } from './comment-form';
-
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
 
@@ -72,9 +71,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [selectedRange, setSelectedRange] = useState<{ from: number; to: number } | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [isContentFull, setIsContentFull] = useState(false);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -115,22 +111,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       attributes: {
         class: 'prose prose-lg max-w-none focus:outline-none',
       },
-      handleKeyDown: (view, event) => {
-        // Prevent input when content is full, except for backspace/delete
-        if (isContentFull && !['Backspace', 'Delete'].includes(event.key)) {
-          event.preventDefault();
-          return true;
-        }
-        return false;
-      },
-      handlePaste: (view, event) => {
-        // Prevent paste when content is full
-        if (isContentFull) {
-          event.preventDefault();
-          return true;
-        }
-        return false;
-      },
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
@@ -168,27 +148,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   }, [content, autoSave, saveStatus, title]);
 
-  // Content height monitoring
-  useEffect(() => {
-    if (!editor) return;
-
-    const editorElement = editor.view.dom.parentElement;
-    if (!editorElement) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      const contentElement = editor.view.dom;
-      const actualHeight = contentElement.scrollHeight;
-      setContentHeight(actualHeight);
-      
-      // 10in = 720px at 72dpi, minus 1in margins = 648px available content height
-      const maxContentHeight = 648;
-      setIsContentFull(actualHeight >= maxContentHeight);
-    });
-
-    resizeObserver.observe(editorElement);
-    return () => resizeObserver.disconnect();
-  }, [editor]);
-
   const handleAddComment = useCallback((commentText: string) => {
     if (selectedRange && selectedText) {
       const newComment: Comment = {
@@ -218,25 +177,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     );
   }, []);
 
-  const handleCommentClick = useCallback((comment: Comment) => {
-    if (!editor) return;
-    
-    // Highlight the text temporarily
-    setHighlightedCommentId(comment.id);
-    
-    // Focus the editor and select the text range
-    editor.commands.focus();
-    editor.commands.setTextSelection({
-      from: comment.range.from,
-      to: comment.range.to
-    });
-    
-    // Remove highlight after 3 seconds
-    setTimeout(() => {
-      setHighlightedCommentId(null);
-    }, 3000);
-  }, [editor]);
-
   const handleSelection = useCallback(() => {
     if (!editor) return;
     
@@ -244,15 +184,15 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     if (from !== to) {
       const selectedText = editor.state.doc.textBetween(from, to);
       
-      // Get the position of the selection for centering the comment popup
+      // Get the position of the selection for positioning the comment icon
+      const editorRect = editor.view.dom.getBoundingClientRect();
       const coords = editor.view.coordsAtPos(to);
-      const viewportWidth = window.innerWidth;
       
       setSelectedText(selectedText);
       setSelectedRange({ from, to });
       setCommentIconPosition({
-        top: coords.top + 20, // Position below the selected text
-        right: (viewportWidth - 320) / 2 // Center horizontally (320px is form width)
+        top: coords.top - editorRect.top + 20,
+        right: 20
       });
       setShowCommentIcon(true);
     } else {
@@ -362,41 +302,44 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
                 dangerouslySetInnerHTML={{ __html: content }}
               />
             ) : (
-              <>
+              <div 
+                className="document-container relative"
+                style={{ 
+                  background: '#f5f5f5',
+                  padding: '20px',
+                  minHeight: '100vh'
+                }}
+                onMouseUp={handleSelection}
+              >
                 <div 
-                  className={cn(
-                    "single-page-editor bg-white shadow-lg relative",
-                    isContentFull && "border-orange-400 border-2"
-                  )}
+                  className="document-page bg-white shadow-lg relative page-break-container"
                   style={{ 
                     width: '8.5in', 
                     minHeight: '11in',
-                    maxHeight: '11in',
+                    margin: '0 auto 20px auto',
                     padding: '1in',
-                    overflow: 'hidden',
-                    margin: '0 auto'
+                    pageBreakAfter: 'always',
+                    boxSizing: 'border-box'
                   }}
-                  onMouseUp={handleSelection}
                 >
                   <EditorContent 
-                    editor={editor}
-                    className="h-full"
+                    editor={editor} 
+                    className="min-h-full"
                   />
-                  {isContentFull && (
-                    <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-medium">
-                      Page full - remove text to continue
-                    </div>
-                  )}
+                  
+                  {/* Page number */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
+                    Page 1
+                  </div>
                 </div>
-                
+
                 {/* Comment Icon */}
                 {showCommentIcon && (
                   <div 
-                    className="fixed"
+                    className="absolute"
                     style={{ 
                       top: commentIconPosition.top,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
+                      right: commentIconPosition.right,
                       zIndex: 10
                     }}
                   >
@@ -420,11 +363,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
                     onCancel={handleCommentCancel}
                     position={{
                       top: commentIconPosition.top + 40,
-                      right: (window.innerWidth - 320) / 2
+                      right: commentIconPosition.right + 50
                     }}
                   />
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -434,7 +377,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
           <CommentsPanel
             comments={comments}
             onResolveComment={handleResolveComment}
-            onCommentClick={handleCommentClick}
             onClose={() => setShowComments(false)}
           />
         )}

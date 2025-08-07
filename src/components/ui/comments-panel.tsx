@@ -7,14 +7,12 @@ import { Comment } from './advanced-template-editor';
 interface CommentsPanelProps {
   comments: Comment[];
   onResolveComment: (commentId: string) => void;
-  onCommentClick: (comment: Comment) => void;
   onClose: () => void;
 }
 
 export const CommentsPanel: React.FC<CommentsPanelProps> = ({
   comments,
   onResolveComment,
-  onCommentClick,
   onClose,
 }) => {
   const activeComments = comments.filter(comment => !comment.resolved);
@@ -57,8 +55,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
               {activeComments.map(comment => (
                 <div
                   key={comment.id}
-                  className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg space-y-2 cursor-pointer hover:bg-yellow-100 transition-colors"
-                  onClick={() => onCommentClick(comment)}
+                  className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg space-y-2"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -79,10 +76,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onResolveComment(comment.id);
-                    }}
+                    onClick={() => onResolveComment(comment.id)}
                     className="w-full flex items-center gap-2"
                   >
                     <Check className="h-3 w-3" />
