@@ -47,7 +47,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
   const [highlightColorOpen, setHighlightColorOpen] = useState(false);
 
   const setFontSize = (size: number) => {
-    editor.chain().focus().setFontSize(`${size}px`).run();
+    editor.chain().focus().setMark('textStyle', { fontSize: `${size}px` }).run();
   };
 
   const setFontFamily = (font: string) => {
@@ -73,12 +73,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
     editor.chain()
       .focus()
       .setHeading({ level })
-      .run();
-    // Apply font size and bold styling
-    editor.chain()
-      .focus()
-      .setFontSize(sizes[level])
-      .toggleBold()
+      .setMark('textStyle', { fontSize: sizes[level] })
       .run();
   };
 
