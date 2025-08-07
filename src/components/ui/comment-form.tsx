@@ -39,7 +39,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 z-50"
       style={{ 
         top: position.top, 
-        left: position.right - 320, // 320px is the width of the form
+        left: position.right,
         maxHeight: '300px'
       }}
     >
