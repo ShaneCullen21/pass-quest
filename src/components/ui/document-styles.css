@@ -156,3 +156,12 @@
     border-radius: 0;
   }
 }
+
+/* Resizable Field Styles */
+.resize-field:hover .resize-handles .opacity-0 {
+  opacity: 1;
+}
+
+.resize-field .resize-handles .opacity-0 {
+  transition: opacity 0.2s ease-in-out;
+}

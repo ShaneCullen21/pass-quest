@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, User, Users, Save } from "lucide-react";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
+import { ResizableField } from "@/components/contracts/ResizableField";
 
 interface Template {
   id: string;
@@ -174,6 +175,16 @@ const DocumentEditor = () => {
       prev.map(field => 
         field.id === fieldId 
           ? { ...field, position: newPosition }
+          : field
+      )
+    );
+  };
+
+  const handleFieldResize = (fieldId: string, newWidth: number, newHeight: number) => {
+    setSigningFields(prev => 
+      prev.map(field => 
+        field.id === fieldId 
+          ? { ...field, width: newWidth, height: newHeight }
           : field
       )
     );
@@ -432,7 +443,7 @@ const DocumentEditor = () => {
           <div className="lg:col-span-3">
             <Card className="h-full">
               <CardContent className="p-0">
-                <div className="document-drop-zone relative min-h-[800px] overflow-hidden">
+                <div className="document-drop-zone relative min-h-[800px] overflow-hidden group">
                   {/* Document Content (Read-only with same styling as template editor) */}
                   <ReadOnlyDocumentViewer 
                     content={template.template_data?.content || '<p>No content available</p>'}
@@ -442,35 +453,18 @@ const DocumentEditor = () => {
                   {/* Overlay for Field Positioning */}
                   <div className="absolute inset-0 pointer-events-auto z-10">
                     {signingFields.map(field => (
-                      <div
+                      <ResizableField
                         key={field.id}
-                        className="absolute border-2 border-primary bg-primary/20 rounded cursor-move flex items-center justify-center text-xs font-medium z-20"
-                        style={{
-                          left: field.position.x,
-                          top: field.position.y,
-                          width: field.width,
-                          height: field.height
-                        }}
-                        draggable
-                        onDragEnd={(e) => {
-                          const rect = e.currentTarget.offsetParent?.getBoundingClientRect();
-                          if (rect) {
-                            const newX = e.clientX - rect.left;
-                            const newY = e.clientY - rect.top;
-                            handleFieldMove(field.id, { x: newX, y: newY });
-                          }
-                        }}
-                      >
-                        <span className="capitalize">
-                          {field.type} - {getClientName(field.clientId)}
-                        </span>
-                        <button
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-destructive/80 z-30"
-                          onClick={() => handleFieldDelete(field.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
+                        id={field.id}
+                        type={field.type}
+                        clientName={getClientName(field.clientId)}
+                        position={field.position}
+                        width={field.width}
+                        height={field.height}
+                        onMove={handleFieldMove}
+                        onResize={handleFieldResize}
+                        onDelete={handleFieldDelete}
+                      />
                     ))}
                   </div>
 
