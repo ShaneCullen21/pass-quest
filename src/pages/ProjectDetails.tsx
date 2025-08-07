@@ -419,7 +419,7 @@ export default function ProjectDetails() {
                               size="sm"
                               onClick={() => {
                                 // Navigate to document editor for all document types
-                                navigate(`/document-editor?documentId=${document.id}&projectId=${id}`);
+                                navigate(`/contracts/document-editor?documentId=${document.id}&projectId=${id}`);
                               }}
                             >
                               Edit
