@@ -31,7 +31,6 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
-import { DeleteProjectConfirmation } from "@/components/projects/DeleteProjectConfirmation";
 
 
 
@@ -74,7 +73,7 @@ export default function ProjectDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
@@ -204,24 +203,25 @@ export default function ProjectDetails() {
     }).format(amount);
   };
 
-  const handleDeleteProject = async () => {
-    if (!project) return;
+  const handleDeleteDocument = async () => {
+    if (!documentToDelete) return;
     
     try {
       const { error } = await supabase
-        .from("projects")
+        .from("documents")
         .delete()
-        .eq("id", project.id);
+        .eq("id", documentToDelete.id);
 
       if (error) throw error;
 
-      toast("Project deleted successfully");
-      navigate("/projects");
+      toast("Document deleted successfully");
+      setDocumentToDelete(null);
+      fetchDocuments(); // Refresh the documents list
     } catch (error) {
-      console.error("Error deleting project:", error);
+      console.error("Error deleting document:", error);
       showToast({
         title: "Error",
-        description: "Failed to delete project",
+        description: "Failed to delete document",
         variant: "destructive",
       });
     }
@@ -276,24 +276,6 @@ export default function ProjectDetails() {
               Back to Projects
             </Button>
             <h1 className="text-3xl font-bold">{project.name}</h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditModalOpen(true)}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsDeleteModalOpen(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
           </div>
         </div>
 
@@ -468,6 +450,13 @@ export default function ProjectDetails() {
                             >
                               Edit
                             </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setDocumentToDelete(document)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </TableCell>
                     </TableRow>
@@ -489,14 +478,30 @@ export default function ProjectDetails() {
           />
         )}
 
-        {/* Delete Project Confirmation */}
-        {project && (
-          <DeleteProjectConfirmation
-            open={isDeleteModalOpen}
-            onOpenChange={setIsDeleteModalOpen}
-            onConfirm={handleDeleteProject}
-            projectName={project.name}
-          />
+        {/* Delete Document Confirmation */}
+        {documentToDelete && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-2">Delete Document</h3>
+              <p className="text-muted-foreground mb-4">
+                Are you sure you want to delete "{documentToDelete.title}"? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDocumentToDelete(null)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteDocument}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>
