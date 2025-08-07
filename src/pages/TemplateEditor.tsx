@@ -247,7 +247,7 @@ const TemplateEditor = () => {
                   <Edit className="h-3 w-3" />
                 </Button>
                 <div className="ml-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border text-red-600 ${templateType === 'master' ? 'bg-blue-50 border-blue-200' : 'bg-purple-50 border-purple-200'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
                 </div>
