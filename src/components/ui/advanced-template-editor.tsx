@@ -15,7 +15,7 @@ import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
 import { CommentForm } from './comment-form';
-
+import { SmartPaginationEditor } from './smart-pagination-editor';
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
 
@@ -73,8 +73,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [selectedText, setSelectedText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [isContentFull, setIsContentFull] = useState(false);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -115,22 +113,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       attributes: {
         class: 'prose prose-lg max-w-none focus:outline-none',
       },
-      handleKeyDown: (view, event) => {
-        // Prevent input when content is full, except for backspace/delete
-        if (isContentFull && !['Backspace', 'Delete'].includes(event.key)) {
-          event.preventDefault();
-          return true;
-        }
-        return false;
-      },
-      handlePaste: (view, event) => {
-        // Prevent paste when content is full
-        if (isContentFull) {
-          event.preventDefault();
-          return true;
-        }
-        return false;
-      },
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
@@ -167,27 +149,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       return () => clearTimeout(timeoutId);
     }
   }, [content, autoSave, saveStatus, title]);
-
-  // Content height monitoring
-  useEffect(() => {
-    if (!editor) return;
-
-    const editorElement = editor.view.dom.parentElement;
-    if (!editorElement) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      const contentElement = editor.view.dom;
-      const actualHeight = contentElement.scrollHeight;
-      setContentHeight(actualHeight);
-      
-      // 10in = 720px at 72dpi, minus 1in margins = 648px available content height
-      const maxContentHeight = 648;
-      setIsContentFull(actualHeight >= maxContentHeight);
-    });
-
-    resizeObserver.observe(editorElement);
-    return () => resizeObserver.disconnect();
-  }, [editor]);
 
   const handleAddComment = useCallback((commentText: string) => {
     if (selectedRange && selectedText) {
@@ -363,31 +324,10 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               />
             ) : (
               <>
-                <div 
-                  className={cn(
-                    "single-page-editor bg-white shadow-lg relative",
-                    isContentFull && "border-orange-400 border-2"
-                  )}
-                  style={{ 
-                    width: '8.5in', 
-                    minHeight: '11in',
-                    maxHeight: '11in',
-                    padding: '1in',
-                    overflow: 'hidden',
-                    margin: '0 auto'
-                  }}
+                <SmartPaginationEditor
+                  editor={editor}
                   onMouseUp={handleSelection}
-                >
-                  <EditorContent 
-                    editor={editor}
-                    className="h-full"
-                  />
-                  {isContentFull && (
-                    <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-medium">
-                      Page full - remove text to continue
-                    </div>
-                  )}
-                </div>
+                />
                 
                 {/* Comment Icon */}
                 {showCommentIcon && (
