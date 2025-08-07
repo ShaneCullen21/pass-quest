@@ -7,15 +7,22 @@ interface SmartPaginationEditorProps {
   onMouseUp?: () => void;
 }
 
+interface PageData {
+  id: string;
+  content: string;
+  height: number;
+}
+
 export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({ 
   editor, 
   className,
   onMouseUp 
 }) => {
-  const [pageCount, setPageCount] = useState(1);
+  const [pages, setPages] = useState<PageData[]>([{ id: '1', content: '', height: 0 }]);
   const containerRef = useRef<HTMLDivElement>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const editorMountedRef = useRef<boolean>(false);
   
   // Page dimensions (at 96 DPI)
   const PAGE_HEIGHT_INCHES = 11.5;
@@ -26,79 +33,113 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
   const PAGE_WIDTH_PX = 8.5 * 96; // 816px
   const CONTENT_WIDTH_PX = 6.5 * 96; // 624px (8.5 - 2 inch margins)
 
-  // Calculate required pages based on content height
-  const calculateRequiredPages = useCallback(() => {
-    if (!editorContainerRef.current || !editor) return 1;
+  // Measure content height
+  const measureContentHeight = useCallback((htmlContent: string): number => {
+    if (!measureRef.current) return 0;
     
-    // Get the actual rendered height of the editor content
-    const editorElement = editorContainerRef.current.querySelector('.ProseMirror');
-    if (!editorElement) return 1;
-    
-    const contentHeight = editorElement.scrollHeight;
-    const requiredPages = Math.max(1, Math.ceil(contentHeight / CONTENT_HEIGHT_PX));
-    
-    return requiredPages;
-  }, [editor, CONTENT_HEIGHT_PX]);
+    measureRef.current.innerHTML = htmlContent;
+    return measureRef.current.scrollHeight;
+  }, []);
 
-  // Update page count when content changes
+  // Split content into pages
+  const splitContentIntoPages = useCallback((content: string): PageData[] => {
+    if (!content.trim()) {
+      return [{ id: '1', content: '', height: 0 }];
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/html');
+    const elements = Array.from(doc.body.children);
+    
+    const pages: PageData[] = [];
+    let currentPageContent = '';
+    let currentPageHeight = 0;
+    let pageNumber = 1;
+
+    for (const element of elements) {
+      const elementHtml = element.outerHTML;
+      const testContent = currentPageContent + elementHtml;
+      const testHeight = measureContentHeight(testContent);
+
+      if (testHeight > CONTENT_HEIGHT_PX && currentPageContent) {
+        // Current element would overflow, save current page and start new one
+        pages.push({
+          id: pageNumber.toString(),
+          content: currentPageContent,
+          height: currentPageHeight
+        });
+        
+        pageNumber++;
+        currentPageContent = elementHtml;
+        currentPageHeight = measureContentHeight(elementHtml);
+      } else {
+        // Element fits on current page
+        currentPageContent = testContent;
+        currentPageHeight = testHeight;
+      }
+    }
+
+    // Add the last page
+    if (currentPageContent || pages.length === 0) {
+      pages.push({
+        id: pageNumber.toString(),
+        content: currentPageContent,
+        height: currentPageHeight
+      });
+    }
+
+    return pages;
+  }, [measureContentHeight, CONTENT_HEIGHT_PX]);
+
+  // Handle editor updates
   useEffect(() => {
     if (!editor) return;
 
-    const updatePageCount = () => {
-      const required = calculateRequiredPages();
-      if (required !== pageCount) {
-        setPageCount(required);
-      }
+    const handleUpdate = () => {
+      const content = editor.getHTML();
+      const newPages = splitContentIntoPages(content);
+      setPages(newPages);
     };
 
-    // Listen to editor updates
-    editor.on('update', updatePageCount);
-    editor.on('selectionUpdate', updatePageCount);
+    // Initial setup
+    handleUpdate();
     
-    // Initial calculation
-    setTimeout(updatePageCount, 100);
-
+    editor.on('update', handleUpdate);
+    
     return () => {
-      editor.off('update', updatePageCount);
-      editor.off('selectionUpdate', updatePageCount);
+      editor.off('update', handleUpdate);
     };
-  }, [editor, pageCount, calculateRequiredPages]);
-
-  // Set up ResizeObserver to monitor content changes
-  useEffect(() => {
-    if (!editorContainerRef.current) return;
-
-    const editorElement = editorContainerRef.current.querySelector('.ProseMirror');
-    if (!editorElement) return;
-
-    resizeObserverRef.current = new ResizeObserver(() => {
-      const required = calculateRequiredPages();
-      if (required !== pageCount) {
-        setPageCount(required);
-      }
-    });
-
-    resizeObserverRef.current.observe(editorElement);
-
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
-    };
-  }, [calculateRequiredPages, pageCount]);
+  }, [editor, splitContentIntoPages]);
 
   // Mount editor on first page
   useEffect(() => {
-    if (!editor || !editorContainerRef.current) return;
+    if (!editor || !editorContainerRef.current || editorMountedRef.current) return;
 
     const editorContainer = editorContainerRef.current;
     if (!editorContainer.contains(editor.view.dom)) {
       editorContainer.appendChild(editor.view.dom);
+      editorMountedRef.current = true;
     }
-  }, [editor]);
+  }, [editor, pages]);
 
   return (
     <div className="w-full">
+      {/* Hidden measuring container */}
+      <div
+        ref={measureRef}
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          width: `${CONTENT_WIDTH_PX}px`,
+          fontFamily: 'Times New Roman, serif',
+          fontSize: '12px',
+          lineHeight: '1.6',
+          visibility: 'hidden',
+          pointerEvents: 'none'
+        }}
+      />
+
       {/* Document container */}
       <div 
         ref={containerRef}
@@ -110,9 +151,9 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
         }}
         onMouseUp={onMouseUp}
       >
-        {Array.from({ length: pageCount }, (_, index) => (
+        {pages.map((page, index) => (
           <div 
-            key={index}
+            key={page.id}
             className="document-page"
             style={{ 
               width: `${PAGE_WIDTH_PX}px`,
@@ -134,30 +175,25 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
                 style={{
                   width: `${CONTENT_WIDTH_PX}px`,
                   height: `${CONTENT_HEIGHT_PX}px`,
-                  overflow: 'visible', // Allow content to flow to next page
-                  position: 'relative'
+                  overflow: 'hidden'
                 }}
               >
                 {/* TipTap editor will be mounted here */}
               </div>
             ) : (
-              // Continuation pages show content overflow
+              // Subsequent pages show read-only content
               <div 
                 className="page-content"
                 style={{
                   width: `${CONTENT_WIDTH_PX}px`,
                   height: `${CONTENT_HEIGHT_PX}px`,
                   overflow: 'hidden',
-                  position: 'relative',
-                  // Offset content to show the portion for this page
-                  marginTop: `${-CONTENT_HEIGHT_PX * index}px`
+                  fontFamily: 'Times New Roman, serif',
+                  fontSize: '12px',
+                  lineHeight: '1.6'
                 }}
-              >
-                {/* This would ideally contain the overflowed content */}
-                <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-                  Page {index + 1} content continues here
-                </div>
-              </div>
+                dangerouslySetInnerHTML={{ __html: page.content }}
+              />
             )}
             
             {/* Page number */}
@@ -169,7 +205,7 @@ export const SmartPaginationEditor: React.FC<SmartPaginationEditorProps> = ({
                 transform: 'translateX(-50%)'
               }}
             >
-              Page {index + 1} of {pageCount}
+              Page {index + 1} of {pages.length}
             </div>
           </div>
         ))}
