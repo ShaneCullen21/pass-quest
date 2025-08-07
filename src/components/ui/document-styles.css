@@ -126,3 +126,33 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
+/* Document Viewer specific styles */
+.document-viewer-container .document-container {
+  width: 100%;
+  min-height: 800px;
+  padding: 2rem;
+  background: white;
+  border-radius: 0.5rem;
+}
+
+.document-viewer-container .document-page {
+  width: 100%;
+  max-width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  background: white;
+  padding: 1in;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border-radius: 0.5rem;
+}
+
+@media print {
+  .document-viewer-container .document-page {
+    box-shadow: none;
+    margin: 0;
+    padding: 0.5in;
+    border-radius: 0;
+  }
+}

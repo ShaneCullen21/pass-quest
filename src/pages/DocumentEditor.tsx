@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, User, Users, Save } from "lucide-react";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
+import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
 
 interface Template {
   id: string;
@@ -430,21 +431,20 @@ const DocumentEditor = () => {
           {/* Main Document Area */}
           <div className="lg:col-span-3">
             <Card className="h-full">
-              <CardContent className="p-6">
-                <div className="document-drop-zone relative bg-white border-2 border-dashed border-gray-200 rounded-lg min-h-[800px] overflow-hidden">
-                  <div 
-                    className="prose prose-lg max-w-none p-8 pointer-events-none"
-                    dangerouslySetInnerHTML={{ 
-                      __html: template.template_data?.content || '<p>No content available</p>' 
-                    }}
+              <CardContent className="p-0">
+                <div className="document-drop-zone relative min-h-[800px] overflow-hidden">
+                  {/* Document Content (Read-only with same styling as template editor) */}
+                  <ReadOnlyDocumentViewer 
+                    content={template.template_data?.content || '<p>No content available</p>'}
+                    className="h-full"
                   />
 
                   {/* Overlay for Field Positioning */}
-                  <div className="absolute inset-0 pointer-events-auto">
+                  <div className="absolute inset-0 pointer-events-auto z-10">
                     {signingFields.map(field => (
                       <div
                         key={field.id}
-                        className="absolute border-2 border-primary bg-primary/10 rounded cursor-move flex items-center justify-center text-xs font-medium"
+                        className="absolute border-2 border-primary bg-primary/20 rounded cursor-move flex items-center justify-center text-xs font-medium z-20"
                         style={{
                           left: field.position.x,
                           top: field.position.y,
@@ -465,7 +465,7 @@ const DocumentEditor = () => {
                           {field.type} - {getClientName(field.clientId)}
                         </span>
                         <button
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-destructive/80"
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-destructive/80 z-30"
                           onClick={() => handleFieldDelete(field.id)}
                         >
                           ×
@@ -476,7 +476,7 @@ const DocumentEditor = () => {
 
                   {/* Drop Zone Instructions */}
                   {selectedClientId && signingFields.length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-white/80">
                       <div className="text-center text-muted-foreground">
                         <p className="text-lg font-medium">Drag signing fields onto the document</p>
                         <p className="text-sm">Select the field type from the sidebar and drag it to position</p>
