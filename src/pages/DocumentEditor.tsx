@@ -80,9 +80,9 @@ const DocumentEditor = () => {
       let templateData = null;
       
       if (isEditingMode && documentId) {
-        // Load existing document from proposals table
+        // Load existing document from documents table
         const { data: document, error: documentError } = await supabase
-          .from('proposals')
+          .from('documents')
           .select('*')
           .eq('id', documentId)
           .eq('user_id', user.id)
@@ -100,12 +100,23 @@ const DocumentEditor = () => {
         }
         
         setExistingDocument(document);
-        // For now, create a mock template structure from the document
+        
+        // If document has content, use it; otherwise create basic content
+        const documentContent = document.document_content as any;
+        const content = documentContent?.content || 
+                       `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>`;
+        
         templateData = {
           id: document.id,
           title: document.title,
-          template_data: { content: `<h1>${document.title}</h1><p>${document.description || 'Document content'}</p>` }
+          template_data: { content }
         };
+
+        // Load existing signing fields if any
+        const fieldData = document.field_data as any;
+        if (fieldData?.signing_fields) {
+          setSigningFields(fieldData.signing_fields);
+        }
       } else if (templateId) {
         // Fetch template for new document
         const { data: template, error: templateError } = await supabase
@@ -243,61 +254,60 @@ const DocumentEditor = () => {
 
     setSaving(true);
     try {
-      // Create contract record
-      const fieldDataJson = JSON.stringify({ signing_fields: signingFields });
-      const documentContentJson = JSON.stringify(template.template_data);
+      const fieldDataJson = { signing_fields: signingFields } as any;
+      const documentContentJson = template.template_data as any;
       
-      const { data: contractData, error: contractError } = await supabase
-        .from('contracts')
-        .insert({
-          title: `${template.title} - ${project.name}`,
-          description: `Document created from template: ${template.title}`,
-          project_id: project.id,
-          template_id: template.id,
-          user_id: user?.id,
-          status: 'draft',
-          document_content: documentContentJson,
-          field_data: fieldDataJson
-        })
-        .select()
-        .single();
+      if (isEditingMode && existingDocument) {
+        // Update existing document
+        const { error: updateError } = await supabase
+          .from('documents')
+          .update({
+            title: `${template.title} - ${project.name}`,
+            description: `Document created from template: ${template.title}`,
+            document_content: documentContentJson,
+            field_data: fieldDataJson,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingDocument.id);
 
-      if (contractError) {
-        console.error('Error creating contract:', contractError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to save document"
-        });
-        return;
-      }
-
-      // Save signing fields
-      if (signingFields.length > 0) {
-        const fieldsToInsert = signingFields.map(field => ({
-          contract_id: contractData.id,
-          client_id: field.clientId,
-          field_type: field.type,
-          field_name: `${field.type}_${getClientName(field.clientId)}`,
-          position_x: field.position.x,
-          position_y: field.position.y,
-          width: field.width,
-          height: field.height,
-          is_required: true
-        }));
-
-        const { error: fieldsError } = await supabase
-          .from('contract_fields')
-          .insert(fieldsToInsert);
-
-        if (fieldsError) {
-          console.error('Error saving fields:', fieldsError);
+        if (updateError) {
+          console.error('Error updating document:', updateError);
           toast({
             variant: "destructive",
-            title: "Warning",
-            description: "Document saved but fields may not have been saved properly"
+            title: "Error",
+            description: "Failed to save document"
           });
+          return;
         }
+      } else {
+        // Create new document
+        const { data: documentData, error: documentError } = await supabase
+          .from('documents')
+          .insert({
+            title: `${template.title} - ${project.name}`,
+            description: `Document created from template: ${template.title}`,
+            project_id: project.id,
+            template_id: template.id,
+            user_id: user?.id,
+            type: 'contract',
+            status: 'draft',
+            document_content: documentContentJson,
+            field_data: fieldDataJson
+          })
+          .select()
+          .single();
+
+        if (documentError) {
+          console.error('Error creating document:', documentError);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to save document"
+          });
+          return;
+        }
+
+        setExistingDocument(documentData);
       }
 
       toast({

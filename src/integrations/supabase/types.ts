@@ -188,6 +188,69 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          amount: number | null
+          created_at: string
+          description: string | null
+          document_content: Json | null
+          document_url: string | null
+          due_date: string | null
+          expires_at: string | null
+          field_data: Json | null
+          id: string
+          project_id: string
+          signed_at: string | null
+          signing_status: string | null
+          status: string
+          template_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          document_content?: Json | null
+          document_url?: string | null
+          due_date?: string | null
+          expires_at?: string | null
+          field_data?: Json | null
+          id?: string
+          project_id: string
+          signed_at?: string | null
+          signing_status?: string | null
+          status?: string
+          template_id?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          document_content?: Json | null
+          document_url?: string | null
+          due_date?: string | null
+          expires_at?: string | null
+          field_data?: Json | null
+          id?: string
+          project_id?: string
+          signed_at?: string | null
+          signing_status?: string | null
+          status?: string
+          template_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number | null

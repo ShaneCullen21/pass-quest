@@ -129,29 +129,19 @@ export default function ProjectDetails() {
     try {
       setDocumentsLoading(true);
       
-      // Fetch proposals
-      const { data: proposals, error: proposalsError } = await supabase
-        .from("proposals")
+      // Fetch all documents from the new unified documents table
+      const { data: documents, error: documentsError } = await supabase
+        .from("documents")
         .select("*")
         .eq("project_id", id);
 
-      if (proposalsError) throw proposalsError;
+      if (documentsError) throw documentsError;
 
-      // Note: Contracts are no longer used - only proposals and invoices
-
-      // Fetch invoices
-      const { data: invoices, error: invoicesError } = await supabase
-        .from("invoices")
-        .select("*")
-        .eq("project_id", id);
-
-      if (invoicesError) throw invoicesError;
-
-      // Combine all documents
-      const allDocuments: Document[] = [
-        ...(proposals || []).map(p => ({ ...p, type: 'proposal' as const })),
-        ...(invoices || []).map(i => ({ ...i, type: 'invoice' as const }))
-      ];
+      // Transform to match the Document interface
+      const allDocuments: Document[] = (documents || []).map(doc => ({
+        ...doc,
+        type: doc.type as 'proposal' | 'contract' | 'invoice'
+      }));
 
       setDocuments(allDocuments);
     } catch (error) {
@@ -428,13 +418,8 @@ export default function ProjectDetails() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => {
-                                if (document.type === 'proposal') {
-                                  // Navigate to document editor for proposals
-                                  navigate(`/document-editor?documentId=${document.id}&projectId=${id}`);
-                                } else if (document.type === 'invoice') {
-                                  // For now, just show a message - you could implement invoice editor later
-                                  toast.error('Invoice editor not yet implemented');
-                                }
+                                // Navigate to document editor for all document types
+                                navigate(`/document-editor?documentId=${document.id}&projectId=${id}`);
                               }}
                             >
                               Edit
