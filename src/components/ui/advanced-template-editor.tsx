@@ -247,7 +247,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Editor Area */}
-        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments && "mr-72")}>
+        <div className="flex-1 overflow-auto bg-gray-100 p-8">
           <div className="max-w-4xl mx-auto">
             {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
             width: '8.5in',
