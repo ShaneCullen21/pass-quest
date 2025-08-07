@@ -14,8 +14,9 @@ import { cn } from '@/lib/utils';
 import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
+import { CommentForm } from './comment-form';
 import { Button } from './button';
-import { MessageSquare, Eye, Save } from 'lucide-react';
+import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
 
 export interface Comment {
   id: string;
@@ -65,6 +66,11 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [showCommentIcon, setShowCommentIcon] = useState(false);
+  const [commentIconPosition, setCommentIconPosition] = useState({ top: 0, right: 0 });
+  const [selectedRange, setSelectedRange] = useState<{ from: number; to: number } | null>(null);
+  const [selectedText, setSelectedText] = useState('');
+  const [showCommentForm, setShowCommentForm] = useState(false);
 
   const extensions = useMemo(() => [
     StarterKit.configure({
@@ -142,21 +148,24 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     }
   }, [content, autoSave, saveStatus, title]);
 
-  const handleAddComment = useCallback((selectedText: string, range: { from: number; to: number }) => {
-    const commentText = prompt('Add a comment:');
-    if (commentText) {
+  const handleAddComment = useCallback((commentText: string) => {
+    if (selectedRange && selectedText) {
       const newComment: Comment = {
         id: Date.now().toString(),
         content: commentText,
         author: 'You',
         timestamp: new Date(),
         resolved: false,
-        range,
-        selectedText,
+        range: selectedRange,
+        selectedText: selectedText,
       };
       setComments(prev => [...prev, newComment]);
+      setShowCommentForm(false);
+      setShowCommentIcon(false);
+      setSelectedRange(null);
+      setSelectedText('');
     }
-  }, []);
+  }, [selectedRange, selectedText]);
 
   const handleResolveComment = useCallback((commentId: string) => {
     setComments(prev => 
@@ -174,13 +183,37 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     const { from, to } = editor.state.selection;
     if (from !== to) {
       const selectedText = editor.state.doc.textBetween(from, to);
-      const shouldAddComment = window.confirm(`Add comment to: "${selectedText.slice(0, 50)}${selectedText.length > 50 ? '...' : ''}"?`);
       
-      if (shouldAddComment) {
-        handleAddComment(selectedText, { from, to });
-      }
+      // Get the position of the selection for positioning the comment icon
+      const editorRect = editor.view.dom.getBoundingClientRect();
+      const coords = editor.view.coordsAtPos(to);
+      
+      setSelectedText(selectedText);
+      setSelectedRange({ from, to });
+      setCommentIconPosition({
+        top: coords.top - editorRect.top + 20,
+        right: 20
+      });
+      setShowCommentIcon(true);
+    } else {
+      setShowCommentIcon(false);
+      setShowCommentForm(false);
+      setSelectedRange(null);
+      setSelectedText('');
     }
-  }, [editor, handleAddComment]);
+  }, [editor]);
+
+  const handleCommentIconClick = () => {
+    setShowCommentForm(true);
+    setShowCommentIcon(false);
+  };
+
+  const handleCommentCancel = () => {
+    setShowCommentForm(false);
+    setShowCommentIcon(false);
+    setSelectedRange(null);
+    setSelectedText('');
+  };
 
   const getSaveStatusText = () => {
     switch (saveStatus) {
@@ -270,7 +303,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               />
             ) : (
               <div 
-                className="document-container"
+                className="document-container relative"
                 style={{ 
                   background: '#f5f5f5',
                   padding: '20px',
@@ -299,6 +332,41 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
                     Page 1
                   </div>
                 </div>
+
+                {/* Comment Icon */}
+                {showCommentIcon && (
+                  <div 
+                    className="absolute"
+                    style={{ 
+                      top: commentIconPosition.top,
+                      right: commentIconPosition.right,
+                      zIndex: 10
+                    }}
+                  >
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleCommentIconClick}
+                      className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
+                      title="Add comment"
+                    >
+                      <MessageCircle className="h-4 w-4 text-white" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Comment Form */}
+                {showCommentForm && selectedText && (
+                  <CommentForm
+                    selectedText={selectedText}
+                    onSave={handleAddComment}
+                    onCancel={handleCommentCancel}
+                    position={{
+                      top: commentIconPosition.top + 40,
+                      right: commentIconPosition.right + 50
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
