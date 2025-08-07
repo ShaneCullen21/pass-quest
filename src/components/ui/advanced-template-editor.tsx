@@ -241,16 +241,13 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     return <div className="flex items-center justify-center h-96">Loading editor...</div>;
   }
   return <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      
-
       {/* Toolbar */}
       {!showPreview && <AdvancedToolbar editor={editor} availableFonts={FONTS} comments={comments} showComments={showComments} onToggleComments={() => setShowComments(!showComments)} />}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Editor Area */}
-        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments && "mr-80")}>
+        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments && "mr-72")}>
           <div className="max-w-4xl mx-auto">
             {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
             width: '8.5in',
