@@ -30,7 +30,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
   };
 
   return (
-    <div className="fixed right-0 top-0 h-full bg-white border-l border-gray-200 flex flex-col shadow-lg z-40" style={{ width: '300px' }}>
+    <div className="w-full bg-white border-l border-gray-200 flex flex-col h-full shadow-lg">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">

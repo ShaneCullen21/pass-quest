@@ -247,39 +247,43 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Editor Area */}
-        <div className="flex-1 overflow-auto bg-gray-100 p-8">
-          <div className="max-w-4xl mx-auto">
-            {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
-            width: '8.5in',
-            minHeight: '11in'
-          }} dangerouslySetInnerHTML={{
-            __html: content
-          }} /> : <>
-                <PagedEditor editor={editor} onMouseUp={handleSelection} />
-                
-                {/* Comment Icon */}
-                {showCommentIcon && <div className="fixed" style={{
-              top: commentIconPosition.top,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 10
-            }}>
-                    <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
-                      <MessageCircle className="h-4 w-4 text-white" />
-                    </Button>
-                  </div>}
+        <div className={cn("flex-1 overflow-auto bg-gray-100 p-8", showComments ? "max-w-none" : "")}>
+          <div className={cn("mx-auto flex gap-4", showComments ? "max-w-none" : "max-w-4xl")}>
+            <div className={cn(showComments ? "flex-1" : "w-full")}>
+              {showPreview ? <div className="prose prose-lg max-w-none bg-white p-8 shadow-lg min-h-[11in]" style={{
+              width: '8.5in',
+              minHeight: '11in'
+            }} dangerouslySetInnerHTML={{
+              __html: content
+            }} /> : <>
+                  <PagedEditor editor={editor} onMouseUp={handleSelection} />
+                  
+                  {/* Comment Icon */}
+                  {showCommentIcon && <div className="fixed" style={{
+                top: commentIconPosition.top,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10
+              }}>
+                      <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      </Button>
+                    </div>}
 
-                {/* Comment Form */}
-                {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
-              top: commentIconPosition.top + 40,
-              right: (window.innerWidth - 320) / 2
-            }} />}
-              </>}
+                  {/* Comment Form */}
+                  {showCommentForm && selectedText && <CommentForm selectedText={selectedText} onSave={handleAddComment} onCancel={handleCommentCancel} position={{
+                top: commentIconPosition.top + 40,
+                right: (window.innerWidth - 320) / 2
+              }} />}
+                </>}
+            </div>
+
+            {/* Comments Panel - Inside document area */}
+            {showComments && <div className="w-80">
+              <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
+            </div>}
           </div>
         </div>
-
-        {/* Comments Panel */}
-        {showComments && <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />}
       </div>
     </div>;
 };
