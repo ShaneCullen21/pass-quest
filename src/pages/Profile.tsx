@@ -22,7 +22,10 @@ const Profile = () => {
     first_name: "",
     last_name: "",
     email: "",
-    avatar_url: ""
+    avatar_url: "",
+    new_email: "",
+    current_password: "",
+    new_password: ""
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -40,7 +43,10 @@ const Profile = () => {
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
         email: user.email || "",
-        avatar_url: profile.avatar_url || ""
+        avatar_url: profile.avatar_url || "",
+        new_email: "",
+        current_password: "",
+        new_password: ""
       });
     }
   }, [profile, user]);
@@ -140,7 +146,8 @@ const Profile = () => {
     setSaving(true);
     
     try {
-      const { error } = await supabase
+      // Update profile data
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           first_name: formData.first_name,
@@ -148,17 +155,83 @@ const Profile = () => {
         })
         .eq('user_id', user.id);
 
-      if (error) {
-        throw error;
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Handle email change if provided
+      if (formData.new_email && formData.new_email !== formData.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: formData.new_email
+        });
+
+        if (emailError) {
+          throw emailError;
+        }
+
+        toast({
+          title: "Email Update",
+          description: "A confirmation email has been sent to your new email address.",
+        });
+      }
+
+      // Handle password change if provided
+      if (formData.new_password) {
+        if (!formData.current_password) {
+          toast({
+            title: "Error",
+            description: "Please enter your current password to change it.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // First verify current password by attempting to sign in
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+          email: user.email || '',
+          password: formData.current_password
+        });
+
+        if (verifyError) {
+          toast({
+            title: "Error",
+            description: "Current password is incorrect.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Update password
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: formData.new_password
+        });
+
+        if (passwordError) {
+          throw passwordError;
+        }
+
+        toast({
+          title: "Password Updated",
+          description: "Your password has been changed successfully.",
+        });
+
+        // Clear password fields
+        setFormData(prev => ({
+          ...prev,
+          current_password: "",
+          new_password: ""
+        }));
       }
 
       // Refresh the profile context
       await refreshProfile();
       
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      });
+      if (!formData.new_email && !formData.new_password) {
+        toast({
+          title: "Success",
+          description: "Profile updated successfully",
+        });
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -297,7 +370,7 @@ const Profile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Current Email</Label>
                 <Input
                   id="email"
                   name="email"
@@ -306,9 +379,49 @@ const Profile = () => {
                   disabled
                   className="bg-muted text-muted-foreground"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new_email">New Email (optional)</Label>
+                <Input
+                  id="new_email"
+                  name="new_email"
+                  type="email"
+                  value={formData.new_email}
+                  onChange={handleInputChange}
+                  placeholder="Enter new email address"
+                />
                 <p className="text-sm text-muted-foreground">
-                  Email cannot be changed. Contact support if you need to update your email address.
+                  You'll receive a confirmation email to verify the change.
                 </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current_password">Current Password (required for password change)</Label>
+                  <Input
+                    id="current_password"
+                    name="current_password"
+                    type="password"
+                    value={formData.current_password}
+                    onChange={handleInputChange}
+                    placeholder="Enter current password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new_password">New Password (optional)</Label>
+                  <Input
+                    id="new_password"
+                    name="new_password"
+                    type="password"
+                    value={formData.new_password}
+                    onChange={handleInputChange}
+                    placeholder="Enter new password"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Leave blank to keep current password.
+                  </p>
+                </div>
               </div>
               
               <div className="flex justify-end">
