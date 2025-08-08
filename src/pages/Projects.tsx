@@ -247,13 +247,31 @@ const Projects = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <Button 
-            onClick={() => setShowAddProjectModal(true)}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create project
-          </Button>
+          <div className="flex gap-3">
+            {projects.length === 0 && (
+              <Button 
+                onClick={async () => {
+                  try {
+                    await supabase.rpc('populate_mock_data');
+                    toast({ title: "Success", description: "Mock data added successfully" });
+                    fetchProjects();
+                  } catch (error) {
+                    toast({ title: "Error", description: "Failed to add mock data", variant: "destructive" });
+                  }
+                }}
+                variant="outline"
+              >
+                Add sample data
+              </Button>
+            )}
+            <Button 
+              onClick={() => setShowAddProjectModal(true)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create project
+            </Button>
+          </div>
         </div>
 
 
