@@ -1,10 +1,12 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { PasswordChangeForm } from "@/components/auth/PasswordChangeForm";
 import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -27,10 +29,13 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Check if this is a password reset flow
+  const isPasswordReset = searchParams.get('type') === 'recovery';
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-auth-background to-primary/20">
       <div className="w-full max-w-md">
-        <AuthForm />
+        {isPasswordReset ? <PasswordChangeForm /> : <AuthForm />}
       </div>
     </div>
   );
