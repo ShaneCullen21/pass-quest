@@ -12,9 +12,8 @@ interface Project {
   id: string;
   name: string;
   status: string;
-  location: string;
-  start_date: string;
-  end_date: string;
+  location: string | null;
+  created_at: string;
 }
 
 interface ProjectSelectorProps {
@@ -153,11 +152,9 @@ export const ProjectSelector = ({
                         <p className="text-sm text-muted-foreground">{project.location}</p>
                       )}
                     </div>
-                    {project.start_date && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Started: {new Date(project.start_date).toLocaleDateString()}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Created: {new Date(project.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               </CardContent>

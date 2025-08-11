@@ -9,7 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Templates from "./pages/Templates";
 import Clients from "./pages/Clients";
-import Reports from "./pages/Reports";
+
 import ProjectDetails from "./pages/ProjectDetails";
 import TemplateEditor from "./pages/TemplateEditor";
 import ContractEditor from "./pages/ContractEditor";
@@ -40,7 +40,7 @@ const App = () => (
             <Route path="/sign/:documentId" element={<DocumentSigning />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/clients" element={<Clients />} />
-            <Route path="/reports" element={<Reports />} />
+            
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

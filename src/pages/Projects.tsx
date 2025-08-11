@@ -161,14 +161,8 @@ const Projects = () => {
     }
   };
 
-  const formatDateRange = (startDate: string | null, endDate: string | null) => {
-    if (!startDate && !endDate) return "No dates set";
-    if (!startDate) return `Ends ${new Date(endDate!).toLocaleDateString()}`;
-    if (!endDate) return `Starts ${new Date(startDate).toLocaleDateString()}`;
-    
-    const start = new Date(startDate).toLocaleDateString();
-    const end = new Date(endDate).toLocaleDateString();
-    return `${start} - ${end}`;
+  const formatCreatedDate = (createdAt: string) => {
+    return new Date(createdAt).toLocaleDateString();
   };
 
   const getStatusVariant = (status: string) => {
@@ -278,7 +272,7 @@ const Projects = () => {
         {/* Projects Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           {projectsLoading ? (
-            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Project dates", "Actions"]} rows={6} />
+            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Date Created", "Actions"]} rows={6} />
           ) : (
             <Table>
               <TableHeader>
@@ -316,12 +310,12 @@ const Projects = () => {
                     Location
                   </SortableTableHeader>
                   <SortableTableHeader 
-                    sortKey="dates" 
+                    sortKey="created_at" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
                   >
-                    Project dates
+                    Date Created
                   </SortableTableHeader>
                   <TableHead className="text-muted-foreground font-medium">Actions</TableHead>
                 </TableRow>
@@ -362,7 +356,7 @@ const Projects = () => {
                         {project.location || "TBC"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {formatDateRange(project.start_date, project.end_date)}
+                        {formatCreatedDate(project.created_at)}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

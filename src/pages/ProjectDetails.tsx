@@ -39,8 +39,6 @@ interface Project {
   id: string;
   name: string;
   status: string;
-  start_date: string | null;
-  end_date: string | null;
   location: string | null;
   client_ids: string[];
   created_at: string;
@@ -302,7 +300,7 @@ export default function ProjectDetails() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 gap-6">
               <div className="flex items-center space-x-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -315,19 +313,9 @@ export default function ProjectDetails() {
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Start Date</p>
+                  <p className="text-sm text-muted-foreground">Date Created</p>
                   <p className="font-medium">
-                    {project.start_date ? format(new Date(project.start_date), "MMM dd, yyyy") : "Not set"}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">End Date</p>
-                  <p className="font-medium">
-                    {project.end_date ? format(new Date(project.end_date), "MMM dd, yyyy") : "Not set"}
+                    {format(new Date(project.created_at), "MMM dd, yyyy")}
                   </p>
                 </div>
               </div>

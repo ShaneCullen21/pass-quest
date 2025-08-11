@@ -324,33 +324,27 @@ export type Database = {
         Row: {
           client_ids: string[] | null
           created_at: string
-          end_date: string | null
           id: string
           location: string | null
           name: string
-          start_date: string | null
           status: string
           user_id: string
         }
         Insert: {
           client_ids?: string[] | null
           created_at?: string
-          end_date?: string | null
           id?: string
           location?: string | null
           name: string
-          start_date?: string | null
           status?: string
           user_id: string
         }
         Update: {
           client_ids?: string[] | null
           created_at?: string
-          end_date?: string | null
           id?: string
           location?: string | null
           name?: string
-          start_date?: string | null
           status?: string
           user_id?: string
         }

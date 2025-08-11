@@ -18,7 +18,7 @@ const Navigation = ({ className }: NavigationProps) => {
     { label: "PROJECTS", active: false, href: "/projects" },
     { label: "TEMPLATES", active: false, href: "/templates" },
     { label: "CLIENTS", active: false, href: "/clients" },
-    { label: "REPORTS", active: false, href: "/reports" },
+    
   ];
 
   return (

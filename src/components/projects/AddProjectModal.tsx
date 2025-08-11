@@ -24,8 +24,6 @@ interface Project {
   id: string;
   name: string;
   location: string | null;
-  start_date: string | null;
-  end_date: string | null;
   status: string;
   client_ids: string[] | null;
 }
@@ -41,8 +39,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
   const [formData, setFormData] = useState({
     name: "",
     location: "",
-    start_date: undefined as Date | undefined,
-    end_date: undefined as Date | undefined,
     status: "",
     client_ids: [] as string[]
   });
@@ -60,8 +56,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       setFormData({
         name: editProject.name,
         location: editProject.location || "",
-        start_date: editProject.start_date ? new Date(editProject.start_date) : undefined,
-        end_date: editProject.end_date ? new Date(editProject.end_date) : undefined,
         status: editProject.status,
         client_ids: editProject.client_ids || []
       });
@@ -69,8 +63,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       setFormData({
         name: "",
         location: "",
-        start_date: undefined,
-        end_date: undefined,
         status: "",
         client_ids: []
       });
@@ -83,8 +75,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       setFormData({
         name: "",
         location: "",
-        start_date: undefined,
-        end_date: undefined,
         status: "",
         client_ids: []
       });
@@ -180,14 +170,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       return;
     }
 
-    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
-      toast({
-        title: "Error",
-        description: "End date must be after start date",
-        variant: "destructive"
-      });
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -201,8 +183,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
           .update({
             name: formData.name.trim(),
             location: formData.location.trim() || null,
-            start_date: formData.start_date?.toISOString().split('T')[0] || null,
-            end_date: formData.end_date?.toISOString().split('T')[0] || null,
             status: formData.status,
             client_ids: formData.client_ids.length > 0 ? formData.client_ids : null,
           })
@@ -223,8 +203,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
           .insert({
             name: formData.name.trim(),
             location: formData.location.trim() || null,
-            start_date: formData.start_date?.toISOString().split('T')[0] || null,
-            end_date: formData.end_date?.toISOString().split('T')[0] || null,
             status: formData.status,
             client_ids: formData.client_ids.length > 0 ? formData.client_ids : null,
             user_id: userData.user?.id!
@@ -297,65 +275,6 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                Start Date
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.start_date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.start_date ? format(formData.start_date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.start_date}
-                    onSelect={(date) => handleInputChange("start_date", date)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                End Date
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.end_date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.end_date ? format(formData.end_date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.end_date}
-                    onSelect={(date) => handleInputChange("end_date", date)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
 
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">
