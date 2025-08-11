@@ -82,7 +82,7 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
   };
 
   const insertPageBreak = () => {
-    editor.chain().focus().setHardBreak().run();
+    editor.chain().focus().setHorizontalRule().run();
   };
 
   return (
