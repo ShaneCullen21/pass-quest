@@ -470,7 +470,7 @@ const Templates = () => {
         <NewTemplateModal 
           isOpen={showNewTemplateModal}
           onClose={() => setShowNewTemplateModal(false)}
-          forceTemplateType={isAdmin ? 'master' : undefined}
+          forceTemplateType={isAdmin ? 'master' : 'customized'}
         />
 
         <ProjectSelectionModal

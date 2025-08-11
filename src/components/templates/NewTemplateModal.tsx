@@ -156,7 +156,7 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
               </div>
             )}
 
-            {selectedType === 'customized' && (
+            {(selectedType === 'customized' || forceTemplateType === 'customized') && (
               <div className="space-y-2">
                 <Label htmlFor="master-template">Select Template</Label>
                 <Select value={selectedMasterTemplate} onValueChange={setSelectedMasterTemplate}>
