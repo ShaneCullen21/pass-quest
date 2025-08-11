@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 interface NewTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
+  forceTemplateType?: 'master' | 'customized';
 }
 
 interface MasterTemplate {
@@ -20,7 +21,7 @@ interface MasterTemplate {
   title: string;
 }
 
-export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onClose }) => {
+export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onClose, forceTemplateType }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<'master' | 'customized' | null>(null);
@@ -30,10 +31,17 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && selectedType === 'customized') {
-      fetchMasterTemplates();
+    if (isOpen) {
+      if (forceTemplateType) {
+        setSelectedType(forceTemplateType);
+        if (forceTemplateType === 'customized') {
+          fetchMasterTemplates();
+        }
+      } else if (selectedType === 'customized') {
+        fetchMasterTemplates();
+      }
     }
-  }, [isOpen, selectedType]);
+  }, [isOpen, selectedType, forceTemplateType]);
 
   const fetchMasterTemplates = async () => {
     try {
@@ -94,7 +102,7 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
           <DialogTitle>Create New Template</DialogTitle>
         </DialogHeader>
         
-        {!selectedType ? (
+        {!selectedType && !forceTemplateType ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <Card 
               className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50"
