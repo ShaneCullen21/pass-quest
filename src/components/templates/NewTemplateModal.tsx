@@ -43,6 +43,14 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
     }
   }, [isOpen, selectedType, forceTemplateType]);
 
+  // Auto-skip to customized template selection for non-admin users
+  useEffect(() => {
+    if (isOpen && forceTemplateType === 'customized') {
+      setSelectedType('customized');
+      fetchMasterTemplates();
+    }
+  }, [isOpen, forceTemplateType]);
+
   const fetchMasterTemplates = async () => {
     try {
       const { data, error } = await supabase
@@ -150,10 +158,10 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
 
             {selectedType === 'customized' && (
               <div className="space-y-2">
-                <Label htmlFor="master-template">Select Master Template</Label>
+                <Label htmlFor="master-template">Select Template</Label>
                 <Select value={selectedMasterTemplate} onValueChange={setSelectedMasterTemplate}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a master template" />
+                    <SelectValue placeholder="Choose a template" />
                   </SelectTrigger>
                   <SelectContent>
                     {masterTemplates.map((template) => (
@@ -167,10 +175,12 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
             )}
 
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setSelectedType(null)}>
-                Back
-              </Button>
-              <Button onClick={handleCreate} disabled={loading}>
+              {!forceTemplateType && (
+                <Button variant="outline" onClick={() => setSelectedType(null)}>
+                  Back
+                </Button>
+              )}
+              <Button onClick={handleCreate} disabled={loading} className={!forceTemplateType ? '' : 'ml-auto'}>
                 Create
               </Button>
             </div>
