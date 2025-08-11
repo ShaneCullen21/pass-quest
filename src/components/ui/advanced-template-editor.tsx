@@ -11,6 +11,10 @@ import { FontFamily } from '@tiptap/extension-font-family';
 import { FontSize } from '@tiptap/extension-font-size';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { Typography } from '@tiptap/extension-typography';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import { cn } from '@/lib/utils';
 import './document-styles.css';
 import { AdvancedToolbar } from './advanced-toolbar';
@@ -110,7 +114,13 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         class: 'page-break'
       }
     }),
-    Typography
+    Typography,
+    Table.configure({
+      resizable: true,
+    }),
+    TableRow,
+    TableHeader,
+    TableCell
   ], [placeholder]);
   const editor = useEditor({
     extensions,

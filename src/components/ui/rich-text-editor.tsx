@@ -4,6 +4,10 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +29,11 @@ import {
   AlignRight,
   AlignJustify,
   Strikethrough,
-  Code
+  Code,
+  Table as TableIcon,
+  Plus,
+  Trash2,
+  Minus
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -69,6 +77,12 @@ export const RichTextEditor = ({
         types: ['heading', 'paragraph'],
       }),
       Underline,
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content,
     onUpdate: ({ editor }: { editor: any }) => {
@@ -274,6 +288,47 @@ export const RichTextEditor = ({
           >
             <Redo className="h-4 w-4" />
           </ToolbarButton>
+
+          <Separator orientation="vertical" className="h-6 mx-2" />
+
+          {/* Page Break */}
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            title="Insert Page Break"
+          >
+            <Minus className="h-4 w-4" />
+          </ToolbarButton>
+
+          {/* Table Controls */}
+          <ToolbarButton
+            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            title="Insert Table"
+          >
+            <TableIcon className="h-4 w-4" />
+          </ToolbarButton>
+          
+          {editor.isActive('table') && (
+            <>
+              <ToolbarButton
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+                title="Add Row"
+              >
+                <Plus className="h-4 w-4" />
+              </ToolbarButton>
+              <ToolbarButton
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                title="Add Column"
+              >
+                <Plus className="h-3 w-3" />
+              </ToolbarButton>
+              <ToolbarButton
+                onClick={() => editor.chain().focus().deleteTable().run()}
+                title="Delete Table"
+              >
+                <Trash2 className="h-4 w-4" />
+              </ToolbarButton>
+            </>
+          )}
         </div>
       </div>
 

@@ -99,11 +99,6 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
               />
             </div>
           )}
-          
-          {/* Page number */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
-            Page {index + 1} of {pageCount}
-          </div>
         </div>
       ))}
     </div>

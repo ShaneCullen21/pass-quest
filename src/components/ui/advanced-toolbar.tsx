@@ -22,7 +22,10 @@ import {
   Highlighter,
   Type,
   Minus,
-  MessageSquare
+  MessageSquare,
+  Table,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 interface AdvancedToolbarProps {
@@ -83,6 +86,22 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
 
   const insertPageBreak = () => {
     editor.chain().focus().setHorizontalRule().run();
+  };
+
+  const insertTable = () => {
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  };
+
+  const addRowAfter = () => {
+    editor.chain().focus().addRowAfter().run();
+  };
+
+  const addColumnAfter = () => {
+    editor.chain().focus().addColumnAfter().run();
+  };
+
+  const deleteTable = () => {
+    editor.chain().focus().deleteTable().run();
   };
 
   return (
@@ -330,6 +349,47 @@ export const AdvancedToolbar: React.FC<AdvancedToolbarProps> = ({ editor, availa
         >
           <Minus className="h-4 w-4" />
         </Button>
+
+        <Separator orientation="vertical" className="mx-2 h-6" />
+
+        {/* Table Controls */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={insertTable}
+          title="Insert Table"
+        >
+          <Table className="h-4 w-4" />
+        </Button>
+        
+        {editor.isActive('table') && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={addRowAfter}
+              title="Add Row"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={addColumnAfter}
+              title="Add Column"
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={deleteTable}
+              title="Delete Table"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        )}
 
         {/* Comments Button - Far Right */}
         <div className="ml-auto">
