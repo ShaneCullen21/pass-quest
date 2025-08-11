@@ -342,17 +342,17 @@ const Templates = () => {
                                         Delete
                                       </Button>
                                     </>
-                                  ) : (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => navigate(`/templates/new?masterId=${template.id}`)}
-                                      className="flex items-center gap-1"
-                                    >
-                                      <Plus className="h-3 w-3" />
-                                      Customize
-                                    </Button>
-                                  )}
+                                   ) : (
+                                     <Button
+                                       variant="outline"
+                                       size="sm"
+                                       onClick={() => setShowNewTemplateModal(true)}
+                                       className="flex items-center gap-1"
+                                     >
+                                       <Plus className="h-3 w-3" />
+                                       Customize
+                                     </Button>
+                                   )}
                                 </div>
                               </div>
                             </CardContent>
