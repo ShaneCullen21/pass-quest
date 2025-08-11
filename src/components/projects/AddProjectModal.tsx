@@ -63,7 +63,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       setFormData({
         name: "",
         location: "",
-        status: "",
+        status: "active",
         client_ids: []
       });
     }
@@ -75,7 +75,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       setFormData({
         name: "",
         location: "",
-        status: "",
+        status: "active",
         client_ids: []
       });
     }
@@ -286,8 +286,9 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="on_hold">On Hold</SelectItem>
-                <SelectItem value="terminated">Terminated</SelectItem>
+                <SelectItem value="on_hold">On-Hold</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>

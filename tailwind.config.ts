@@ -67,6 +67,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'status-active': {
+					DEFAULT: 'hsl(var(--status-active))',
+					foreground: 'hsl(var(--status-active-foreground))'
+				},
+				'status-hold': {
+					DEFAULT: 'hsl(var(--status-hold))',
+					foreground: 'hsl(var(--status-hold-foreground))'
+				},
+				'status-completed': {
+					DEFAULT: 'hsl(var(--status-completed))',
+					foreground: 'hsl(var(--status-completed-foreground))'
+				},
+				'status-cancelled': {
+					DEFAULT: 'hsl(var(--status-cancelled))',
+					foreground: 'hsl(var(--status-cancelled-foreground))'
 				}
 			},
 			borderRadius: {

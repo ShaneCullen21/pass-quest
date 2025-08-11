@@ -37,6 +37,16 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 15 44% 50%;
 
+    /* Status badge colors */
+    --status-active: 0 84% 60%;
+    --status-active-foreground: 0 0% 98%;
+    --status-hold: 217 91% 60%;
+    --status-hold-foreground: 0 0% 98%;
+    --status-completed: 142 76% 36%;
+    --status-completed-foreground: 0 0% 98%;
+    --status-cancelled: 215 14% 34%;
+    --status-cancelled-foreground: 0 0% 98%;
+
     /* Auth-specific colors */
     --auth-background: 0 0% 96%;
     --auth-card: 0 0% 100%;
@@ -93,6 +103,17 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 15 44% 70%;
+
+    /* Status badge colors - dark mode */
+    --status-active: 0 84% 60%;
+    --status-active-foreground: 0 0% 98%;
+    --status-hold: 217 91% 60%;
+    --status-hold-foreground: 0 0% 98%;
+    --status-completed: 142 76% 36%;
+    --status-completed-foreground: 0 0% 98%;
+    --status-cancelled: 215 14% 34%;
+    --status-cancelled-foreground: 0 0% 98%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 15 44% 48%;

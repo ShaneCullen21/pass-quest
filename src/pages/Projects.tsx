@@ -168,11 +168,13 @@ const Projects = () => {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "active":
-        return "default";
+        return "destructive"; // red
       case "on_hold":
-        return "secondary";
-      case "terminated":
-        return "destructive";
+        return "outline"; // blue
+      case "completed":
+        return "default"; // green
+      case "cancelled":
+        return "secondary"; // grey
       default:
         return "default";
     }
@@ -183,9 +185,11 @@ const Projects = () => {
       case "active":
         return "ACTIVE";
       case "on_hold":
-        return "ON HOLD";
-      case "terminated":
-        return "TERMINATED";
+        return "ON-HOLD";
+      case "completed":
+        return "COMPLETED";
+      case "cancelled":
+        return "CANCELLED";
       default:
         return status.toUpperCase();
     }
