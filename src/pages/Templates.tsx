@@ -244,9 +244,16 @@ const Templates = () => {
             {isAdmin ? (
               <div className="text-lg font-semibold">Master Templates</div>
             ) : (
-              <TabsList className="grid w-fit grid-cols-2">
-                <TabsTrigger value="master">Available Templates</TabsTrigger>
+              <TabsList className="grid w-fit grid-cols-3">
+                <TabsTrigger value="master">Purchased Templates</TabsTrigger>
                 <TabsTrigger value="customized">My Customized Templates</TabsTrigger>
+                <TabsTrigger 
+                  value="free" 
+                  disabled 
+                  className="cursor-not-allowed hover:bg-muted/60 hover:text-muted-foreground/80 transition-colors"
+                >
+                  Free Templates
+                </TabsTrigger>
               </TabsList>
             )}
             
