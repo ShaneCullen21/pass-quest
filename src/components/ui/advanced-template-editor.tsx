@@ -21,7 +21,6 @@ import { AdvancedToolbar } from './advanced-toolbar';
 import { CommentsPanel } from './comments-panel';
 import { CommentForm } from './comment-form';
 import { PagedEditor } from './paged-editor';
-import { TableRowResizer } from './table-row-resizer';
 import { Button } from './button';
 import { MessageSquare, Eye, Save, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,6 +117,7 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
     Typography,
     Table.configure({
       resizable: true,
+      allowTableNodeSelection: true,
     }),
     TableRow,
     TableHeader,
@@ -488,7 +488,6 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
         <div className="flex-1 overflow-auto bg-gray-100 p-8">
           <div className="mx-auto max-w-4xl">
             <PagedEditor editor={editor} onMouseUp={handleSelection} />
-            <TableRowResizer editor={editor} />
                 
             {/* Comment Icon */}
             {showCommentIcon && <div className="fixed" style={{

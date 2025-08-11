@@ -135,12 +135,13 @@ All colors MUST be HSL.
   }
 }
 
-/* Table styles for editors */
+/* Table styles for editors - using Tiptap's built-in resizing */
 .ProseMirror table {
   border-collapse: collapse;
   margin: 16px 0;
   width: 100%;
   overflow: hidden;
+  table-layout: fixed;
 }
 
 .ProseMirror table td,
@@ -151,6 +152,7 @@ All colors MUST be HSL.
   box-sizing: border-box;
   position: relative;
   min-height: 40px;
+  word-wrap: break-word;
 }
 
 .ProseMirror table th {
@@ -168,63 +170,63 @@ All colors MUST be HSL.
   pointer-events: none;
 }
 
+/* Column resize handle (built-in from Tiptap) */
 .ProseMirror table .column-resize-handle {
   position: absolute;
-  right: -2px; top: 0; bottom: 0;
+  right: -2px; 
+  top: 0; 
+  bottom: 0;
   width: 4px;
   z-index: 20;
   background-color: hsl(var(--primary));
   pointer-events: none;
 }
 
-.ProseMirror table.resize-cursor {
-  cursor: ew-resize;
-  cursor: col-resize;
+/* Row resize handle - mimicking column resize behavior */
+.ProseMirror table .tableWrapper {
+  position: relative;
+  margin: 0;
+  overflow-x: auto;
 }
 
-/* Enhanced table row resizing */
 .ProseMirror table tr {
   position: relative;
 }
 
-.ProseMirror table tr:hover::after {
+/* Add row resize handles similar to column handles */
+.ProseMirror table tbody tr:not(:last-child)::after,
+.ProseMirror table thead tr::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: -2px;
   height: 4px;
-  background-color: hsl(var(--primary));
-  opacity: 0.7;
-  cursor: ns-resize;
-  z-index: 10;
-}
-
-.ProseMirror table td {
-  height: 40px; /* Default row height */
-  min-height: 40px;
-}
-
-/* Allow manual height adjustment via CSS custom property */
-.ProseMirror table tr[data-row-height] td {
-  height: attr(data-row-height px, 40px);
-}
-
-/* Make table cells manually resizable with a drag handle */
-.ProseMirror table td::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: transparent;
+  background-color: transparent;
   cursor: ns-resize;
   z-index: 15;
 }
 
-.ProseMirror table td:hover::after {
-  background-color: hsl(var(--primary) / 0.5);
+.ProseMirror table tbody tr:not(:last-child):hover::after,
+.ProseMirror table thead tr:hover::after {
+  background-color: hsl(var(--primary));
+}
+
+/* Make table resizable like columns */
+.ProseMirror table.resize-cursor {
+  cursor: ew-resize;
+}
+
+.ProseMirror table.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+}
+
+/* Allow content to determine row height while maintaining minimum */
+.ProseMirror table td {
+  height: auto;
+  min-height: 40px;
+  resize: vertical;
+  overflow: hidden;
 }
 
 /* Better table cell content handling */
@@ -235,6 +237,12 @@ All colors MUST be HSL.
 .ProseMirror table td > p {
   margin: 0;
   line-height: 1.4;
+}
+
+/* Enable row height adjustment via content */
+.ProseMirror table td:focus {
+  outline: 1px solid hsl(var(--ring));
+  resize: both;
 }
 
 /* Page break styles */

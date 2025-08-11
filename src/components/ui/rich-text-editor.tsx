@@ -79,6 +79,7 @@ export const RichTextEditor = ({
       Underline,
       Table.configure({
         resizable: true,
+        allowTableNodeSelection: true,
       }),
       TableRow,
       TableHeader,
