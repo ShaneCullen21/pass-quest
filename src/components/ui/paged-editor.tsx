@@ -67,14 +67,15 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
           className="document-page"
           style={{ 
             width: '8.5in', 
-            height: '11in',
+            height: 'auto',
+            minHeight: '11in',
             margin: '0 auto 30px auto',
             padding: '1in',
             background: 'white',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             boxSizing: 'border-box',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'visible'
           }}
         >
           {index === 0 && (
@@ -82,7 +83,9 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
             <div 
               className="h-full overflow-visible"
               style={{ 
-                height: '9in', // Content area height (11in - 2in margins)
+                height: 'auto',
+                minHeight: '9in',
+                paddingBottom: '1in', // Add padding to prevent cutoff
               }}
             >
               <div 

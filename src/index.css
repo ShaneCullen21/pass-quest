@@ -150,6 +150,9 @@ All colors MUST be HSL.
   vertical-align: top;
   box-sizing: border-box;
   position: relative;
+  min-height: 40px;
+  resize: vertical;
+  overflow: hidden;
 }
 
 .ProseMirror table th {
@@ -176,9 +179,23 @@ All colors MUST be HSL.
   pointer-events: none;
 }
 
+.ProseMirror table .row-resize-handle {
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 4px;
+  z-index: 20;
+  background-color: hsl(var(--primary));
+  pointer-events: none;
+  cursor: ns-resize;
+}
+
 .ProseMirror table.resize-cursor {
   cursor: ew-resize;
   cursor: col-resize;
+}
+
+.ProseMirror table tr:hover .row-resize-handle {
+  background-color: hsl(var(--primary));
 }
 
 /* Page break styles */
