@@ -20,8 +20,9 @@ export type Database = {
           company: string | null
           created_at: string
           email: string | null
+          first_name: string
           id: string
-          name: string
+          last_name: string
           phone: string | null
           user_id: string
         }
@@ -30,8 +31,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          first_name: string
           id?: string
-          name: string
+          last_name: string
           phone?: string | null
           user_id?: string
         }
@@ -40,8 +42,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          first_name?: string
           id?: string
-          name?: string
+          last_name?: string
           phone?: string | null
           user_id?: string
         }
@@ -486,10 +489,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      populate_mock_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

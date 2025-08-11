@@ -11,7 +11,8 @@ import { AddClientModal } from "../clients/AddClientModal";
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   company: string;
 }
@@ -46,7 +47,7 @@ export const ClientSelector = ({
         .from('clients')
         .select('*')
         .eq('user_id', user.id)
-        .order('name', { ascending: true });
+        .order('first_name', { ascending: true });
 
       if (error) throw error;
 
@@ -60,7 +61,8 @@ export const ClientSelector = ({
   };
 
   const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     client.company?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -150,7 +152,7 @@ export const ClientSelector = ({
                   />
                   <User className="h-8 w-8 text-muted-foreground flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold">{client.name}</h4>
+                    <h4 className="font-semibold">{client.first_name} {client.last_name}</h4>
                     {client.company && (
                       <p className="text-sm text-muted-foreground">{client.company}</p>
                     )}

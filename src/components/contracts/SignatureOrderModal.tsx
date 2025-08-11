@@ -8,7 +8,8 @@ import { Mail, ArrowDown } from 'lucide-react';
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
 }
 
@@ -65,7 +66,7 @@ export const SignatureOrderModal: React.FC<SignatureOrderModalProps> = ({
                 <SelectContent>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.name} ({client.email})
+                      {client.first_name} {client.last_name} ({client.email})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -87,7 +88,7 @@ export const SignatureOrderModal: React.FC<SignatureOrderModalProps> = ({
                 <SelectContent>
                   {clients.filter(c => c.id !== firstSigner).map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.name} ({client.email})
+                      {client.first_name} {client.last_name} ({client.email})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -102,11 +103,11 @@ export const SignatureOrderModal: React.FC<SignatureOrderModalProps> = ({
                 <div className="space-y-2 text-sm">
                   <div>
                     <span className="font-medium">1. </span>
-                    {getClientById(firstSigner)?.name} will receive the document first
+                    {getClientById(firstSigner)?.first_name} {getClientById(firstSigner)?.last_name} will receive the document first
                   </div>
                   <div>
                     <span className="font-medium">2. </span>
-                    {getClientById(secondSigner)?.name} will receive it after the first signature is complete
+                    {getClientById(secondSigner)?.first_name} {getClientById(secondSigner)?.last_name} will receive it after the first signature is complete
                   </div>
                 </div>
               </CardContent>

@@ -16,7 +16,8 @@ import { X } from "lucide-react";
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
 }
 
 interface ContractField {
@@ -140,7 +141,7 @@ export const FieldConfigModal: React.FC<FieldConfigModalProps> = ({
                   <SelectItem value="none">No specific client</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.name}
+                      {client.first_name} {client.last_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

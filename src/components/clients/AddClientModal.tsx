@@ -14,7 +14,8 @@ interface AddClientModalProps {
   onClientAdded?: () => void;
   editClient?: {
     id: string;
-    name: string;
+    first_name: string;
+    last_name: string;
     company: string | null;
     email: string | null;
     phone: string | null;
@@ -24,7 +25,8 @@ interface AddClientModalProps {
 
 export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }: AddClientModalProps) => {
   const [formData, setFormData] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     company: "",
     email: "",
     phone: "",
@@ -39,7 +41,8 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
   useEffect(() => {
     if (editClient) {
       setFormData({
-        name: editClient.name,
+        first_name: editClient.first_name,
+        last_name: editClient.last_name,
         company: editClient.company || "",
         email: editClient.email || "",
         phone: editClient.phone || "",
@@ -47,7 +50,8 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
       });
     } else {
       setFormData({
-        name: "",
+        first_name: "",
+        last_name: "",
         company: "",
         email: "",
         phone: "",
@@ -80,10 +84,10 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    if (!formData.first_name.trim() || !formData.last_name.trim()) {
       toast({
         title: "Error",
-        description: "Client name is required",
+        description: "Both first name and last name are required",
         variant: "destructive"
       });
       return;
@@ -115,7 +119,8 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
         const { error } = await supabase
           .from('clients')
           .update({
-            name: formData.name.trim(),
+            first_name: formData.first_name.trim(),
+            last_name: formData.last_name.trim(),
             company: formData.company.trim() || null,
             email: formData.email.trim() || null,
             phone: formData.phone.trim() || null,
@@ -136,7 +141,8 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
         const { error } = await supabase
           .from('clients')
           .insert({
-            name: formData.name.trim(),
+            first_name: formData.first_name.trim(),
+            last_name: formData.last_name.trim(),
             company: formData.company.trim() || null,
             email: formData.email.trim() || null,
             phone: formData.phone.trim() || null,
@@ -170,7 +176,8 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
 
   const handleCancel = () => {
     setFormData({
-      name: "",
+      first_name: "",
+      last_name: "",
       company: "",
       email: "",
       phone: "",
@@ -189,19 +196,35 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-foreground">
-              Client name*
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Enter client name"
-              required
-              className="w-full"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name" className="text-sm font-medium text-foreground">
+                First name*
+              </Label>
+              <Input
+                id="first_name"
+                type="text"
+                value={formData.first_name}
+                onChange={(e) => handleInputChange("first_name", e.target.value)}
+                placeholder="Enter first name"
+                required
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name" className="text-sm font-medium text-foreground">
+                Last name*
+              </Label>
+              <Input
+                id="last_name"
+                type="text"
+                value={formData.last_name}
+                onChange={(e) => handleInputChange("last_name", e.target.value)}
+                placeholder="Enter last name"
+                required
+                className="w-full"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

@@ -62,7 +62,7 @@ const Projects = () => {
         .order("created_at", { ascending: false }),
       supabase
         .from("clients")
-        .select("id, name, company"),
+        .select("id, first_name, last_name, company"),
       new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading time
     ]);
 
@@ -245,31 +245,13 @@ const Projects = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <div className="flex gap-3">
-            {projects.length === 0 && (
-              <Button 
-                onClick={async () => {
-                  try {
-                    await supabase.rpc('populate_mock_data');
-                    toast({ title: "Success", description: "Mock data added successfully" });
-                    fetchProjects();
-                  } catch (error) {
-                    toast({ title: "Error", description: "Failed to add mock data", variant: "destructive" });
-                  }
-                }}
-                variant="outline"
-              >
-                Add sample data
-              </Button>
-            )}
-            <Button 
-              onClick={() => setShowAddProjectModal(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create project
-            </Button>
-          </div>
+          <Button 
+            onClick={() => setShowAddProjectModal(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create project
+          </Button>
         </div>
 
 
@@ -346,7 +328,7 @@ const Projects = () => {
                         <div className="flex items-center space-x-2">
                           <span className="text-foreground">
                             {project.clients && project.clients.length > 0 
-                              ? project.clients.map(client => client.name).join(", ")
+                              ? project.clients.map(client => `${client.first_name} ${client.last_name}`).join(", ")
                               : "No client assigned"}
                           </span>
                         </div>

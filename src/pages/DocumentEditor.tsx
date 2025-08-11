@@ -30,7 +30,8 @@ interface Project {
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   company?: string;
 }
@@ -269,7 +270,7 @@ const DocumentEditor = () => {
 
   const getClientName = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
-    return client?.name || 'Unknown Client';
+    return client ? `${client.first_name} ${client.last_name}` : 'Unknown Client';
   };
 
   const handleSave = async () => {
@@ -491,7 +492,7 @@ const DocumentEditor = () => {
                       {clients.map(client => (
                         <SelectItem key={client.id} value={client.id}>
                           <div>
-                            <div className="font-medium">{client.name}</div>
+                            <div className="font-medium">{client.first_name} {client.last_name}</div>
                             {client.company && (
                               <div className="text-xs text-muted-foreground">
                                 {client.company}

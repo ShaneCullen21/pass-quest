@@ -34,7 +34,7 @@ interface DocumentCanvasProps {
   onFieldUpdate: (fieldId: string, updates: Partial<ContractField>) => void;
   onFieldDelete: (fieldId: string) => void;
   onFieldClick?: (field: ContractField) => void;
-  clients: { id: string; name: string; company?: string; }[];
+  clients: { id: string; first_name: string; last_name: string; company?: string; }[];
   documentUrl?: string;
   showGrid?: boolean;
   snapToGrid?: boolean;
@@ -161,7 +161,8 @@ export const DocumentCanvas = forwardRef<HTMLDivElement, DocumentCanvasProps>(
     const renderField = (field: ContractField) => {
       const Icon = getFieldIcon(field.type);
       const isSelected = selectedFields.has(field.id);
-      const clientName = field.clientId ? clients.find(c => c.id === field.clientId)?.name : '';
+      const client = field.clientId ? clients.find(c => c.id === field.clientId) : null;
+      const clientName = client ? `${client.first_name} ${client.last_name}` : '';
       
       return (
         <div

@@ -177,38 +177,20 @@ const Clients = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Clients</h1>
-          <div className="flex gap-3">
-            {clients.length === 0 && (
-              <Button 
-                onClick={async () => {
-                  try {
-                    await supabase.rpc('populate_mock_data');
-                    toast({ title: "Success", description: "Mock data added successfully" });
-                    fetchClients();
-                  } catch (error) {
-                    toast({ title: "Error", description: "Failed to add mock data", variant: "destructive" });
-                  }
-                }}
-                variant="outline"
-              >
-                Add sample data
-              </Button>
-            )}
-            <Button 
-              onClick={() => setShowAddClientModal(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add client
-            </Button>
-          </div>
+          <Button 
+            onClick={() => setShowAddClientModal(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add client
+          </Button>
         </div>
 
         {/* Clients Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
-          {clientsLoading ? (
+        {clientsLoading ? (
             <TableLoading 
-              columns={["Name", "Company", "Email", "Phone", "Address", "Actions"]}
+              columns={["First Name", "Last Name", "Company", "Email", "Phone", "Address", "Actions"]}
               rows={6}
             />
           ) : (
@@ -216,12 +198,20 @@ const Clients = () => {
               <TableHeader>
                 <TableRow className="border-b border-border">
                   <SortableTableHeader 
-                    sortKey="name" 
+                    sortKey="first_name" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
                   >
-                    Name
+                    First Name
+                  </SortableTableHeader>
+                  <SortableTableHeader 
+                    sortKey="last_name" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Last Name
                   </SortableTableHeader>
                   <SortableTableHeader 
                     sortKey="company" 
@@ -261,7 +251,7 @@ const Clients = () => {
               <TableBody>
                 {paginatedClients.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <p className="text-muted-foreground">No clients found. Add your first client to get started.</p>
                     </TableCell>
                   </TableRow>
@@ -270,7 +260,12 @@ const Clients = () => {
                     <TableRow key={client.id} className="border-b border-border hover:bg-muted/50">
                       <TableCell>
                         <span className="text-foreground font-medium">
-                          {client.name}
+                          {client.first_name}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-foreground font-medium">
+                          {client.last_name}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -408,7 +403,7 @@ const Clients = () => {
         open={!!deletingClient}
         onOpenChange={(open) => !open && setDeletingClient(null)}
         onConfirm={handleDeleteClient}
-        clientName={deletingClient?.name || ""}
+        clientName={deletingClient ? `${deletingClient.first_name} ${deletingClient.last_name}` : ""}
       />
     </div>
   );

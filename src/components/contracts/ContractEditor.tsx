@@ -25,7 +25,8 @@ interface ContractField {
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   company: string;
 }
 
@@ -78,7 +79,7 @@ export const ContractEditor = ({
         if (project?.client_ids && project.client_ids.length > 0) {
           const { data: projectClients } = await supabase
             .from('clients')
-            .select('id, name, company')
+            .select('id, first_name, last_name, company')
             .in('id', project.client_ids);
 
           setClients(projectClients || []);

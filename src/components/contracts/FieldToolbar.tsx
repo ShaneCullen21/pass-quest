@@ -5,7 +5,8 @@ import { Type, PenTool, Calendar, CheckSquare } from "lucide-react";
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   company: string;
 }
 

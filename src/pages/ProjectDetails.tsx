@@ -46,7 +46,8 @@ interface Project {
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   company: string | null;
 }
 
@@ -109,7 +110,7 @@ export default function ProjectDetails() {
       if (projectData.client_ids && projectData.client_ids.length > 0) {
         const { data: clientsData, error: clientsError } = await supabase
           .from("clients")
-          .select("id, name, company")
+          .select("id, first_name, last_name, company")
           .in("id", projectData.client_ids);
 
         if (clientsError) throw clientsError;
@@ -335,7 +336,7 @@ export default function ProjectDetails() {
                 <div className="flex flex-wrap gap-2">
                   {clients.map((client) => (
                     <Badge key={client.id} variant="outline">
-                      {client.name} {client.company && `(${client.company})`}
+                      {client.first_name} {client.last_name} {client.company && `(${client.company})`}
                     </Badge>
                   ))}
                 </div>

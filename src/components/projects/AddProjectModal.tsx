@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   company: string | null;
 }
 
@@ -93,8 +94,8 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
     try {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, name, company")
-        .order("name", { ascending: true });
+        .select("id, first_name, last_name, company")
+        .order("first_name", { ascending: true });
 
       if (error) {
         throw error;
@@ -309,7 +310,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
                         key={client.id}
                         className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-sm"
                       >
-                        <span>{client.name}</span>
+                        <span>{client.first_name} {client.last_name}</span>
                         <button
                           type="button"
                           onClick={() => removeClient(client.id)}
@@ -341,7 +342,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
                             htmlFor={`client-${client.id}`}
                             className="text-sm font-normal cursor-pointer flex-1"
                           >
-                            {client.name}
+                            {client.first_name} {client.last_name}
                             {client.company && (
                               <span className="text-muted-foreground ml-1">({client.company})</span>
                             )}
