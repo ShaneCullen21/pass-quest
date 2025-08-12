@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { NewTemplateModal } from "@/components/templates/NewTemplateModal";
 import { DeleteTemplateConfirmation } from "@/components/templates/DeleteTemplateConfirmation";
-import { ProjectSelectionModal } from "@/components/contracts/ProjectSelectionModal";
+import { DocumentCreationModal } from "@/components/dashboard/DocumentCreationModal";
 
 interface Template {
   id: string;
@@ -46,8 +46,8 @@ const Templates = () => {
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [preselectedTemplateId, setPreselectedTemplateId] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<string>('master'); // Track active tab
-  const [showProjectSelection, setShowProjectSelection] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [showDocumentCreation, setShowDocumentCreation] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [showPurchasedAlert, setShowPurchasedAlert] = useState(true);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
@@ -227,13 +227,11 @@ const Templates = () => {
   };
 
   const handleCreateDocument = (templateId: string) => {
-    setSelectedTemplateId(templateId);
-    setShowProjectSelection(true);
-  };
-
-  const handleProjectSelect = (projectId: string) => {
-    setShowProjectSelection(false);
-    navigate(`/document-editor?templateId=${selectedTemplateId}&projectId=${projectId}`);
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setSelectedTemplate(template);
+      setShowDocumentCreation(true);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -625,11 +623,16 @@ const Templates = () => {
           preselectedTemplateId={preselectedTemplateId}
         />
 
-        <ProjectSelectionModal
-          isOpen={showProjectSelection}
-          onClose={() => setShowProjectSelection(false)}
-          onProjectSelect={handleProjectSelect}
-          templateId={selectedTemplateId}
+        <DocumentCreationModal
+          isOpen={showDocumentCreation}
+          onClose={() => {
+            setShowDocumentCreation(false);
+            setSelectedTemplate(null);
+          }}
+          documentType={
+            selectedTemplate?.type === 'Proposal' ? 'proposal' :
+            selectedTemplate?.type === 'Invoice' ? 'invoice' : 'contract'
+          }
         />
 
         <DeleteTemplateConfirmation
