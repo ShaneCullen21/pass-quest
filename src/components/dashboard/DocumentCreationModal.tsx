@@ -11,6 +11,9 @@ interface Template {
   id: string;
   title: string;
   category: string;
+  type: string;
+  template_type: string;
+  master_template_id?: string;
 }
 
 interface Project {
@@ -47,11 +50,62 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
       // Fetch all customized templates
       const { data: templatesData, error: templatesError } = await supabase
         .from('templates')
-        .select('id, title, category')
+        .select('id, title, category, type, template_type, master_template_id')
         .eq('user_id', user?.id)
         .eq('template_type', 'customized');
 
       if (templatesError) throw templatesError;
+
+      // Get unique master template IDs for customized templates
+      const masterTemplateIds = templatesData
+        ?.filter(t => t.template_type === 'customized' && t.master_template_id)
+        .map(t => t.master_template_id) || [];
+
+      // Fetch master template types
+      let masterTemplatesMap: Record<string, { title: string; type: string }> = {};
+      if (masterTemplateIds.length > 0) {
+        const { data: masterTemplates, error: masterError } = await supabase
+          .from('templates')
+          .select('id, title, type')
+          .in('id', masterTemplateIds);
+
+        if (!masterError && masterTemplates) {
+          masterTemplatesMap = masterTemplates.reduce((acc, template) => {
+            acc[template.id] = { 
+              title: template.title,
+              type: template.type || 'Contract'
+            };
+            return acc;
+          }, {} as Record<string, { title: string; type: string }>);
+        }
+      }
+
+      // Combine the data and inherit type from master template for customized templates
+      const templatesWithMasterInfo = templatesData?.map(template => {
+        const masterInfo = template.master_template_id && masterTemplatesMap[template.master_template_id];
+        return {
+          ...template,
+          // For customized templates, inherit type from master template
+          type: template.template_type === 'customized' && masterInfo 
+            ? masterInfo.type 
+            : template.type || 'Contract'
+        };
+      }) || [];
+
+      // Filter templates by document type
+      const getTemplateTypeFromDocumentType = (docType: string) => {
+        switch (docType) {
+          case "proposal": return "Proposal";
+          case "contract": return "Contract";
+          case "invoice": return "Invoice";
+          default: return "Contract";
+        }
+      };
+
+      const targetType = getTemplateTypeFromDocumentType(documentType);
+      const filteredTemplates = templatesWithMasterInfo.filter(template => 
+        template.type === targetType
+      );
 
       // Fetch user's projects
       const { data: projectsData, error: projectsError } = await supabase
@@ -62,7 +116,7 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
 
       if (projectsError) throw projectsError;
 
-      setTemplates(templatesData || []);
+      setTemplates(filteredTemplates as Template[]);
       setProjects(projectsData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
