@@ -130,7 +130,7 @@
 /* Document Viewer specific styles */
 .document-viewer-container .document-container {
   width: 100%;
-  min-height: 800px;
+  min-height: auto;
   padding: 2rem;
   background: white;
   border-radius: 0.5rem;
@@ -139,6 +139,7 @@
 .document-viewer-container .document-page {
   width: 100%;
   max-width: 8.5in;
+  height: auto;
   min-height: 11in;
   margin: 0 auto;
   background: white;
@@ -146,6 +147,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   position: relative;
   border-radius: 0.5rem;
+  overflow: visible;
 }
 
 @media print {

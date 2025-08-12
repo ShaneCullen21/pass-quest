@@ -775,7 +775,7 @@ const DocumentEditor = () => {
           <div className="lg:col-span-3">
             <Card className="h-full">
               <CardContent className="p-0">
-                <div className="document-drop-zone relative min-h-[800px] overflow-hidden group">
+                <div className="document-drop-zone relative overflow-visible group">
                   {/* Document Content (Read-only with same styling as template editor) */}
                   <ReadOnlyDocumentViewer 
                     content={template.template_data?.content || '<p>No content available</p>'}
