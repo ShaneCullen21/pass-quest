@@ -188,6 +188,19 @@ export default function ProjectDetails() {
     }
   };
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'proposal':
+        return 'bg-template-proposal/10 text-template-proposal border-template-proposal/20';
+      case 'contract':
+        return 'bg-template-contract/10 text-template-contract border-template-contract/20';
+      case 'invoice':
+        return 'bg-template-invoice/10 text-template-invoice border-template-invoice/20';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
   const handleProjectUpdated = () => {
     fetchProjectDetails();
     setIsEditModalOpen(false);
@@ -438,10 +451,9 @@ export default function ProjectDetails() {
                   {sortedDocuments.map((document) => (
                     <TableRow key={`${document.type}-${document.id}`}>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {getDocumentIcon(document.type)}
-                          <span className="capitalize">{document.type}</span>
-                        </div>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeColor(document.type)}`}>
+                          {document.type.charAt(0).toUpperCase() + document.type.slice(1)}
+                        </span>
                       </TableCell>
                       <TableCell className="font-medium">{document.title}</TableCell>
                       <TableCell>{formatAmount(document.amount)}</TableCell>
