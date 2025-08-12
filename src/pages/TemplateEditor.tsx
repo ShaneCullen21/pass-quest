@@ -24,6 +24,7 @@ const TemplateEditor = () => {
   const [saving, setSaving] = useState(false);
   const [documentSize, setDocumentSize] = useState<'a4' | 'letter' | 'legal'>('a4');
   const [templateType, setTemplateType] = useState<'master' | 'customized'>('master');
+  const [templateCategory, setTemplateCategory] = useState('Contract');
   const [masterTemplateId, setMasterTemplateId] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState("");
@@ -79,6 +80,7 @@ const TemplateEditor = () => {
       const type = searchParams.get('type') as 'master' | 'customized';
       const masterId = searchParams.get('masterId');
       const name = searchParams.get('name');
+      const categoryFromUrl = searchParams.get('templateType');
       if (type) {
         setTemplateType(type);
       }
@@ -87,6 +89,9 @@ const TemplateEditor = () => {
       }
       if (name) {
         setTitle(name);
+      }
+      if (categoryFromUrl) {
+        setTemplateCategory(categoryFromUrl);
       }
       if (templateId) {
         // Editing existing template
@@ -111,6 +116,7 @@ const TemplateEditor = () => {
             setDescription(data.description || '');
             setContent((data.template_data as any)?.content || '');
             setTemplateType(data.template_type as 'master' | 'customized' || 'master');
+            setTemplateCategory(data.type || 'Contract');
             setMasterTemplateId(data.master_template_id);
           }
         } catch (error) {
@@ -170,6 +176,7 @@ const TemplateEditor = () => {
       const templateData = {
         title: title.trim(),
         description: description.trim(),
+        type: templateCategory,
         template_data: {
           content,
           document_size: documentSize
@@ -309,10 +316,22 @@ const TemplateEditor = () => {
                 >
                   <Edit className="h-3 w-3" />
                 </Button>
-                <div className="ml-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border text-red-600 ${templateType === 'master' ? 'bg-blue-50 border-blue-200' : 'bg-purple-50 border-purple-200'}`}>
+                <div className="ml-2 flex items-center gap-2">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-purple-50 border-purple-200 text-purple-600'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
+                  {templateType === 'master' && (
+                    <Select value={templateCategory} onValueChange={setTemplateCategory}>
+                      <SelectTrigger className="h-6 w-24 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Proposal">Proposal</SelectItem>
+                        <SelectItem value="Contract">Contract</SelectItem>
+                        <SelectItem value="Invoice">Invoice</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
             </div>

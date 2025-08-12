@@ -27,6 +27,7 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<'master' | 'customized' | null>(null);
   const [masterTemplateName, setMasterTemplateName] = useState('');
+  const [templateType, setTemplateType] = useState('Contract');
   const [selectedMasterTemplate, setSelectedMasterTemplate] = useState('');
   const [masterTemplates, setMasterTemplates] = useState<MasterTemplate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,7 +91,7 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
         });
         return;
       }
-      navigate(`/templates/new?type=master&name=${encodeURIComponent(masterTemplateName)}`);
+      navigate(`/templates/new?type=master&name=${encodeURIComponent(masterTemplateName)}&templateType=${encodeURIComponent(templateType)}`);
     } else if (selectedType === 'customized') {
       if (!selectedMasterTemplate) {
         toast({
@@ -108,6 +109,7 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
   const handleClose = () => {
     setSelectedType(null);
     setMasterTemplateName('');
+    setTemplateType('Contract');
     setSelectedMasterTemplate('');
     onClose();
   };
@@ -154,15 +156,30 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
         ) : (
           <div className="space-y-4 py-4">
             {selectedType === 'master' && (
-              <div className="space-y-2">
-                <Label htmlFor="template-name">Template Name</Label>
-                <Input
-                  id="template-name"
-                  placeholder="Enter template name"
-                  value={masterTemplateName}
-                  onChange={(e) => setMasterTemplateName(e.target.value)}
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="template-name">Template Name</Label>
+                  <Input
+                    id="template-name"
+                    placeholder="Enter template name"
+                    value={masterTemplateName}
+                    onChange={(e) => setMasterTemplateName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-type">Template Type</Label>
+                  <Select value={templateType} onValueChange={setTemplateType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select template type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Proposal">Proposal</SelectItem>
+                      <SelectItem value="Contract">Contract</SelectItem>
+                      <SelectItem value="Invoice">Invoice</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
 
             {(selectedType === 'customized' || forceTemplateType === 'customized') && (

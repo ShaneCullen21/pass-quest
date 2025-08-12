@@ -443,6 +443,7 @@ export type Database = {
           template_data: Json | null
           template_type: string
           title: string
+          type: string
           updated_at: string
           user_id: string
         }
@@ -457,6 +458,7 @@ export type Database = {
           template_data?: Json | null
           template_type?: string
           title: string
+          type?: string
           updated_at?: string
           user_id: string
         }
@@ -471,6 +473,7 @@ export type Database = {
           template_data?: Json | null
           template_type?: string
           title?: string
+          type?: string
           updated_at?: string
           user_id?: string
         }
