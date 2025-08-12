@@ -230,7 +230,7 @@ export default function ProjectDetails() {
 
   const handleTemplateSelect = (templateId: string) => {
     setIsTemplateSelectorOpen(false);
-    navigate(`/contracts/document-editor?projectId=${id}&templateId=${templateId}`);
+    navigate(`/document-editor?projectId=${id}&templateId=${templateId}`);
   };
 
   if (isLoading) {
@@ -449,7 +449,7 @@ export default function ProjectDetails() {
                               size="sm"
                               onClick={() => {
                                 // Navigate to document editor for all document types
-                                navigate(`/contracts/document-editor?documentId=${document.id}&projectId=${id}`);
+                                navigate(`/document-editor?documentId=${document.id}&projectId=${id}`);
                               }}
                             >
                               Edit

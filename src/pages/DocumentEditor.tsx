@@ -17,6 +17,7 @@ import { SignatureOrderModal } from "@/components/contracts/SignatureOrderModal"
 interface Template {
   id: string;
   title: string;
+  type?: string;
   template_data: {
     content: string;
   } | null;
@@ -205,6 +206,7 @@ const DocumentEditor = () => {
       setTemplate({
         id: templateData.id,
         title: templateData.title,
+        type: templateData.type,
         template_data: templateData.template_data as { content: string } | null
       });
       setProject(projectData);
@@ -280,6 +282,7 @@ const DocumentEditor = () => {
     try {
       const fieldDataJson = { signing_fields: signingFields } as any;
       const documentContentJson = template.template_data as any;
+      let documentId = existingDocument?.id;
       
       if (isEditingMode && existingDocument) {
         // Update existing document
@@ -303,6 +306,7 @@ const DocumentEditor = () => {
           });
           return;
         }
+        documentId = existingDocument.id;
       } else {
         // Create new document
         const { data: documentData, error: documentError } = await supabase
@@ -313,7 +317,7 @@ const DocumentEditor = () => {
             project_id: project.id,
             template_id: template.id,
             user_id: user?.id,
-            type: 'contract',
+            type: template.type?.toLowerCase() || 'contract',
             status: 'draft',
             document_content: documentContentJson,
             field_data: fieldDataJson
@@ -332,6 +336,65 @@ const DocumentEditor = () => {
         }
 
         setExistingDocument(documentData);
+        documentId = documentData.id;
+      }
+
+      if (documentId) {
+        // Save signing fields to document_fields table
+        if (signingFields.length > 0) {
+          // Delete existing fields for this document
+          await supabase
+            .from('document_fields')
+            .delete()
+            .eq('document_id', documentId);
+
+          // Insert new fields
+          const fieldsToInsert = signingFields.map(field => ({
+            document_id: documentId,
+            client_id: field.clientId,
+            field_type: field.type,
+            field_name: field.type,
+            position_x: field.position.x,
+            position_y: field.position.y,
+            width: field.width,
+            height: field.height,
+            is_required: true,
+            placeholder: `${field.type} field`
+          }));
+
+          const { error: fieldsError } = await supabase
+            .from('document_fields')
+            .insert(fieldsToInsert);
+
+          if (fieldsError) {
+            console.error('Error saving document fields:', fieldsError);
+          }
+        }
+
+        // Save client relationships to document_clients table
+        const uniqueClientIds = [...new Set(signingFields.map(field => field.clientId))];
+        if (uniqueClientIds.length > 0) {
+          // Delete existing client relationships for this document
+          await supabase
+            .from('document_clients')
+            .delete()
+            .eq('document_id', documentId);
+
+          // Insert new client relationships
+          const clientsToInsert = uniqueClientIds.map(clientId => ({
+            document_id: documentId,
+            client_id: clientId,
+            role: 'signatory'
+          }));
+
+          const { error: clientsError } = await supabase
+            .from('document_clients')
+            .insert(clientsToInsert);
+
+          if (clientsError) {
+            console.error('Error saving document clients:', clientsError);
+          }
+        }
       }
 
       toast({

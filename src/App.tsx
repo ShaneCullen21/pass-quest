@@ -12,7 +12,7 @@ import Clients from "./pages/Clients";
 
 import ProjectDetails from "./pages/ProjectDetails";
 import TemplateEditor from "./pages/TemplateEditor";
-import ContractEditor from "./pages/ContractEditor";
+
 import DocumentEditor from "./pages/DocumentEditor";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -36,7 +36,7 @@ const App = () => (
             <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/templates/new" element={<TemplateEditor />} />
             <Route path="/templates/edit" element={<TemplateEditor />} />
-            <Route path="/contracts/document-editor" element={<DocumentEditor />} />
+            <Route path="/document-editor" element={<DocumentEditor />} />
             <Route path="/sign/:documentId" element={<DocumentSigning />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/clients" element={<Clients />} />

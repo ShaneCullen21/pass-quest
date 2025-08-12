@@ -50,36 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
-      contract_clients: {
+      document_clients: {
         Row: {
           client_id: string
-          contract_id: string
           created_at: string
+          document_id: string
           id: string
           role: string | null
         }
         Insert: {
           client_id: string
-          contract_id: string
           created_at?: string
+          document_id: string
           id?: string
           role?: string | null
         }
         Update: {
           client_id?: string
-          contract_id?: string
           created_at?: string
+          document_id?: string
           id?: string
           role?: string | null
         }
         Relationships: []
       }
-      contract_fields: {
+      document_fields: {
         Row: {
           client_id: string | null
-          contract_id: string
           created_at: string
           default_value: string | null
+          document_id: string
           field_name: string
           field_type: string
           field_value: string | null
@@ -96,9 +96,9 @@ export type Database = {
         }
         Insert: {
           client_id?: string | null
-          contract_id: string
           created_at?: string
           default_value?: string | null
+          document_id: string
           field_name: string
           field_type: string
           field_value?: string | null
@@ -115,9 +115,9 @@ export type Database = {
         }
         Update: {
           client_id?: string | null
-          contract_id?: string
           created_at?: string
           default_value?: string | null
+          document_id?: string
           field_name?: string
           field_type?: string
           field_value?: string | null
@@ -131,63 +131,6 @@ export type Database = {
           updated_at?: string
           validation_rules?: Json | null
           width?: number | null
-        }
-        Relationships: []
-      }
-      contracts: {
-        Row: {
-          amount: number | null
-          created_at: string
-          description: string | null
-          document_content: Json | null
-          document_url: string | null
-          expires_at: string | null
-          field_data: Json | null
-          id: string
-          project_id: string
-          signed_at: string | null
-          signing_status: string | null
-          status: string
-          template_id: string | null
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          document_content?: Json | null
-          document_url?: string | null
-          expires_at?: string | null
-          field_data?: Json | null
-          id?: string
-          project_id: string
-          signed_at?: string | null
-          signing_status?: string | null
-          status?: string
-          template_id?: string | null
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          document_content?: Json | null
-          document_url?: string | null
-          expires_at?: string | null
-          field_data?: Json | null
-          id?: string
-          project_id?: string
-          signed_at?: string | null
-          signing_status?: string | null
-          status?: string
-          template_id?: string | null
-          title?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -254,45 +197,6 @@ export type Database = {
         }
         Relationships: []
       }
-      invoices: {
-        Row: {
-          amount: number | null
-          created_at: string
-          description: string | null
-          due_date: string | null
-          id: string
-          project_id: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          project_id: string
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          project_id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -349,42 +253,6 @@ export type Database = {
           location?: string | null
           name?: string
           status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      proposals: {
-        Row: {
-          amount: number | null
-          created_at: string
-          description: string | null
-          id: string
-          project_id: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          project_id: string
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          project_id?: string
-          status?: string
-          title?: string
-          updated_at?: string
           user_id?: string
         }
         Relationships: []

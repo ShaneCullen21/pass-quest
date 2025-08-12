@@ -223,7 +223,7 @@ const Templates = () => {
 
   const handleProjectSelect = (projectId: string) => {
     setShowProjectSelection(false);
-    navigate(`/contracts/document-editor?templateId=${selectedTemplateId}&projectId=${projectId}`);
+    navigate(`/document-editor?templateId=${selectedTemplateId}&projectId=${projectId}`);
   };
 
   const formatDate = (dateString: string) => {
