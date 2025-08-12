@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/ui/navigation";
-import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt } from "lucide-react";
+import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt, Search, Bell, HelpCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -221,11 +221,31 @@ const Templates = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+      {/* Top Navigation */}
+      <header className="border-b border-border bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
             <Navigation />
-            <div className="flex items-center space-x-4">
+            
+            {/* Desktop User Actions */}
+            <div className="hidden sm:flex items-center space-x-3">
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Search className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Bell className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+              
+              <div className="ml-4">
+                <ProfileDropdown />
+              </div>
+            </div>
+
+            {/* Mobile User Actions */}
+            <div className="sm:hidden">
               <ProfileDropdown />
             </div>
           </div>
