@@ -465,14 +465,17 @@ const Templates = () => {
 
         {/* Marketplace Section - only show for regular users */}
         {!isAdmin && (
-          <div className="mt-12 p-6 bg-muted/50 rounded-lg border">
-            <h2 className="text-xl font-semibold mb-2">Need More Templates?</h2>
-            <p className="text-muted-foreground mb-4">
-              Explore our template marketplace for professionally designed templates across various industries.
+          <div className="mt-12 p-8 bg-muted/30 rounded-lg border text-center">
+            <h2 className="text-2xl font-semibold mb-3 text-foreground">Cannot find what you need?</h2>
+            <p className="text-foreground mb-6 text-base">
+              Find more legal templates created by the team of experts from The Legal Paige
             </p>
-            <Button variant="outline">
-              Browse Marketplace
-            </Button>
+            <a 
+              href="#" 
+              className="text-foreground underline hover:no-underline transition-all text-base font-medium"
+            >
+              Visit Our Marketplace
+            </a>
           </div>
         )}
 
