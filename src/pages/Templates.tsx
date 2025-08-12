@@ -121,29 +121,39 @@ const Templates = () => {
         ?.filter(t => t.template_type === 'customized' && t.master_template_id)
         .map(t => t.master_template_id) || [];
 
-      // Fetch master template names
-      let masterTemplatesMap: Record<string, string> = {};
+      // Fetch master template names and types
+      let masterTemplatesMap: Record<string, { title: string; type: string }> = {};
       if (masterTemplateIds.length > 0) {
         const { data: masterTemplates, error: masterError } = await supabase
           .from('templates')
-          .select('id, title')
+          .select('id, title, type')
           .in('id', masterTemplateIds);
 
         if (!masterError && masterTemplates) {
           masterTemplatesMap = masterTemplates.reduce((acc, template) => {
-            acc[template.id] = template.title;
+            acc[template.id] = { 
+              title: template.title,
+              type: template.type || 'Contract'
+            };
             return acc;
-          }, {} as Record<string, string>);
+          }, {} as Record<string, { title: string; type: string }>);
         }
       }
 
-      // Combine the data
-      const templatesWithMasterInfo = templatesData?.map(template => ({
-        ...template,
-        master_template: template.master_template_id && masterTemplatesMap[template.master_template_id] 
-          ? { title: masterTemplatesMap[template.master_template_id] }
-          : null
-      })) || [];
+      // Combine the data and inherit type from master template for customized templates
+      const templatesWithMasterInfo = templatesData?.map(template => {
+        const masterInfo = template.master_template_id && masterTemplatesMap[template.master_template_id];
+        return {
+          ...template,
+          // For customized templates, inherit type from master template
+          type: template.template_type === 'customized' && masterInfo 
+            ? masterInfo.type 
+            : template.type,
+          master_template: masterInfo 
+            ? { title: masterInfo.title }
+            : null
+        };
+      }) || [];
 
       setTemplates(templatesWithMasterInfo as Template[]);
     } catch (error) {
