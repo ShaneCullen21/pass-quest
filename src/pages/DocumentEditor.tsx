@@ -55,6 +55,7 @@ const DocumentEditor = () => {
   const templateId = searchParams.get('templateId');
   const documentId = searchParams.get('documentId');
   const projectId = searchParams.get('projectId');
+  const documentType = searchParams.get('type');
 
   const [template, setTemplate] = useState<Template | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -317,7 +318,7 @@ const DocumentEditor = () => {
             project_id: project.id,
             template_id: template.id,
             user_id: user?.id,
-            type: template.type?.toLowerCase() || 'contract',
+            type: documentType || template.type?.toLowerCase() || 'contract',
             status: 'draft',
             document_content: documentContentJson,
             field_data: fieldDataJson
