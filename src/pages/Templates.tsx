@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/ui/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt, Search, Bell, HelpCircle } from "lucide-react";
+import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt, Search, Bell, HelpCircle, Presentation } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -199,7 +199,9 @@ const Templates = () => {
 
   const getTemplateIcon = (title: string) => {
     const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('invoice')) {
+    if (lowerTitle.includes('proposal')) {
+      return Presentation;
+    } else if (lowerTitle.includes('invoice')) {
       return Receipt;
     } else if (lowerTitle.includes('service agreement') || lowerTitle.includes('contract')) {
       return Users;
