@@ -227,15 +227,10 @@ const Templates = () => {
           <h1 className="text-3xl font-bold text-foreground">
             {isAdmin ? 'Admin: Manage Master Templates' : 'Templates'}
           </h1>
-          {isAdmin ? (
+          {isAdmin && (
             <Button onClick={() => setShowNewTemplateModal(true)} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create Master Template
-            </Button>
-          ) : (
-            <Button onClick={() => setShowNewTemplateModal(true)} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Customized Template
             </Button>
           )}
         </div>
