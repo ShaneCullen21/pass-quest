@@ -8,6 +8,7 @@ import { ProfileProvider } from "@/contexts/ProfileContext";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Templates from "./pages/Templates";
+import Styles from "./pages/Styles";
 import Clients from "./pages/Clients";
 
 import ProjectDetails from "./pages/ProjectDetails";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/document-editor" element={<DocumentEditor />} />
             <Route path="/sign/:documentId" element={<DocumentSigning />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/styles" element={<Styles />} />
             <Route path="/clients" element={<Clients />} />
             
             <Route path="/profile" element={<Profile />} />

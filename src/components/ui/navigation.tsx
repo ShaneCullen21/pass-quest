@@ -17,6 +17,7 @@ const Navigation = ({ className }: NavigationProps) => {
     { label: "DASHBOARD", active: false, href: "/dashboard" },
     { label: "PROJECTS", active: false, href: "/projects" },
     { label: "TEMPLATES", active: false, href: "/templates" },
+    { label: "STYLES", active: false, href: "/styles" },
     { label: "CLIENTS", active: false, href: "/clients" },
     
   ];
