@@ -170,7 +170,8 @@ export default function ProjectDetails() {
       rejected: "destructive",
       terminated: "destructive",
       paid: "secondary",
-      overdue: "destructive"
+      overdue: "destructive",
+      "awaiting signatures": "default"
     };
     return statusMap[status] || "outline";
   };

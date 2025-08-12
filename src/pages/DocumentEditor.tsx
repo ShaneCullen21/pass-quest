@@ -332,13 +332,14 @@ const DocumentEditor = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (shouldNavigate: boolean = true) => {
     if (!template || !project) return;
 
     setSaving(true);
     try {
       const fieldDataJson = { signing_fields: signingFields } as any;
       const documentContentJson = template.template_data as any;
+      const documentTitle = editableTitle.trim() || template.title;
       let documentId = existingDocument?.id;
       
       if (isEditingMode && existingDocument) {
@@ -346,7 +347,7 @@ const DocumentEditor = () => {
         const { error: updateError } = await supabase
           .from('documents')
           .update({
-            title: template.title,
+            title: documentTitle,
             description: `Document created from template: ${template.title}`,
             document_content: documentContentJson,
             field_data: fieldDataJson,
@@ -365,14 +366,14 @@ const DocumentEditor = () => {
         }
 
         // Update existingDocument state with new updated_at
-        setExistingDocument({ ...existingDocument, title: template.title, updated_at: new Date().toISOString() });
+        setExistingDocument({ ...existingDocument, title: documentTitle, updated_at: new Date().toISOString() });
         documentId = existingDocument.id;
       } else {
         // Create new document
         const { data: documentData, error: documentError } = await supabase
           .from('documents')
           .insert({
-            title: template.title,
+            title: documentTitle,
             description: `Document created from template: ${template.title}`,
             project_id: project.id,
             template_id: template.id,
@@ -462,8 +463,10 @@ const DocumentEditor = () => {
         description: "Document saved successfully!"
       });
 
-      // Navigate back to project details
-      navigate(`/projects/${project.id}`);
+      // Navigate back to project details only if shouldNavigate is true
+      if (shouldNavigate) {
+        navigate(`/projects/${project.id}`);
+      }
     } catch (error) {
       console.error('Error in handleSave:', error);
       toast({
@@ -491,15 +494,17 @@ const DocumentEditor = () => {
   const handleConfirmSendSignature = async (firstSignerId: string, secondSignerId: string) => {
     setIsSendingSignature(true);
     try {
-      // Save document first to ensure it's up to date
-      await handleSave();
+      // Save document first to ensure it's up to date but don't navigate
+      await handleSave(false);
 
+      const documentTitle = editableTitle.trim() || template?.title || 'Untitled Document';
+      
       const { data, error } = await supabase.functions.invoke('send-signature-email', {
         body: {
-          documentId: existingDocument?.id || 'new',
+          documentId: existingDocument?.id,
           firstSignerId,
           secondSignerId,
-          documentTitle: template?.title || 'Untitled Document'
+          documentTitle
         }
       });
 
@@ -608,7 +613,7 @@ const DocumentEditor = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSave} disabled={saving} variant="outline" size="sm" className="h-8">
+              <Button onClick={() => handleSave()} disabled={saving} variant="outline" size="sm" className="h-8">
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save'}
               </Button>
