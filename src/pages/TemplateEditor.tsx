@@ -336,7 +336,7 @@ const TemplateEditor = () => {
                   <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-secondary border-secondary text-secondary-foreground'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
-                   <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCategoryColorClass(templateCategory)}`}>
+                   <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCategoryColorClass((templateType === 'customized' && templateData?.type) ? templateData.type : templateCategory)}`}>
                     {(templateType === 'customized' && templateData?.type) ? templateData.type.toUpperCase() : templateCategory.toUpperCase()}
                   </span>
                   {templateType === 'master' && (
