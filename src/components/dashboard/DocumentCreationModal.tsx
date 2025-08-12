@@ -33,6 +33,18 @@ interface DocumentCreationModalProps {
 }
 
 export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselectedTemplateId, preselectedProjectId }: DocumentCreationModalProps) => {
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Proposal':
+        return 'bg-template-proposal/10 text-template-proposal border-template-proposal/20';
+      case 'Contract':
+        return 'bg-template-contract/10 text-template-contract border-template-contract/20';
+      case 'Invoice':
+        return 'bg-template-invoice/10 text-template-invoice border-template-invoice/20';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
   const [templates, setTemplates] = useState<Template[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -225,7 +237,12 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
                       ) : (
                         templates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
-                            {template.title}
+                            <div className="flex items-center justify-between w-full">
+                              <span>{template.title}</span>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ml-2 ${getTypeColor(template.type)}`}>
+                                {template.type}
+                              </span>
+                            </div>
                           </SelectItem>
                         ))
                       )}
