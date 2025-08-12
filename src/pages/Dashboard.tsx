@@ -263,7 +263,7 @@ const Dashboard = () => {
                     <TableRow key={document.id}>
                       <TableCell>
                         <Link 
-                          to={`/document-editor/${document.project_id}/${document.id}`}
+                          to={`/document-editor?documentId=${document.id}&projectId=${document.project_id}`}
                           className="font-medium hover:underline text-primary"
                         >
                           {document.title}
