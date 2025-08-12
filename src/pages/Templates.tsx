@@ -251,7 +251,7 @@ const Templates = () => {
                 <TabsTrigger 
                   value="free" 
                   disabled 
-                  className="cursor-not-allowed data-[disabled]:opacity-100 data-[disabled]:text-foreground"
+                  className="cursor-not-allowed data-[disabled]:opacity-100 data-[disabled]:text-muted-foreground"
                 >
                   Free Templates
                 </TabsTrigger>
