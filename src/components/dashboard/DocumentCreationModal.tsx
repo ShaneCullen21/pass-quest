@@ -154,7 +154,7 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
     }
 
     // Navigate to document editor with template and project
-    navigate(`/projects/${selectedProject}/document-editor?templateId=${templateToUse}&type=${documentType}`);
+    navigate(`/document-editor?templateId=${templateToUse}&projectId=${selectedProject}&type=${documentType}`);
     onClose();
   };
 
