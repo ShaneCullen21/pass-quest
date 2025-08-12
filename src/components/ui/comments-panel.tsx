@@ -1,13 +1,15 @@
 import React from 'react';
 import { Button } from './button';
 import { ScrollArea } from './scroll-area';
-import { X, Check, MessageSquare } from 'lucide-react';
+import { X, Check, MessageSquare, Trash2 } from 'lucide-react';
 import { Comment } from './advanced-template-editor';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface CommentsPanelProps {
   comments: Comment[];
   onResolveComment: (commentId: string) => void;
   onUnresolveComment: (commentId: string) => void;
+  onDeleteComment: (commentId: string) => void;
   onCommentClick: (comment: Comment) => void;
   onClose: () => void;
 }
@@ -16,9 +18,11 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
   comments,
   onResolveComment,
   onUnresolveComment,
+  onDeleteComment,
   onCommentClick,
   onClose,
 }) => {
+  const { isAdmin } = useUserRole();
   const activeComments = comments.filter(comment => !comment.resolved);
   const resolvedComments = comments.filter(comment => comment.resolved);
 
@@ -83,18 +87,36 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
                       </div>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onResolveComment(comment.id);
-                    }}
-                    className="w-full flex items-center gap-2"
-                  >
-                    <Check className="h-3 w-3" />
-                    Resolve
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onResolveComment(comment.id);
+                      }}
+                      className="w-full flex items-center gap-2"
+                    >
+                      <Check className="h-3 w-3" />
+                      Resolve
+                    </Button>
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Are you sure you want to delete this comment?')) {
+                            onDeleteComment(comment.id);
+                          }
+                        }}
+                        className="w-full flex items-center gap-2 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
               </div>

@@ -290,22 +290,13 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   }, [content, autoSave, saveStatus, title]);
   const handleAddComment = useCallback(async (commentText: string) => {
     if (selectedRange && selectedText && user) {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        content: commentText,
-        author: 'You',
-        timestamp: new Date(),
-        resolved: false,
-        range: selectedRange,
-        selectedText: selectedText
-      };
-
-      // For customized templates, always save to the template's own ID
-      const targetTemplateId = templateId;
+      // For master templates or existing templates, use templateId
+      // For new customized templates without ID yet, use masterTemplateId
+      const targetTemplateId = templateId || masterTemplateId;
       
       if (targetTemplateId) {
         try {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('template_comments')
             .insert({
               template_id: targetTemplateId,
@@ -316,68 +307,103 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               range_from: selectedRange.from,
               range_to: selectedRange.to,
               resolved: false
-            });
+            })
+            .select()
+            .single();
 
           if (error) {
             console.error('Error saving comment:', error);
+            return;
+          }
+
+          if (data) {
+            const newComment: Comment = {
+              id: data.id,
+              content: data.content,
+              author: data.author,
+              timestamp: new Date(data.created_at),
+              resolved: data.resolved,
+              range: {
+                from: data.range_from,
+                to: data.range_to
+              },
+              selectedText: data.selected_text
+            };
+
+            setComments(prev => [...prev, newComment]);
           }
         } catch (error) {
           console.error('Error in handleAddComment:', error);
         }
       }
 
-      setComments(prev => [...prev, newComment]);
       setShowCommentForm(false);
       setShowCommentIcon(false);
       setSelectedRange(null);
       setSelectedText('');
     }
-  }, [selectedRange, selectedText, templateId, user]);
+  }, [selectedRange, selectedText, templateId, masterTemplateId, user]);
   const handleResolveComment = useCallback(async (commentId: string) => {
-    // Update in database only if we have a template ID
-    if (templateId && user) {
-      try {
-        const { error } = await supabase
-          .from('template_comments')
-          .update({ resolved: true })
-          .eq('id', commentId)
-          .eq('user_id', user.id);
+    // Update in database
+    try {
+      const { error } = await supabase
+        .from('template_comments')
+        .update({ resolved: true })
+        .eq('id', commentId);
 
-        if (error) {
-          console.error('Error resolving comment:', error);
-        }
-      } catch (error) {
-        console.error('Error in handleResolveComment:', error);
+      if (error) {
+        console.error('Error resolving comment:', error);
+        return;
       }
+    } catch (error) {
+      console.error('Error in handleResolveComment:', error);
+      return;
     }
 
     setComments(prev => prev.map(comment => 
       comment.id === commentId ? { ...comment, resolved: true } : comment
     ));
-  }, [templateId, user]);
+  }, []);
 
   const handleUnresolveComment = useCallback(async (commentId: string) => {
-    // Update in database only if we have a template ID
-    if (templateId && user) {
-      try {
-        const { error } = await supabase
-          .from('template_comments')
-          .update({ resolved: false })
-          .eq('id', commentId)
-          .eq('user_id', user.id);
+    // Update in database
+    try {
+      const { error } = await supabase
+        .from('template_comments')
+        .update({ resolved: false })
+        .eq('id', commentId);
 
-        if (error) {
-          console.error('Error unresolving comment:', error);
-        }
-      } catch (error) {
-        console.error('Error in handleUnresolveComment:', error);
+      if (error) {
+        console.error('Error unresolving comment:', error);
+        return;
       }
+    } catch (error) {
+      console.error('Error in handleUnresolveComment:', error);
+      return;
     }
 
     setComments(prev => prev.map(comment => 
       comment.id === commentId ? { ...comment, resolved: false } : comment
     ));
-  }, [templateId, user]);
+  }, []);
+
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('template_comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return;
+      }
+
+      setComments(prev => prev.filter(comment => comment.id !== commentId));
+    } catch (error) {
+      console.error('Error in handleDeleteComment:', error);
+    }
+  }, []);
   const handleCommentClick = useCallback((comment: Comment) => {
     if (!editor) return;
 
@@ -511,7 +537,14 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
 
         {/* Comments Panel - Same height as document area */}
         {showComments && <div className="w-80 flex flex-col">
-          <CommentsPanel comments={comments} onResolveComment={handleResolveComment} onUnresolveComment={handleUnresolveComment} onCommentClick={handleCommentClick} onClose={() => setShowComments(false)} />
+          <CommentsPanel 
+            comments={comments} 
+            onResolveComment={handleResolveComment} 
+            onUnresolveComment={handleUnresolveComment} 
+            onDeleteComment={handleDeleteComment}
+            onCommentClick={handleCommentClick} 
+            onClose={() => setShowComments(false)} 
+          />
         </div>}
       </div>
     </div>;
