@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { AddProjectModal } from "@/components/projects/AddProjectModal";
 
 interface Template {
   id: string;
@@ -35,6 +37,7 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -160,10 +163,20 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
       setSelectedTemplate("");
     }
     setSelectedProject("");
+    setShowAddProjectModal(false);
     onClose();
   };
 
+  const handleProjectAdded = () => {
+    setShowAddProjectModal(false);
+    fetchTemplatesAndProjects(); // Refresh projects list
+  };
+
   const getModalTitle = () => {
+    if (preselectedTemplateId) {
+      return "Create Document";
+    }
+    
     switch (documentType) {
       case "proposal":
         return "Create New Proposal";
@@ -220,7 +233,18 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
               )}
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Select Project</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Select Project</label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAddProjectModal(true)}
+                    className="h-8 px-2 text-xs"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    New Project
+                  </Button>
+                </div>
                 <Select value={selectedProject} onValueChange={setSelectedProject}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a project" />
@@ -266,6 +290,12 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
           </Button>
         </div>
       </DialogContent>
+
+      <AddProjectModal
+        open={showAddProjectModal}
+        onOpenChange={setShowAddProjectModal}
+        onProjectAdded={handleProjectAdded}
+      />
     </Dialog>
   );
 };
