@@ -83,6 +83,18 @@ export default {
 				'status-cancelled': {
 					DEFAULT: 'hsl(var(--status-cancelled))',
 					foreground: 'hsl(var(--status-cancelled-foreground))'
+				},
+				'template-contract': {
+					DEFAULT: 'hsl(var(--template-contract))',
+					foreground: 'hsl(var(--template-contract-foreground))'
+				},
+				'template-invoice': {
+					DEFAULT: 'hsl(var(--template-invoice))',
+					foreground: 'hsl(var(--template-invoice-foreground))'
+				},
+				'template-proposal': {
+					DEFAULT: 'hsl(var(--template-proposal))',
+					foreground: 'hsl(var(--template-proposal-foreground))'
 				}
 			},
 			borderRadius: {

@@ -47,6 +47,14 @@ All colors MUST be HSL.
     --status-cancelled: 215 14% 34%;
     --status-cancelled-foreground: 0 0% 98%;
 
+    /* Template category colors */
+    --template-contract: 217 91% 60%;
+    --template-contract-foreground: 0 0% 98%;
+    --template-invoice: 142 76% 36%;
+    --template-invoice-foreground: 0 0% 98%;
+    --template-proposal: 271 91% 65%;
+    --template-proposal-foreground: 0 0% 98%;
+
     /* Auth-specific colors */
     --auth-background: 0 0% 96%;
     --auth-card: 0 0% 100%;
@@ -113,6 +121,14 @@ All colors MUST be HSL.
     --status-completed-foreground: 0 0% 98%;
     --status-cancelled: 215 14% 34%;
     --status-cancelled-foreground: 0 0% 98%;
+
+    /* Template category colors - dark mode */
+    --template-contract: 217 91% 60%;
+    --template-contract-foreground: 0 0% 98%;
+    --template-invoice: 142 76% 36%;
+    --template-invoice-foreground: 0 0% 98%;
+    --template-proposal: 271 91% 65%;
+    --template-proposal-foreground: 0 0% 98%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

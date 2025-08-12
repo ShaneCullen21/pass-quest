@@ -255,11 +255,11 @@ const Templates = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Proposal':
-        return 'bg-secondary text-secondary-foreground border-secondary';
+        return 'bg-template-proposal/10 text-template-proposal border-template-proposal/20';
       case 'Contract':
-        return 'bg-primary/10 text-primary border-primary/20';
+        return 'bg-template-contract/10 text-template-contract border-template-contract/20';
       case 'Invoice':
-        return 'bg-accent text-accent-foreground border-accent';
+        return 'bg-template-invoice/10 text-template-invoice border-template-invoice/20';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }

@@ -32,6 +32,20 @@ const TemplateEditor = () => {
     user
   } = useAuth();
 
+  // Function to get category color classes
+  const getCategoryColorClass = (category: string) => {
+    switch (category) {
+      case 'Proposal':
+        return 'bg-template-proposal/10 text-template-proposal border-template-proposal/20';
+      case 'Contract':
+        return 'bg-template-contract/10 text-template-contract border-template-contract/20';
+      case 'Invoice':
+        return 'bg-template-invoice/10 text-template-invoice border-template-invoice/20';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
   // Function to copy comments from master template to new customized template
   const copyCommentsToNewTemplate = async (newTemplateId: string, masterTemplateId: string) => {
     if (!user) return;
@@ -319,6 +333,9 @@ const TemplateEditor = () => {
                 <div className="ml-2 flex items-center gap-2">
                   <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-secondary border-secondary text-secondary-foreground'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
+                  </span>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCategoryColorClass(templateCategory)}`}>
+                    {templateCategory.toUpperCase()}
                   </span>
                   {templateType === 'master' && (
                     <Select value={templateCategory} onValueChange={setTemplateCategory}>
