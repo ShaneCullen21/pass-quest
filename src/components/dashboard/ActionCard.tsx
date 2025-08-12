@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { FileText, Users, Receipt, Workflow } from "lucide-react";
+import { Presentation, Users, Receipt, Workflow } from "lucide-react";
 
 interface ActionCardProps {
   type: "proposal" | "contract" | "invoice" | "flow";
@@ -8,7 +8,7 @@ interface ActionCardProps {
 const ActionCard = ({ type }: ActionCardProps) => {
   const config = {
     proposal: {
-      icon: FileText,
+      icon: Presentation,
       label: "+ PROPOSAL"
     },
     contract: {
