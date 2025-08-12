@@ -11,7 +11,7 @@ import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/contexts/ProfileContext";
 import { AddClientModal } from "@/components/clients/AddClientModal";
 import { DeleteClientConfirmation } from "@/components/clients/DeleteClientConfirmation";
 import { TableLoading } from "@/components/ui/table-loading";

@@ -12,12 +12,12 @@ import { DocumentCreationModal } from "@/components/dashboard/DocumentCreationMo
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/contexts/ProfileContext";
 import { MoreHorizontal, Search, Bell, HelpCircle } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDocumentType, setSelectedDocumentType] = useState<"proposal" | "contract" | "invoice">("proposal");
@@ -125,7 +125,9 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-foreground mb-6">Welcome back, {profile?.first_name || user?.email?.split('@')[0] || 'User'}!</h1>
+          <h1 className="text-3xl font-semibold text-foreground mb-6">
+            Welcome back, {profileLoading ? 'Loading...' : (profile?.first_name || user?.email?.split('@')[0] || 'User')}!
+          </h1>
           
           {/* Stats Section */}
           <div className="mb-8">

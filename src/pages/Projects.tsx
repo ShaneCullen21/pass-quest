@@ -14,7 +14,7 @@ import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/contexts/ProfileContext";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
 import { DeleteProjectConfirmation } from "@/components/projects/DeleteProjectConfirmation";
 import { supabase } from "@/integrations/supabase/client";
