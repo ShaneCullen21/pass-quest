@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Users, Save, Send, Palette } from "lucide-react";
+import { ArrowLeft, User, Users, Save, Send, Palette, Edit3, Check, X } from "lucide-react";
+import { format } from "date-fns";
 import { DocumentDraggableField } from "@/components/contracts/DocumentDraggableField";
 import { ReadOnlyDocumentViewer } from "@/components/contracts/ReadOnlyDocumentViewer";
 import { ResizableField } from "@/components/contracts/ResizableField";
@@ -68,6 +70,8 @@ const DocumentEditor = () => {
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [isSendingSignature, setIsSendingSignature] = useState(false);
   const [clientColors, setClientColors] = useState<{ [clientId: string]: string }>({});
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editableTitle, setEditableTitle] = useState("");
   const isEditingMode = !!documentId;
 
   useEffect(() => {
@@ -212,6 +216,7 @@ const DocumentEditor = () => {
       });
       setProject(projectData);
       setClients(clientsData);
+      setEditableTitle(templateData.title);
     } catch (error) {
       console.error('Error in fetchData:', error);
       toast({
@@ -276,6 +281,57 @@ const DocumentEditor = () => {
     return client ? `${client.first_name} ${client.last_name}` : 'Unknown Client';
   };
 
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    const statusMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      active: "default",
+      completed: "secondary",
+      draft: "outline",
+      sent: "default",
+      accepted: "secondary",
+      rejected: "destructive",
+      terminated: "destructive",
+      paid: "secondary",
+    };
+    return statusMap[status] || "outline";
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'proposal':
+        return 'bg-template-proposal/10 text-template-proposal border-template-proposal/20';
+      case 'contract':
+        return 'bg-template-contract/10 text-template-contract border-template-contract/20';
+      case 'invoice':
+        return 'bg-template-invoice/10 text-template-invoice border-template-invoice/20';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const handleEditTitle = () => {
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = () => {
+    if (editableTitle.trim() && template) {
+      setTemplate({ ...template, title: editableTitle.trim() });
+      setIsEditingTitle(false);
+    }
+  };
+
+  const handleCancelEditTitle = () => {
+    setEditableTitle(template?.title || "");
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      handleCancelEditTitle();
+    }
+  };
+
   const handleSave = async () => {
     if (!template || !project) return;
 
@@ -307,6 +363,9 @@ const DocumentEditor = () => {
           });
           return;
         }
+
+        // Update existingDocument state with new updated_at
+        setExistingDocument({ ...existingDocument, title: template.title, updated_at: new Date().toISOString() });
         documentId = existingDocument.id;
       } else {
         // Create new document
@@ -499,13 +558,54 @@ const DocumentEditor = () => {
               <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <div>
-                <h1 className="text-lg font-semibold">Document Editor</h1>
-                <p className="text-sm text-muted-foreground">
-                  {template.title} • {project.name}
-                </p>
+              <div className="flex flex-col group">
+                {/* Editable Title */}
+                <div className="flex items-center gap-2">
+                  {isEditingTitle ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editableTitle}
+                        onChange={(e) => setEditableTitle(e.target.value)}
+                        onKeyDown={handleTitleKeyDown}
+                        onBlur={handleSaveTitle}
+                        className="text-lg font-semibold h-8 px-2 py-1 min-w-[200px]"
+                        autoFocus
+                      />
+                      <Button variant="ghost" size="sm" onClick={handleSaveTitle} className="h-6 w-6 p-0">
+                        <Check className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={handleCancelEditTitle} className="h-6 w-6 p-0">
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-lg font-semibold">{template.title}</h1>
+                      <Button variant="ghost" size="sm" onClick={handleEditTitle} className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Edit3 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Type and Status Tags */}
+                  <div className="flex items-center gap-2 ml-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeColor(existingDocument?.type || documentType || template.type?.toLowerCase() || 'contract')}`}>
+                      {(existingDocument?.type || documentType || template.type || 'Contract').charAt(0).toUpperCase() + (existingDocument?.type || documentType || template.type || 'Contract').slice(1)}
+                    </span>
+                    <Badge variant={getStatusVariant(existingDocument?.status || 'draft')}>
+                      {(existingDocument?.status || 'draft').charAt(0).toUpperCase() + (existingDocument?.status || 'draft').slice(1)}
+                    </Badge>
+                  </div>
+                </div>
+                
+                {/* Last Updated Info */}
+                <div className="text-sm text-muted-foreground">
+                  Last updated: {existingDocument?.updated_at 
+                    ? format(new Date(existingDocument.updated_at), "MMM dd, yyyy 'at' h:mm a")
+                    : format(new Date(), "MMM dd, yyyy 'at' h:mm a")
+                  }
+                </div>
               </div>
-              <Badge variant="secondary">Document Setup</Badge>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleSave} disabled={saving} variant="outline" size="sm" className="h-8">
