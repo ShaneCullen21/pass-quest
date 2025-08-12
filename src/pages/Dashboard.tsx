@@ -50,7 +50,7 @@ const Dashboard = () => {
     
     setDocumentsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: docs, error } = await supabase
         .from('documents')
         .select(`
           id,
@@ -58,23 +58,42 @@ const Dashboard = () => {
           status,
           updated_at,
           type,
-          project_id,
-          projects (
-            id,
-            name
-          )
+          project_id
         `)
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) {
         console.error('Error fetching documents:', error);
+        setDocuments([]);
       } else {
-        setDocuments(data || []);
+        const projectIds = Array.from(new Set((docs || []).map(d => d.project_id).filter(Boolean)));
+        let projectsMap: Record<string, { id: string; name: string }> = {};
+        
+        if (projectIds.length) {
+          const { data: projects, error: projectsError } = await supabase
+            .from('projects')
+            .select('id, name')
+            .in('id', projectIds);
+          
+          if (projectsError) {
+            console.error('Error fetching related projects:', projectsError);
+          } else if (projects) {
+            projectsMap = Object.fromEntries(projects.map(p => [p.id, p]));
+          }
+        }
+
+        const enriched = (docs || []).map(d => ({
+          ...d,
+          project_name: d.project_id ? projectsMap[d.project_id]?.name || null : null,
+        }));
+
+        setDocuments(enriched);
       }
     } catch (error) {
       console.error('Error in fetchRecentDocuments:', error);
+      setDocuments([]);
     } finally {
       setDocumentsLoading(false);
     }
@@ -269,12 +288,12 @@ const Dashboard = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {document.projects ? (
+                        {document.project_name ? (
                           <Link 
                             to={`/projects/${document.project_id}`}
                             className="hover:underline text-primary"
                           >
-                            {document.projects.name}
+                            {document.project_name}
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">No project</span>
