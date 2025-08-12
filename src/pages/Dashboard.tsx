@@ -58,35 +58,23 @@ const Dashboard = () => {
           status,
           updated_at,
           type,
-          project_id
+          project_id,
+          projects (
+            id,
+            name
+          )
         `)
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
-        .limit(50);
+        .limit(10);
 
       if (error) {
         console.error('Error fetching documents:', error);
         setDocuments([]);
       } else {
-        const projectIds = Array.from(new Set((docs || []).map(d => d.project_id).filter(Boolean)));
-        let projectsMap: Record<string, { id: string; name: string }> = {};
-        
-        if (projectIds.length) {
-          const { data: projects, error: projectsError } = await supabase
-            .from('projects')
-            .select('id, name')
-            .in('id', projectIds);
-          
-          if (projectsError) {
-            console.error('Error fetching related projects:', projectsError);
-          } else if (projects) {
-            projectsMap = Object.fromEntries(projects.map(p => [p.id, p]));
-          }
-        }
-
         const enriched = (docs || []).map(d => ({
           ...d,
-          project_name: d.project_id ? projectsMap[d.project_id]?.name || null : null,
+          project_name: d.projects?.name || null,
         }));
 
         setDocuments(enriched);

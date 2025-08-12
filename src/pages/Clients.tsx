@@ -404,6 +404,7 @@ const Clients = () => {
         onOpenChange={(open) => !open && setDeletingClient(null)}
         onConfirm={handleDeleteClient}
         clientName={deletingClient ? `${deletingClient.first_name} ${deletingClient.last_name}` : ""}
+        clientId={deletingClient?.id || ""}
       />
     </div>
   );

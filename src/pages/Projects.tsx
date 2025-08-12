@@ -427,6 +427,7 @@ const Projects = () => {
         onOpenChange={(open) => !open && setDeletingProject(null)}
         onConfirm={handleDeleteProject}
         projectName={deletingProject?.name || ""}
+        projectId={deletingProject?.id || ""}
       />
     </div>;
 };
