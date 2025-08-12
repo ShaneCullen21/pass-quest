@@ -32,7 +32,7 @@ const Navigation = ({ className }: NavigationProps) => {
             className={cn(
               "text-sm font-medium transition-colors hover:text-primary",
               location.pathname === item.href
-                ? "text-active-tab-foreground bg-active-tab px-3 py-2 rounded-md"
+                ? "text-primary border-b-2 border-primary pb-1"
                 : "text-muted-foreground"
             )}
           >
