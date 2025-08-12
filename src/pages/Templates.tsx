@@ -367,7 +367,7 @@ const Templates = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => setShowPurchasedAlert(false)}
-                      className="ml-4 flex-shrink-0 bg-[#6D312C] text-white border-[#6D312C] hover:bg-[#6D312C]/90"
+                      className="ml-4 flex-shrink-0 bg-[#6D312C] text-white border-[#6D312C] hover:bg-[#6D312C]/90 hover:text-white"
                     >
                       Got it
                     </Button>
