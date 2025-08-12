@@ -193,7 +193,9 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-semibold">Latest updates</CardTitle>
-              <Button variant="outline" size="sm">View all projects</Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/projects">View all projects</Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -240,19 +242,19 @@ const Dashboard = () => {
                   >
                     Last edited
                   </SortableTableHeader>
-                  <TableHead className="w-12 text-muted-foreground font-medium">Actions</TableHead>
+                  
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {documentsLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Loading recent documents...
                     </TableCell>
                   </TableRow>
                 ) : sortedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       No documents found. Create your first document to get started!
                     </TableCell>
                   </TableRow>
@@ -289,11 +291,6 @@ const Dashboard = () => {
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(document.updated_at), "MMM dd, yyyy 'at' h:mm a")}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
