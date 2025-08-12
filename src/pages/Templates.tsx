@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/ui/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt, Search, Bell, HelpCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +44,7 @@ const Templates = () => {
   const [activeTab, setActiveTab] = useState<string>('master'); // Track active tab
   const [showProjectSelection, setShowProjectSelection] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [showPurchasedAlert, setShowPurchasedAlert] = useState(true);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     templateId: string;
@@ -297,9 +300,40 @@ const Templates = () => {
           {/* Content for both admin and regular users - shows master templates */}
           <div className={isAdmin ? "space-y-4" : ""}>
             <TabsContent value="master" className="space-y-4">
+              {/* Info Alert for Purchased Templates */}
+              {!isAdmin && activeTab === 'master' && showPurchasedAlert && (
+                <Alert className="border-[#6D312C]/20 bg-[#6D312C]/5">
+                  <AlertDescription className="flex items-center justify-between text-[#6D312C]">
+                    <span>Every time you decide to use a purchased template we will create a copy of it. The original template you've purchased will remain unchanged.</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowPurchasedAlert(false)}
+                      className="ml-4 flex-shrink-0 bg-[#6D312C] text-white border-[#6D312C] hover:bg-[#6D312C]/90"
+                    >
+                      Got it
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               {loading2 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Loading templates...
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="p-4">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-16 h-16 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-6 w-1/3" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-8 w-16" />
+                          <Skeleton className="h-8 w-16" />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <>
@@ -334,10 +368,9 @@ const Templates = () => {
                                   
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h3 className="font-semibold text-lg truncate">{template.title}</h3>
-                                      <Badge variant="default">Purchased</Badge>
-                                    </div>
+                                     <div className="flex items-center gap-2 mb-1">
+                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                     </div>
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span>Created: {formatDate(template.created_at)}</span>
                                       <span>Updated: {formatDate(template.updated_at)}</span>
@@ -397,8 +430,23 @@ const Templates = () => {
           {!isAdmin && (
             <TabsContent value="customized" className="space-y-4">
               {loading2 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Loading templates...
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="p-4">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-16 h-16 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-6 w-1/3" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-8 w-16" />
+                          <Skeleton className="h-8 w-16" />
+                          <Skeleton className="h-8 w-16" />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <>
@@ -430,10 +478,9 @@ const Templates = () => {
                                   
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h3 className="font-semibold text-lg truncate">{template.title}</h3>
-                                      <Badge variant="secondary">Customized</Badge>
-                                    </div>
+                                     <div className="flex items-center gap-2 mb-1">
+                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                     </div>
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span>Created: {formatDate(template.created_at)}</span>
                                       <span>Updated: {formatDate(template.updated_at)}</span>
