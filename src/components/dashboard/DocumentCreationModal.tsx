@@ -44,13 +44,12 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
   const fetchTemplatesAndProjects = async () => {
     setLoading(true);
     try {
-      // Fetch customized templates that match the document type
+      // Fetch all customized templates
       const { data: templatesData, error: templatesError } = await supabase
         .from('templates')
         .select('id, title, category')
         .eq('user_id', user?.id)
-        .eq('template_type', 'customized')
-        .ilike('title', `%${documentType}%`);
+        .eq('template_type', 'customized');
 
       if (templatesError) throw templatesError;
 
