@@ -99,17 +99,14 @@ const Templates = () => {
     if (!user) return;
     
     try {
-      // Fetch master templates (visible to all) and user's customized templates with master template info
-      const { data, error } = await supabase
+      // First fetch all templates
+      const { data: templatesData, error: templatesError } = await supabase
         .from('templates')
-        .select(`
-          *,
-          master_template:templates!master_template_id(title)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching templates:', error);
+      if (templatesError) {
+        console.error('Error fetching templates:', templatesError);
         toast({
           variant: "destructive",
           title: "Error",
@@ -118,7 +115,36 @@ const Templates = () => {
         return;
       }
 
-      setTemplates((data || []) as Template[]);
+      // Get all master template IDs from customized templates
+      const masterTemplateIds = templatesData
+        ?.filter(t => t.template_type === 'customized' && t.master_template_id)
+        .map(t => t.master_template_id) || [];
+
+      // Fetch master template names
+      let masterTemplatesMap: Record<string, string> = {};
+      if (masterTemplateIds.length > 0) {
+        const { data: masterTemplates, error: masterError } = await supabase
+          .from('templates')
+          .select('id, title')
+          .in('id', masterTemplateIds);
+
+        if (!masterError && masterTemplates) {
+          masterTemplatesMap = masterTemplates.reduce((acc, template) => {
+            acc[template.id] = template.title;
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
+      // Combine the data
+      const templatesWithMasterInfo = templatesData?.map(template => ({
+        ...template,
+        master_template: template.master_template_id && masterTemplatesMap[template.master_template_id] 
+          ? { title: masterTemplatesMap[template.master_template_id] }
+          : null
+      })) || [];
+
+      setTemplates(templatesWithMasterInfo as Template[]);
     } catch (error) {
       console.error('Error in fetchTemplates:', error);
       toast({
