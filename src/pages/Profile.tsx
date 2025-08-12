@@ -377,7 +377,7 @@ const Profile = () => {
               </div>
               
               <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={saving}>
+                <Button onClick={handleSave} disabled={saving} className="bg-[#6d312c] bg-[6D312C]">
                   {saving ? <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Saving...
