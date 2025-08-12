@@ -303,11 +303,8 @@ const Templates = () => {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
-                                      <Badge variant="default">Master</Badge>
+                                      <Badge variant="default">Purchased</Badge>
                                     </div>
-                                    <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-                                      {template.description || 'No description provided'}
-                                    </p>
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span>Created: {formatDate(template.created_at)}</span>
                                       <span>Updated: {formatDate(template.updated_at)}</span>
@@ -401,9 +398,6 @@ const Templates = () => {
                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
                                       <Badge variant="secondary">Customized</Badge>
                                     </div>
-                                    <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-                                      {template.description || 'No description provided'}
-                                    </p>
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span>Created: {formatDate(template.created_at)}</span>
                                       <span>Updated: {formatDate(template.updated_at)}</span>
