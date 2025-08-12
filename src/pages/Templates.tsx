@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/ui/navigation";
-import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon } from "lucide-react";
+import { Plus, Edit, FileText, Trash2, ArrowLeft, FileIcon, Users, Receipt } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -194,6 +194,16 @@ const Templates = () => {
     return format(new Date(dateString), 'MMM dd, yyyy');
   };
 
+  const getTemplateIcon = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('invoice')) {
+      return Receipt;
+    } else if (lowerTitle.includes('service agreement') || lowerTitle.includes('contract')) {
+      return Users;
+    }
+    return FileIcon;
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -296,7 +306,10 @@ const Templates = () => {
                                 <div className="flex items-center gap-4 flex-1">
                                   {/* Preview Image */}
                                   <div className="w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <FileIcon className="h-6 w-6 text-gray-400" />
+                                    {(() => {
+                                      const IconComponent = getTemplateIcon(template.title);
+                                      return <IconComponent className="h-6 w-6 text-gray-400" />;
+                                    })()}
                                   </div>
                                   
                                   {/* Content */}
@@ -389,7 +402,10 @@ const Templates = () => {
                                 <div className="flex items-center gap-4 flex-1">
                                   {/* Preview Image */}
                                   <div className="w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <FileIcon className="h-6 w-6 text-gray-400" />
+                                    {(() => {
+                                      const IconComponent = getTemplateIcon(template.title);
+                                      return <IconComponent className="h-6 w-6 text-gray-400" />;
+                                    })()}
                                   </div>
                                   
                                   {/* Content */}
