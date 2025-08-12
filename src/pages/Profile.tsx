@@ -25,7 +25,8 @@ const Profile = () => {
     avatar_url: "",
     new_email: "",
     current_password: "",
-    new_password: ""
+    new_password: "",
+    confirm_new_password: ""
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -46,7 +47,8 @@ const Profile = () => {
         avatar_url: profile.avatar_url || "",
         new_email: "",
         current_password: "",
-        new_password: ""
+        new_password: "",
+        confirm_new_password: ""
       });
     }
   }, [profile, user]);
@@ -183,6 +185,17 @@ const Profile = () => {
             description: "Please enter your current password to change it.",
             variant: "destructive"
           });
+          setSaving(false);
+          return;
+        }
+
+        if (formData.new_password !== formData.confirm_new_password) {
+          toast({
+            title: "Error",
+            description: "New passwords do not match.",
+            variant: "destructive"
+          });
+          setSaving(false);
           return;
         }
 
@@ -219,7 +232,8 @@ const Profile = () => {
         setFormData(prev => ({
           ...prev,
           current_password: "",
-          new_password: ""
+          new_password: "",
+          confirm_new_password: ""
         }));
       }
 
@@ -421,6 +435,17 @@ const Profile = () => {
                   <p className="text-sm text-muted-foreground">
                     Leave blank to keep current password.
                   </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm_new_password">Confirm New Password</Label>
+                  <Input
+                    id="confirm_new_password"
+                    name="confirm_new_password"
+                    type="password"
+                    value={formData.confirm_new_password}
+                    onChange={handleInputChange}
+                    placeholder="Confirm new password"
+                  />
                 </div>
               </div>
               
