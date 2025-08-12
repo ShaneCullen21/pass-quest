@@ -26,9 +26,10 @@ interface DocumentCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   documentType: "proposal" | "contract" | "invoice";
+  preselectedTemplateId?: string;
 }
 
-export const DocumentCreationModal = ({ isOpen, onClose, documentType }: DocumentCreationModalProps) => {
+export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselectedTemplateId }: DocumentCreationModalProps) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -41,71 +42,80 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
   useEffect(() => {
     if (isOpen && user) {
       fetchTemplatesAndProjects();
+      // Set preselected template if provided
+      if (preselectedTemplateId) {
+        setSelectedTemplate(preselectedTemplateId);
+      }
     }
-  }, [isOpen, user, documentType]);
+  }, [isOpen, user, documentType, preselectedTemplateId]);
 
   const fetchTemplatesAndProjects = async () => {
     setLoading(true);
     try {
-      // Fetch all customized templates
-      const { data: templatesData, error: templatesError } = await supabase
-        .from('templates')
-        .select('id, title, category, type, template_type, master_template_id')
-        .eq('user_id', user?.id)
-        .eq('template_type', 'customized');
-
-      if (templatesError) throw templatesError;
-
-      // Get unique master template IDs for customized templates
-      const masterTemplateIds = templatesData
-        ?.filter(t => t.template_type === 'customized' && t.master_template_id)
-        .map(t => t.master_template_id) || [];
-
-      // Fetch master template types
-      let masterTemplatesMap: Record<string, { title: string; type: string }> = {};
-      if (masterTemplateIds.length > 0) {
-        const { data: masterTemplates, error: masterError } = await supabase
+      // Only fetch templates if no preselected template
+      if (!preselectedTemplateId) {
+        // Fetch all customized templates
+        const { data: templatesData, error: templatesError } = await supabase
           .from('templates')
-          .select('id, title, type')
-          .in('id', masterTemplateIds);
+          .select('id, title, category, type, template_type, master_template_id')
+          .eq('user_id', user?.id)
+          .eq('template_type', 'customized');
 
-        if (!masterError && masterTemplates) {
-          masterTemplatesMap = masterTemplates.reduce((acc, template) => {
-            acc[template.id] = { 
-              title: template.title,
-              type: template.type || 'Contract'
-            };
-            return acc;
-          }, {} as Record<string, { title: string; type: string }>);
+        if (templatesError) throw templatesError;
+
+        // Get unique master template IDs for customized templates
+        const masterTemplateIds = templatesData
+          ?.filter(t => t.template_type === 'customized' && t.master_template_id)
+          .map(t => t.master_template_id) || [];
+
+        // Fetch master template types
+        let masterTemplatesMap: Record<string, { title: string; type: string }> = {};
+        if (masterTemplateIds.length > 0) {
+          const { data: masterTemplates, error: masterError } = await supabase
+            .from('templates')
+            .select('id, title, type')
+            .in('id', masterTemplateIds);
+
+          if (!masterError && masterTemplates) {
+            masterTemplatesMap = masterTemplates.reduce((acc, template) => {
+              acc[template.id] = { 
+                title: template.title,
+                type: template.type || 'Contract'
+              };
+              return acc;
+            }, {} as Record<string, { title: string; type: string }>);
+          }
         }
-      }
 
-      // Combine the data and inherit type from master template for customized templates
-      const templatesWithMasterInfo = templatesData?.map(template => {
-        const masterInfo = template.master_template_id && masterTemplatesMap[template.master_template_id];
-        return {
-          ...template,
-          // For customized templates, inherit type from master template
-          type: template.template_type === 'customized' && masterInfo 
-            ? masterInfo.type 
-            : template.type || 'Contract'
+        // Combine the data and inherit type from master template for customized templates
+        const templatesWithMasterInfo = templatesData?.map(template => {
+          const masterInfo = template.master_template_id && masterTemplatesMap[template.master_template_id];
+          return {
+            ...template,
+            // For customized templates, inherit type from master template
+            type: template.template_type === 'customized' && masterInfo 
+              ? masterInfo.type 
+              : template.type || 'Contract'
+          };
+        }) || [];
+
+        // Filter templates by document type
+        const getTemplateTypeFromDocumentType = (docType: string) => {
+          switch (docType) {
+            case "proposal": return "Proposal";
+            case "contract": return "Contract";
+            case "invoice": return "Invoice";
+            default: return "Contract";
+          }
         };
-      }) || [];
 
-      // Filter templates by document type
-      const getTemplateTypeFromDocumentType = (docType: string) => {
-        switch (docType) {
-          case "proposal": return "Proposal";
-          case "contract": return "Contract";
-          case "invoice": return "Invoice";
-          default: return "Contract";
-        }
-      };
+        const targetType = getTemplateTypeFromDocumentType(documentType);
+        const filteredTemplates = templatesWithMasterInfo.filter(template => 
+          template.type === targetType
+        );
 
-      const targetType = getTemplateTypeFromDocumentType(documentType);
-      const filteredTemplates = templatesWithMasterInfo.filter(template => 
-        template.type === targetType
-      );
+        setTemplates(filteredTemplates as Template[]);
+      }
 
       // Fetch user's projects
       const { data: projectsData, error: projectsError } = await supabase
@@ -116,7 +126,6 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
 
       if (projectsError) throw projectsError;
 
-      setTemplates(filteredTemplates as Template[]);
       setProjects(projectsData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -131,7 +140,8 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
   };
 
   const handleCreate = () => {
-    if (!selectedTemplate || !selectedProject) {
+    const templateToUse = preselectedTemplateId || selectedTemplate;
+    if (!templateToUse || !selectedProject) {
       toast({
         title: "Missing selection",
         description: "Please select both a template and a project",
@@ -141,12 +151,14 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
     }
 
     // Navigate to document editor with template and project
-    navigate(`/projects/${selectedProject}/document-editor?templateId=${selectedTemplate}&type=${documentType}`);
+    navigate(`/projects/${selectedProject}/document-editor?templateId=${templateToUse}&type=${documentType}`);
     onClose();
   };
 
   const handleClose = () => {
-    setSelectedTemplate("");
+    if (!preselectedTemplateId) {
+      setSelectedTemplate("");
+    }
     setSelectedProject("");
     onClose();
   };
@@ -178,32 +190,34 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
             </div>
           ) : (
             <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Select Template</label>
-                <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Choose a ${documentType} template`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {templates.length === 0 ? (
-                      <SelectItem value="no-templates" disabled>
-                        No {documentType} templates found
-                      </SelectItem>
-                    ) : (
-                      templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.title}
+              {!preselectedTemplateId && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Template</label>
+                  <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Choose a ${documentType} template`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.length === 0 ? (
+                        <SelectItem value="no-templates" disabled>
+                          No {documentType} templates found
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                {templates.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Create a customized {documentType} template first in the Templates section
-                  </p>
-                )}
-              </div>
+                      ) : (
+                        templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.title}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {templates.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Create a customized {documentType} template first in the Templates section
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Select Project</label>
@@ -246,7 +260,7 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType }: Documen
           </Button>
           <Button 
             onClick={handleCreate} 
-            disabled={!selectedTemplate || !selectedProject || loading}
+            disabled={(!preselectedTemplateId && !selectedTemplate) || !selectedProject || loading}
           >
             Create {documentType.charAt(0).toUpperCase() + documentType.slice(1)}
           </Button>

@@ -633,6 +633,7 @@ const Templates = () => {
             selectedTemplate?.type === 'Proposal' ? 'proposal' :
             selectedTemplate?.type === 'Invoice' ? 'invoice' : 'contract'
           }
+          preselectedTemplateId={selectedTemplate?.id}
         />
 
         <DeleteTemplateConfirmation
