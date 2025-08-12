@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      design_system_settings: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_clients: {
         Row: {
           client_id: string
