@@ -162,6 +162,8 @@ const TemplateEditor = () => {
             setTitle(`${data.title} (Customized)`);
             setEditableTitle(`${data.title} (Customized)`);
             setDescription(data.description || '');
+            setTemplateCategory(data.type || 'Contract');
+            setTemplateData(data);
           }
         } catch (error) {
           console.error('Error:', error);
