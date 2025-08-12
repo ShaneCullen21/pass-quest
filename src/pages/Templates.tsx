@@ -454,7 +454,7 @@ const Templates = () => {
                 <>
                   {getFilteredTemplates('customized').length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      No customized templates found. Customize a master template to get started.
+                      No customized templates found. Customize a purchased template to get started.
                     </div>
                   ) : (
                     <div className="space-y-4">
