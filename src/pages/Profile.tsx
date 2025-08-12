@@ -309,7 +309,7 @@ const Profile = () => {
             
             <CardContent className="space-y-6">
               {/* Profile Image Section */}
-              <div className="flex flex-col items-center space-y-4 py-[15px]">
+              <div className="flex flex-col items-center space-y-4 py-[20px]">
                 <Avatar className="w-24 h-24">
                   {formData.avatar_url ? <AvatarImage src={formData.avatar_url} alt="Profile" /> : null}
                   <AvatarFallback className="bg-primary text-primary-foreground text-xl">
