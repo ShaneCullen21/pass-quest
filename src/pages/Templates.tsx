@@ -24,6 +24,7 @@ interface Template {
   title: string;
   description: string;
   category: string;
+  type: string;
   created_at: string;
   updated_at: string;
   template_data?: any;
@@ -240,6 +241,19 @@ const Templates = () => {
     }
     return FileIcon;
   };
+  
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Proposal':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'Contract':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'Invoice':
+        return 'bg-green-100 text-green-700 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
 
   if (loading || roleLoading) {
     return (
@@ -400,11 +414,14 @@ const Templates = () => {
                                     })()}
                                   </div>
                                   
-                                  {/* Content */}
-                                  <div className="flex-1 min-w-0">
-                                     <div className="flex items-center gap-2 mb-1">
-                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
-                                     </div>
+                                   {/* Content */}
+                                   <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeColor(template.type || 'Contract')}`}>
+                                          {template.type || 'Contract'}
+                                        </span>
+                                      </div>
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span>Created: {formatDate(template.created_at)}</span>
                                       <span>Updated: {formatDate(template.updated_at)}</span>
@@ -510,11 +527,14 @@ const Templates = () => {
                                     })()}
                                   </div>
                                   
-                                  {/* Content */}
-                                  <div className="flex-1 min-w-0">
-                                     <div className="flex items-center gap-2 mb-1">
-                                       <h3 className="font-semibold text-lg truncate">{template.title}</h3>
-                                     </div>
+                                   {/* Content */}
+                                   <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-lg truncate">{template.title}</h3>
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeColor(template.type || 'Contract')}`}>
+                                          {template.type || 'Contract'}
+                                        </span>
+                                      </div>
                                      {template.master_template && (
                                        <div className="text-xs text-muted-foreground mb-1">
                                          Original Template - {template.master_template.title}
