@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface NavigationProps {
   className?: string;
@@ -12,14 +13,14 @@ interface NavigationProps {
 const Navigation = ({ className }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { isAdmin } = useUserRole();
   
   const navItems = [
     { label: "DASHBOARD", active: false, href: "/dashboard" },
     { label: "PROJECTS", active: false, href: "/projects" },
     { label: "TEMPLATES", active: false, href: "/templates" },
-    { label: "STYLES", active: false, href: "/styles" },
+    ...(isAdmin ? [{ label: "STYLES", active: false, href: "/styles" }] : []),
     { label: "CLIENTS", active: false, href: "/clients" },
-    
   ];
 
   return (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +13,9 @@ import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/contexts/ProfileContext";
+import { supabase } from "@/integrations/supabase/client";
 import { MoreHorizontal, Search, Bell, HelpCircle } from "lucide-react";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
@@ -21,41 +23,62 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDocumentType, setSelectedDocumentType] = useState<"proposal" | "contract" | "invoice">("proposal");
-  
-
-  // Project data - defined at component level to ensure consistent hook calls
-  const projectData = [
-    {
-      name: "Dream Wedding 2025",
-      client: "Sasha Sukhoruchko",
-      clientCount: "+2",
-      status: "PROPOSAL APPROVED",
-      statusVariant: "success",
-      location: "Chicago, IL",
-      date: "Feb 20-Apr 03, 2025"
-    },
-    {
-      name: "30s Anniversary – Tom & Anny",
-      client: "Martha Smith",
-      clientCount: "+3",
-      status: "CONTRACT SENT FOR SIGNATURE",
-      statusVariant: "warning",
-      location: "Missoula, MN",
-      date: "Feb 24, 2025"
-    },
-    {
-      name: "2-days photoshoot",
-      client: "Holden Price",
-      clientCount: "+1",
-      status: "CONTRACT DRAFTED",
-      statusVariant: "default",
-      location: "TBC",
-      date: "Mar 04-Mar 10, 2025"
-    }
-  ];
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(true);
 
   // All hooks must be called before any early returns
-  const { sortedData, sortConfig, handleSort } = useTableSort(projectData);
+  const { sortedData, sortConfig, handleSort } = useTableSort(documents);
+
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    const statusMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      active: "default",
+      completed: "secondary", 
+      draft: "outline",
+      sent: "default",
+      accepted: "secondary",
+      rejected: "destructive",
+      terminated: "destructive",
+      paid: "secondary",
+      overdue: "destructive",
+      "awaiting signatures": "default"
+    };
+    return statusMap[status] || "outline";
+  };
+
+  const fetchRecentDocuments = async () => {
+    if (!user) return;
+    
+    setDocumentsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select(`
+          id,
+          title,
+          status,
+          updated_at,
+          type,
+          project_id,
+          projects (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching documents:', error);
+      } else {
+        setDocuments(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchRecentDocuments:', error);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
 
   const handleActionCardClick = (type: "proposal" | "contract" | "invoice" | "flow") => {
     if (type === "flow") {
@@ -70,6 +93,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
+    } else if (user) {
+      fetchRecentDocuments();
     }
   }, [user, loading, navigate]);
 
@@ -169,7 +194,7 @@ const Dashboard = () => {
               <TableHeader>
                 <TableRow>
                   <SortableTableHeader 
-                    sortKey="name" 
+                    sortKey="title" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
@@ -177,12 +202,12 @@ const Dashboard = () => {
                     Document name
                   </SortableTableHeader>
                   <SortableTableHeader 
-                    sortKey="client" 
+                    sortKey="type" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
                   >
-                    Clients
+                    Type
                   </SortableTableHeader>
                   <SortableTableHeader 
                     sortKey="status" 
@@ -193,59 +218,79 @@ const Dashboard = () => {
                     Status
                   </SortableTableHeader>
                   <SortableTableHeader 
-                    sortKey="location" 
+                    sortKey="project_name" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
                   >
-                    Location
+                    Project
                   </SortableTableHeader>
                   <SortableTableHeader 
-                    sortKey="date" 
+                    sortKey="updated_at" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
                     onSort={handleSort}
                   >
-                    Project date
+                    Last edited
                   </SortableTableHeader>
                   <TableHead className="w-12 text-muted-foreground font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedData.map((project, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <button className="text-left font-medium hover:underline">
-                        {project.name}
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <span>{project.client}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {project.clientCount}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={project.statusVariant === "success" ? "default" : 
-                                project.statusVariant === "warning" ? "secondary" : "outline"}
-                        className={project.statusVariant === "success" ? "bg-status-completed text-status-completed-foreground border-status-completed/20" :
-                                  project.statusVariant === "warning" ? "bg-status-hold text-status-hold-foreground border-status-hold/20" : ""}
-                      >
-                        {project.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{project.location}</TableCell>
-                    <TableCell className="text-muted-foreground">{project.date}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                {documentsLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      Loading recent documents...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : sortedData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No documents found. Create your first document to get started!
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedData.map((document: any) => (
+                    <TableRow key={document.id}>
+                      <TableCell>
+                        <Link 
+                          to={`/document-editor/${document.project_id}/${document.id}`}
+                          className="font-medium hover:underline text-primary"
+                        >
+                          {document.title}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <span className="capitalize">{document.type}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(document.status)}>
+                          {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {document.projects ? (
+                          <Link 
+                            to={`/projects/${document.project_id}`}
+                            className="hover:underline text-primary"
+                          >
+                            {document.projects.name}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">No project</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {format(new Date(document.updated_at), "MMM dd, yyyy 'at' h:mm a")}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
