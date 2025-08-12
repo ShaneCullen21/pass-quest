@@ -1,14 +1,15 @@
 import { Card } from "@/components/ui/card";
-import { FileText, Users, Receipt, Workflow } from "lucide-react";
+import { Presentation, Users, Receipt, Workflow } from "lucide-react";
 
 interface ActionCardProps {
   type: "proposal" | "contract" | "invoice" | "flow";
+  onClick?: () => void;
 }
 
-const ActionCard = ({ type }: ActionCardProps) => {
+const ActionCard = ({ type, onClick }: ActionCardProps) => {
   const config = {
     proposal: {
-      icon: FileText,
+      icon: Presentation,
       label: "+ PROPOSAL"
     },
     contract: {
@@ -28,7 +29,10 @@ const ActionCard = ({ type }: ActionCardProps) => {
   const { icon: Icon, label } = config[type];
 
   return (
-    <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer border-input bg-background">
+    <Card 
+      className="p-6 hover:shadow-md transition-shadow cursor-pointer border-input bg-background"
+      onClick={onClick}
+    >
       <div className="flex flex-col items-center text-center space-y-3">
         <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
           <Icon className="h-6 w-6 text-muted-foreground" />

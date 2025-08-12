@@ -8,6 +8,7 @@ import { Navigation } from "@/components/ui/navigation";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ActionCard } from "@/components/dashboard/ActionCard";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { DocumentCreationModal } from "@/components/dashboard/DocumentCreationModal";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,8 @@ const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<"proposal" | "contract" | "invoice">("proposal");
   
 
   // Project data - defined at component level to ensure consistent hook calls
@@ -53,6 +56,15 @@ const Dashboard = () => {
 
   // All hooks must be called before any early returns
   const { sortedData, sortConfig, handleSort } = useTableSort(projectData);
+
+  const handleActionCardClick = (type: "proposal" | "contract" | "invoice" | "flow") => {
+    if (type === "flow") {
+      // Handle flow differently if needed
+      return;
+    }
+    setSelectedDocumentType(type);
+    setModalOpen(true);
+  };
 
 
   useEffect(() => {
@@ -135,10 +147,10 @@ const Dashboard = () => {
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-6">What would you like to do?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <ActionCard type="proposal" />
-            <ActionCard type="contract" />
-            <ActionCard type="invoice" />
-            <ActionCard type="flow" />
+            <ActionCard type="proposal" onClick={() => handleActionCardClick("proposal")} />
+            <ActionCard type="contract" onClick={() => handleActionCardClick("contract")} />
+            <ActionCard type="invoice" onClick={() => handleActionCardClick("invoice")} />
+            <ActionCard type="flow" onClick={() => handleActionCardClick("flow")} />
           </div>
         </div>
 
@@ -237,6 +249,13 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Document Creation Modal */}
+      <DocumentCreationModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        documentType={selectedDocumentType}
+      />
     </div>
   );
 };
