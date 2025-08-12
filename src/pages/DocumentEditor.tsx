@@ -581,7 +581,7 @@ const DocumentEditor = () => {
                   ) : (
                     <div className="flex items-center gap-2">
                       <h1 className="text-lg font-semibold">{template.title}</h1>
-                      <Button variant="ghost" size="sm" onClick={handleEditTitle} className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="sm" onClick={handleEditTitle} className="h-6 w-6 p-0">
                         <Edit3 className="h-3 w-3" />
                       </Button>
                     </div>
