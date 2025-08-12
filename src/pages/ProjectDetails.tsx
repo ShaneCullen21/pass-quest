@@ -31,7 +31,7 @@ import { TableLoading } from "@/components/ui/table-loading";
 import { useTableSort } from "@/hooks/useTableSort";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { AddProjectModal } from "@/components/projects/AddProjectModal";
-import { TemplateSelector } from "@/components/contracts/TemplateSelector";
+import { DocumentCreationModal } from "@/components/dashboard/DocumentCreationModal";
 
 
 
@@ -74,7 +74,8 @@ export default function ProjectDetails() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
-  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+  const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<"proposal" | "contract" | "invoice">("proposal");
   
 
   const { sortedData: sortedDocuments, sortConfig, handleSort } = useTableSort(documents);
@@ -228,9 +229,14 @@ export default function ProjectDetails() {
     }
   };
 
-  const handleTemplateSelect = (templateId: string) => {
-    setIsTemplateSelectorOpen(false);
-    navigate(`/document-editor?projectId=${id}&templateId=${templateId}`);
+  const handleAddDocument = (type: "proposal" | "contract" | "invoice") => {
+    setSelectedDocumentType(type);
+    setIsDocumentModalOpen(true);
+  };
+
+  const handleDocumentModalClose = () => {
+    setIsDocumentModalOpen(false);
+    fetchDocuments(); // Refresh documents after creation
   };
 
   if (isLoading) {
@@ -354,16 +360,24 @@ export default function ProjectDetails() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => setIsTemplateSelectorOpen(true)}
+                  onClick={() => handleAddDocument("proposal")}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Document
-                </Button>
-                <Button size="sm" variant="outline">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Proposal
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleAddDocument("contract")}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Contract
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleAddDocument("invoice")}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Invoice
                 </Button>
@@ -482,17 +496,13 @@ export default function ProjectDetails() {
           />
         )}
 
-        {/* Template Selector Modal */}
-        {isTemplateSelectorOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-background p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
-              <TemplateSelector
-                onTemplateSelect={handleTemplateSelect}
-                onBack={() => setIsTemplateSelectorOpen(false)}
-              />
-            </div>
-          </div>
-        )}
+        {/* Document Creation Modal */}
+        <DocumentCreationModal
+          isOpen={isDocumentModalOpen}
+          onClose={handleDocumentModalClose}
+          documentType={selectedDocumentType}
+          preselectedProjectId={id}
+        />
 
         {/* Delete Document Confirmation */}
         {documentToDelete && (

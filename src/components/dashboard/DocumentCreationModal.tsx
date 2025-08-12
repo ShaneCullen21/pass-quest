@@ -29,9 +29,10 @@ interface DocumentCreationModalProps {
   onClose: () => void;
   documentType: "proposal" | "contract" | "invoice";
   preselectedTemplateId?: string;
+  preselectedProjectId?: string;
 }
 
-export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselectedTemplateId }: DocumentCreationModalProps) => {
+export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselectedTemplateId, preselectedProjectId }: DocumentCreationModalProps) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -49,8 +50,12 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
       if (preselectedTemplateId) {
         setSelectedTemplate(preselectedTemplateId);
       }
+      // Set preselected project if provided
+      if (preselectedProjectId) {
+        setSelectedProject(preselectedProjectId);
+      }
     }
-  }, [isOpen, user, documentType, preselectedTemplateId]);
+  }, [isOpen, user, documentType, preselectedTemplateId, preselectedProjectId]);
 
   const fetchTemplatesAndProjects = async () => {
     setLoading(true);
@@ -162,7 +167,9 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
     if (!preselectedTemplateId) {
       setSelectedTemplate("");
     }
-    setSelectedProject("");
+    if (!preselectedProjectId) {
+      setSelectedProject("");
+    }
     setShowAddProjectModal(false);
     onClose();
   };
@@ -232,48 +239,50 @@ export const DocumentCreationModal = ({ isOpen, onClose, documentType, preselect
                 </div>
               )}
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Select Project</label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAddProjectModal(true)}
-                    className="h-8 px-2 text-xs"
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    New Project
-                  </Button>
-                </div>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.length === 0 ? (
-                      <SelectItem value="no-projects" disabled>
-                        No active projects found
-                      </SelectItem>
-                    ) : (
-                      projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          <div>
-                            <div className="font-medium">{project.name}</div>
-                            {project.location && (
-                              <div className="text-xs text-muted-foreground">{project.location}</div>
-                            )}
-                          </div>
+              {!preselectedProjectId && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Select Project</label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAddProjectModal(true)}
+                      className="h-8 px-2 text-xs"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      New Project
+                    </Button>
+                  </div>
+                  <Select value={selectedProject} onValueChange={setSelectedProject}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.length === 0 ? (
+                        <SelectItem value="no-projects" disabled>
+                          No active projects found
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                {projects.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Create a project first in the Projects section
-                  </p>
-                )}
-              </div>
+                      ) : (
+                        projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            <div>
+                              <div className="font-medium">{project.name}</div>
+                              {project.location && (
+                                <div className="text-xs text-muted-foreground">{project.location}</div>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {projects.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Create a project first in the Projects section
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
