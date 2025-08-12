@@ -29,6 +29,9 @@ interface Template {
   template_data?: any;
   template_type: 'master' | 'customized';
   master_template_id?: string;
+  master_template?: {
+    title: string;
+  };
 }
 
 const Templates = () => {
@@ -96,10 +99,13 @@ const Templates = () => {
     if (!user) return;
     
     try {
-      // Fetch master templates (visible to all) and user's customized templates
+      // Fetch master templates (visible to all) and user's customized templates with master template info
       const { data, error } = await supabase
         .from('templates')
-        .select('*')
+        .select(`
+          *,
+          master_template:templates!master_template_id(title)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -483,10 +489,15 @@ const Templates = () => {
                                      <div className="flex items-center gap-2 mb-1">
                                        <h3 className="font-semibold text-lg truncate">{template.title}</h3>
                                      </div>
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                      <span>Created: {formatDate(template.created_at)}</span>
-                                      <span>Updated: {formatDate(template.updated_at)}</span>
-                                    </div>
+                                     {template.master_template && (
+                                       <div className="text-xs text-muted-foreground mb-1">
+                                         Original Template - {template.master_template.title}
+                                       </div>
+                                     )}
+                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                       <span>Created: {formatDate(template.created_at)}</span>
+                                       <span>Updated: {formatDate(template.updated_at)}</span>
+                                     </div>
                                   </div>
                                 </div>
                                 
