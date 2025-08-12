@@ -16,9 +16,9 @@ const fieldIcons = {
 };
 
 const fieldColors = {
-  name: "border-blue-200 bg-blue-50 text-blue-700",
-  signature: "border-green-200 bg-green-50 text-green-700",
-  date: "border-orange-200 bg-orange-50 text-orange-700"
+  name: "border-primary/50 bg-primary/10 text-primary",
+  signature: "border-accent/50 bg-accent/10 text-accent-foreground",
+  date: "border-muted-foreground/50 bg-muted text-muted-foreground"
 };
 
 export const DocumentDraggableField: React.FC<DocumentDraggableFieldProps> = ({

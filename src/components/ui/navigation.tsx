@@ -33,7 +33,7 @@ const Navigation = ({ className }: NavigationProps) => {
             className={cn(
               "text-sm font-medium transition-colors hover:text-primary",
               location.pathname === item.href
-                ? "text-[#6D312C]"
+                ? "text-primary"
                 : "text-muted-foreground"
             )}
           >

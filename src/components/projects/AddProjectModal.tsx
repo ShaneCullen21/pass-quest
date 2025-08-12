@@ -367,7 +367,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
             <Button 
               type="submit" 
               disabled={isSubmitting || formData.client_ids.length > 5}
-              className="w-full bg-[hsl(15,78%,46%)] hover:bg-[hsl(15,78%,40%)] text-white font-medium"
+              className="w-full"
             >
               {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Project" : "Save & Continue")}
             </Button>

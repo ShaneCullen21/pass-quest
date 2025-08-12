@@ -317,7 +317,7 @@ const TemplateEditor = () => {
                   <Edit className="h-3 w-3" />
                 </Button>
                 <div className="ml-2 flex items-center gap-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-purple-50 border-purple-200 text-purple-600'}`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${templateType === 'master' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-secondary border-secondary text-secondary-foreground'}`}>
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
                   {templateType === 'master' && (

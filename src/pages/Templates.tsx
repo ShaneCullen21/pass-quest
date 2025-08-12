@@ -255,13 +255,13 @@ const Templates = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Proposal':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
+        return 'bg-secondary text-secondary-foreground border-secondary';
       case 'Contract':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-primary/10 text-primary border-primary/20';
       case 'Invoice':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-accent text-accent-foreground border-accent';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -360,14 +360,14 @@ const Templates = () => {
             <TabsContent value="master" className="space-y-4">
               {/* Info Alert for Purchased Templates */}
               {!isAdmin && activeTab === 'master' && showPurchasedAlert && (
-                <Alert className="border-[#6D312C]/20 bg-[#6D312C]/5">
-                  <AlertDescription className="flex items-center justify-between text-[#6D312C]">
+                <Alert className="border-primary/20 bg-primary/5">
+                  <AlertDescription className="flex items-center justify-between text-primary">
                     <span>Every time you decide to use a purchased template we will create a copy of it. The original template you've purchased will remain unchanged.</span>
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => setShowPurchasedAlert(false)}
-                      className="ml-4 flex-shrink-0 bg-[#6D312C] text-white border-[#6D312C] hover:bg-[#6D312C]/90 hover:text-white"
+                      className="ml-4 flex-shrink-0"
                     >
                       Got it
                     </Button>

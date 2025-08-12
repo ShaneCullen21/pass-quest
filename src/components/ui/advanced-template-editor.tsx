@@ -504,14 +504,14 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
   if (!editor) {
     return <div className="flex items-center justify-center h-96">Loading editor...</div>;
   }
-  return <div className="h-full flex flex-col bg-gray-50">
+  return <div className="h-full flex flex-col bg-muted/30">
       {/* Toolbar */}
       <AdvancedToolbar editor={editor} availableFonts={FONTS} comments={comments} showComments={showComments} onToggleComments={() => setShowComments(!showComments)} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Document Editor */}
-        <div className="flex-1 overflow-auto bg-gray-100 p-8">
+        <div className="flex-1 overflow-auto bg-muted/50 p-8">
           <div className="mx-auto max-w-4xl">
             <PagedEditor editor={editor} onMouseUp={handleSelection} />
                 
@@ -522,8 +522,8 @@ export const AdvancedTemplateEditor: React.FC<AdvancedTemplateEditorProps> = ({
               transform: 'translateX(-50%)',
               zIndex: 10
             }}>
-              <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg" title="Add comment">
-                <MessageCircle className="h-4 w-4 text-white" />
+              <Button variant="default" size="sm" onClick={handleCommentIconClick} className="h-8 w-8 p-0 rounded-full shadow-lg" title="Add comment">
+                <MessageCircle className="h-4 w-4" />
               </Button>
             </div>}
 

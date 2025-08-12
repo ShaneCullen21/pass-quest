@@ -286,7 +286,7 @@ export const AddClientModal = ({ open, onOpenChange, onClientAdded, editClient }
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full bg-[hsl(15,78%,46%)] hover:bg-[hsl(15,78%,40%)] text-white font-medium"
+              className="w-full"
             >
               {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Client" : "Save & Continue")}
             </Button>

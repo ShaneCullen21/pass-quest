@@ -8,9 +8,9 @@ interface StatsCardProps {
 
 const StatsCard = ({ label, amount, variant }: StatsCardProps) => {
   const variants = {
-    paid: "bg-green-100 text-green-800 border-green-200",
-    due: "bg-yellow-100 text-yellow-800 border-yellow-200", 
-    pastdue: "bg-red-100 text-red-800 border-red-200"
+    paid: "bg-status-completed text-status-completed-foreground border-status-completed/20",
+    due: "bg-status-hold text-status-hold-foreground border-status-hold/20", 
+    pastdue: "bg-status-cancelled text-status-cancelled-foreground border-status-cancelled/20"
   };
 
   return (

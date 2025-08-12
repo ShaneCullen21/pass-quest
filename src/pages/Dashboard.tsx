@@ -231,8 +231,8 @@ const Dashboard = () => {
                       <Badge 
                         variant={project.statusVariant === "success" ? "default" : 
                                 project.statusVariant === "warning" ? "secondary" : "outline"}
-                        className={project.statusVariant === "success" ? "bg-green-100 text-green-800 border-green-200" :
-                                  project.statusVariant === "warning" ? "bg-yellow-100 text-yellow-800 border-yellow-200" : ""}
+                        className={project.statusVariant === "success" ? "bg-status-completed text-status-completed-foreground border-status-completed/20" :
+                                  project.statusVariant === "warning" ? "bg-status-hold text-status-hold-foreground border-status-hold/20" : ""}
                       >
                         {project.status}
                       </Badge>
