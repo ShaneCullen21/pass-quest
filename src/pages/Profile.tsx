@@ -12,12 +12,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/contexts/ProfileContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
 const Profile = () => {
-  const { user, loading } = useAuth();
-  const { profile, refreshProfile } = useProfile();
+  const {
+    user,
+    loading
+  } = useAuth();
+  const {
+    profile,
+    refreshProfile
+  } = useProfile();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -31,13 +38,11 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
-
   useEffect(() => {
     if (profile && user) {
       setFormData({
@@ -52,15 +57,16 @@ const Profile = () => {
       });
     }
   }, [profile, user]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value
+    } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
-
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
@@ -78,57 +84,57 @@ const Profile = () => {
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error", 
+        title: "Error",
         description: "Image must be less than 5MB",
         variant: "destructive"
       });
       return;
     }
-
     setUploading(true);
-
     try {
       const fileExt = file.name.split('.').pop();
       const timestamp = Date.now();
       const fileName = `${user.id}/avatar_${timestamp}.${fileExt}`;
 
       // Upload file to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { 
-          contentType: file.type
-        });
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('avatars').upload(fileName, file, {
+        contentType: file.type
+      });
       if (uploadError) {
         throw uploadError;
       }
 
       // Get public URL with cache-busting
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-        
+      const {
+        data: {
+          publicUrl
+        }
+      } = supabase.storage.from('avatars').getPublicUrl(fileName);
       const cacheBustedUrl = `${publicUrl}?t=${timestamp}`;
 
       // Update profile in database first
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: cacheBustedUrl })
-        .eq('user_id', user.id);
-
+      const {
+        error: updateError
+      } = await supabase.from('profiles').update({
+        avatar_url: cacheBustedUrl
+      }).eq('user_id', user.id);
       if (updateError) {
         throw updateError;
       }
 
       // Update form data immediately to show new image
-      setFormData(prev => ({ ...prev, avatar_url: cacheBustedUrl }));
-      
+      setFormData(prev => ({
+        ...prev,
+        avatar_url: cacheBustedUrl
+      }));
+
       // Refresh the profile context to update everywhere else
       await refreshProfile();
-
       toast({
         title: "Success",
-        description: "Profile image updated successfully",
+        description: "Profile image updated successfully"
       });
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -141,39 +147,34 @@ const Profile = () => {
       setUploading(false);
     }
   };
-
   const handleSave = async () => {
     if (!user) return;
-
     setSaving(true);
-    
     try {
       // Update profile data
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-        })
-        .eq('user_id', user.id);
-
+      const {
+        error: profileError
+      } = await supabase.from('profiles').update({
+        first_name: formData.first_name,
+        last_name: formData.last_name
+      }).eq('user_id', user.id);
       if (profileError) {
         throw profileError;
       }
 
       // Handle email change if provided
       if (formData.new_email && formData.new_email !== formData.email) {
-        const { error: emailError } = await supabase.auth.updateUser({
+        const {
+          error: emailError
+        } = await supabase.auth.updateUser({
           email: formData.new_email
         });
-
         if (emailError) {
           throw emailError;
         }
-
         toast({
           title: "Email Update",
-          description: "A confirmation email has been sent to your new email address.",
+          description: "A confirmation email has been sent to your new email address."
         });
       }
 
@@ -188,7 +189,6 @@ const Profile = () => {
           setSaving(false);
           return;
         }
-
         if (formData.new_password !== formData.confirm_new_password) {
           toast({
             title: "Error",
@@ -200,11 +200,12 @@ const Profile = () => {
         }
 
         // First verify current password by attempting to sign in
-        const { error: verifyError } = await supabase.auth.signInWithPassword({
+        const {
+          error: verifyError
+        } = await supabase.auth.signInWithPassword({
           email: user.email || '',
           password: formData.current_password
         });
-
         if (verifyError) {
           toast({
             title: "Error",
@@ -215,17 +216,17 @@ const Profile = () => {
         }
 
         // Update password
-        const { error: passwordError } = await supabase.auth.updateUser({
+        const {
+          error: passwordError
+        } = await supabase.auth.updateUser({
           password: formData.new_password
         });
-
         if (passwordError) {
           throw passwordError;
         }
-
         toast({
           title: "Password Updated",
-          description: "Your password has been changed successfully.",
+          description: "Your password has been changed successfully."
         });
 
         // Clear password fields
@@ -239,11 +240,10 @@ const Profile = () => {
 
       // Refresh the profile context
       await refreshProfile();
-      
       if (!formData.new_email && !formData.new_password) {
         toast({
           title: "Success",
-          description: "Profile updated successfully",
+          description: "Profile updated successfully"
         });
       }
     } catch (error) {
@@ -257,24 +257,18 @@ const Profile = () => {
       setSaving(false);
     }
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (!user) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -312,47 +306,27 @@ const Profile = () => {
           <h1 className="text-3xl font-bold text-foreground mb-8">Profile Settings</h1>
           
           <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-            </CardHeader>
+            
             <CardContent className="space-y-6">
               {/* Profile Image Section */}
-              <div className="flex flex-col items-center space-y-4">
+              <div className="flex flex-col items-center space-y-4 py-[15px]">
                 <Avatar className="w-24 h-24">
-                  {formData.avatar_url ? (
-                    <AvatarImage src={formData.avatar_url} alt="Profile" />
-                  ) : null}
+                  {formData.avatar_url ? <AvatarImage src={formData.avatar_url} alt="Profile" /> : null}
                   <AvatarFallback className="bg-primary text-primary-foreground text-xl">
                     <User className="h-8 w-8" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col items-center space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="flex items-center space-x-2"
-                  >
-                    {uploading ? (
-                      <>
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center space-x-2">
+                    {uploading ? <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                         <span>Uploading...</span>
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <Upload className="h-4 w-4" />
                         <span>Upload Photo</span>
-                      </>
-                    )}
+                      </>}
                   </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                   <p className="text-sm text-muted-foreground text-center">
                     JPG, PNG or GIF. Max size 5MB.
                   </p>
@@ -363,48 +337,22 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">First Name</Label>
-                  <Input
-                    id="first_name"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleInputChange}
-                    placeholder="Enter your first name"
-                  />
+                  <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleInputChange} placeholder="Enter your first name" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Last Name</Label>
-                  <Input
-                    id="last_name"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleInputChange}
-                    placeholder="Enter your last name"
-                  />
+                  <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleInputChange} placeholder="Enter your last name" />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Current Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  disabled
-                  className="bg-muted text-muted-foreground"
-                />
+                <Input id="email" name="email" type="email" value={formData.email} disabled className="bg-muted text-muted-foreground" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="new_email">New Email (optional)</Label>
-                <Input
-                  id="new_email"
-                  name="new_email"
-                  type="email"
-                  value={formData.new_email}
-                  onChange={handleInputChange}
-                  placeholder="Enter new email address"
-                />
+                <Input id="new_email" name="new_email" type="email" value={formData.new_email} onChange={handleInputChange} placeholder="Enter new email address" />
                 <p className="text-sm text-muted-foreground">
                   You'll receive a confirmation email to verify the change.
                 </p>
@@ -413,63 +361,36 @@ const Profile = () => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="current_password">Current Password (required for password change)</Label>
-                  <Input
-                    id="current_password"
-                    name="current_password"
-                    type="password"
-                    value={formData.current_password}
-                    onChange={handleInputChange}
-                    placeholder="Enter current password"
-                  />
+                  <Input id="current_password" name="current_password" type="password" value={formData.current_password} onChange={handleInputChange} placeholder="Enter current password" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new_password">New Password (optional)</Label>
-                  <Input
-                    id="new_password"
-                    name="new_password"
-                    type="password"
-                    value={formData.new_password}
-                    onChange={handleInputChange}
-                    placeholder="Enter new password"
-                  />
+                  <Input id="new_password" name="new_password" type="password" value={formData.new_password} onChange={handleInputChange} placeholder="Enter new password" />
                   <p className="text-sm text-muted-foreground">
                     Leave blank to keep current password.
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm_new_password">Confirm New Password</Label>
-                  <Input
-                    id="confirm_new_password"
-                    name="confirm_new_password"
-                    type="password"
-                    value={formData.confirm_new_password}
-                    onChange={handleInputChange}
-                    placeholder="Confirm new password"
-                  />
+                  <Input id="confirm_new_password" name="confirm_new_password" type="password" value={formData.confirm_new_password} onChange={handleInputChange} placeholder="Confirm new password" />
                 </div>
               </div>
               
               <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
-                  {saving ? (
-                    <>
+                  {saving ? <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Saving...
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <Save className="h-4 w-4 mr-2" />
                       Save Changes
-                    </>
-                  )}
+                    </>}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Profile;
