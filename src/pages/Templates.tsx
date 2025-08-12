@@ -38,6 +38,7 @@ const Templates = () => {
   const [loading2, setLoading2] = useState(true);
   const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
+  const [preselectedTemplateId, setPreselectedTemplateId] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<string>('master'); // Track active tab
   const [showProjectSelection, setShowProjectSelection] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
@@ -346,7 +347,10 @@ const Templates = () => {
                                      <Button
                                        variant="outline"
                                        size="sm"
-                                       onClick={() => setShowNewTemplateModal(true)}
+                                       onClick={() => {
+                                         setPreselectedTemplateId(template.id);
+                                         setShowNewTemplateModal(true);
+                                       }}
                                        className="flex items-center gap-1"
                                      >
                                        <Plus className="h-3 w-3" />
@@ -468,9 +472,13 @@ const Templates = () => {
         )}
 
         <NewTemplateModal 
-          isOpen={showNewTemplateModal}
-          onClose={() => setShowNewTemplateModal(false)}
-          forceTemplateType={isAdmin ? 'master' : 'customized'}
+          isOpen={showNewTemplateModal} 
+          onClose={() => {
+            setShowNewTemplateModal(false);
+            setPreselectedTemplateId(undefined);
+          }}
+          forceTemplateType={!isAdmin ? 'customized' : undefined}
+          preselectedTemplateId={preselectedTemplateId}
         />
 
         <ProjectSelectionModal

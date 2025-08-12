@@ -14,6 +14,7 @@ interface NewTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
   forceTemplateType?: 'master' | 'customized';
+  preselectedTemplateId?: string;
 }
 
 interface MasterTemplate {
@@ -21,7 +22,7 @@ interface MasterTemplate {
   title: string;
 }
 
-export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onClose, forceTemplateType }) => {
+export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onClose, forceTemplateType, preselectedTemplateId }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<'master' | 'customized' | null>(null);
@@ -50,6 +51,14 @@ export const NewTemplateModal: React.FC<NewTemplateModalProps> = ({ isOpen, onCl
       fetchMasterTemplates();
     }
   }, [isOpen, forceTemplateType]);
+
+  // Auto-navigate if a specific template is preselected
+  useEffect(() => {
+    if (isOpen && preselectedTemplateId) {
+      navigate(`/templates/new?type=customized&masterId=${preselectedTemplateId}`);
+      onClose();
+    }
+  }, [isOpen, preselectedTemplateId, navigate, onClose]);
 
   const fetchMasterTemplates = async () => {
     try {
