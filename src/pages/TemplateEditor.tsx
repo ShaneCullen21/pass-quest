@@ -28,6 +28,7 @@ const TemplateEditor = () => {
   const [masterTemplateId, setMasterTemplateId] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState("");
+  const [templateData, setTemplateData] = useState<any>(null);
   const {
     user
   } = useAuth();
@@ -132,6 +133,7 @@ const TemplateEditor = () => {
             setTemplateType(data.template_type as 'master' | 'customized' || 'master');
             setTemplateCategory(data.type || 'Contract');
             setMasterTemplateId(data.master_template_id);
+            setTemplateData(data);
           }
         } catch (error) {
           console.error('Error:', error);
@@ -335,7 +337,7 @@ const TemplateEditor = () => {
                     {templateType === 'master' ? 'MASTER TEMPLATE' : 'CUSTOMIZED TEMPLATE'}
                   </span>
                   <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCategoryColorClass(templateCategory)}`}>
-                    {templateCategory.toUpperCase()}
+                    {(templateType === 'customized' && templateData?.type) ? templateData.type.toUpperCase() : templateCategory.toUpperCase()}
                   </span>
                   {templateType === 'master' && (
                     <Select value={templateCategory} onValueChange={setTemplateCategory}>
