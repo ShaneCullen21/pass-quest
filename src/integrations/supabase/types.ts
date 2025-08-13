@@ -22,6 +22,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          is_signing_profile: boolean | null
           last_name: string
           phone: string | null
           user_id: string
@@ -33,6 +34,7 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: string
+          is_signing_profile?: boolean | null
           last_name: string
           phone?: string | null
           user_id?: string
@@ -44,6 +46,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: string
+          is_signing_profile?: boolean | null
           last_name?: string
           phone?: string | null
           user_id?: string
@@ -265,6 +268,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          signing_profile_created: boolean | null
           updated_at: string
           user_id: string
         }
@@ -274,6 +278,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          signing_profile_created?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -283,6 +288,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          signing_profile_created?: boolean | null
           updated_at?: string
           user_id?: string
         }

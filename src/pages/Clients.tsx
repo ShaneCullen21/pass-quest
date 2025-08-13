@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Bell, Search, CircleHelp, Plus, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Bell, Search, CircleHelp, Plus, Edit, Trash2, User } from "lucide-react";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { SortableTableHeader } from "@/components/ui/sortable-table-header";
 import { useTableSort } from "@/hooks/useTableSort";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/contexts/ProfileContext";
 import { AddClientModal } from "@/components/clients/AddClientModal";
 import { DeleteClientConfirmation } from "@/components/clients/DeleteClientConfirmation";
+import { SigningProfileModal } from "@/components/clients/SigningProfileModal";
 import { TableLoading } from "@/components/ui/table-loading";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,15 +25,17 @@ type Client = Tables<"clients">;
 
 const Clients = () => {
   const { user, loading, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, refreshProfile } = useProfile();
   const navigate = useNavigate();
   
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [showSigningProfileModal, setShowSigningProfileModal] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [clientsLoading, setClientsLoading] = useState(true);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [needsSigningProfile, setNeedsSigningProfile] = useState(false);
   const { toast } = useToast();
   
   // Pagination constants
@@ -63,6 +66,8 @@ const Clients = () => {
       supabase
         .from("clients")
         .select("*")
+        .eq("user_id", user.id)
+        .order("is_signing_profile", { ascending: false })
         .order("created_at", { ascending: false }),
       new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading time
     ]);
@@ -83,6 +88,30 @@ const Clients = () => {
     }
   };
 
+  const checkSigningProfile = async () => {
+    if (!user || !profile) return;
+
+    try {
+      // Check if signing profile exists
+      const { data: signingProfile, error } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_signing_profile", true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      // If no signing profile exists and profile hasn't been created, show modal
+      if (!signingProfile && !profile.signing_profile_created) {
+        setNeedsSigningProfile(true);
+        setShowSigningProfileModal(true);
+      }
+    } catch (error) {
+      console.error("Error checking signing profile:", error);
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
@@ -90,10 +119,11 @@ const Clients = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
+      checkSigningProfile();
       fetchClients();
     }
-  }, [user]);
+  }, [user, profile]);
 
   if (loading) {
     return (
@@ -109,6 +139,14 @@ const Clients = () => {
   if (!user) {
     return null;
   }
+
+  const handleSigningProfileCreated = () => {
+    setShowSigningProfileModal(false);
+    setNeedsSigningProfile(false);
+    fetchClients();
+    refreshProfile(); // Refresh profile to update signing_profile_created flag
+  };
+
   const handleDeleteClient = async () => {
     if (!deletingClient) return;
 
@@ -180,6 +218,7 @@ const Clients = () => {
           <Button 
             onClick={() => setShowAddClientModal(true)}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            disabled={needsSigningProfile}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add client
@@ -259,9 +298,14 @@ const Clients = () => {
                   paginatedClients.map((client) => (
                     <TableRow key={client.id} className="border-b border-border hover:bg-muted/50">
                       <TableCell>
-                        <span className="text-foreground font-medium">
-                          {client.first_name}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-medium">
+                            {client.first_name}
+                          </span>
+                           {client.is_signing_profile && (
+                             <User className="h-4 w-4 text-primary" />
+                           )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <span className="text-foreground font-medium">
@@ -288,13 +332,15 @@ const Clients = () => {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setDeletingClient(client)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            {!client.is_signing_profile && (
+                              <DropdownMenuItem 
+                                onClick={() => setDeletingClient(client)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -380,6 +426,11 @@ const Clients = () => {
           </div>
         )}
       </main>
+      
+      <SigningProfileModal
+        open={showSigningProfileModal}
+        onSigningProfileCreated={handleSigningProfileCreated}
+      />
       
       <AddClientModal
         open={showAddClientModal}

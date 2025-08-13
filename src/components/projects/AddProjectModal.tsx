@@ -19,6 +19,7 @@ interface Client {
   first_name: string;
   last_name: string;
   company: string | null;
+  is_signing_profile?: boolean;
 }
 
 interface Project {
@@ -46,6 +47,7 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
   const [clients, setClients] = useState<Client[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingClients, setIsLoadingClients] = useState(false);
+  const [signingProfile, setSigningProfile] = useState<any>(null);
   const [clientSelectionError, setClientSelectionError] = useState<string>("");
   const { toast } = useToast();
 
@@ -94,7 +96,8 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
     try {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, first_name, last_name, company")
+        .select("id, first_name, last_name, company, is_signing_profile")
+        .order("is_signing_profile", { ascending: false })
         .order("first_name", { ascending: true });
 
       if (error) {
@@ -102,6 +105,18 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
       }
 
       setClients(data || []);
+      
+      // Find and pre-select signing profile for new projects
+      const signingProfileClient = data?.find(client => client.is_signing_profile);
+      if (signingProfileClient) {
+        setSigningProfile(signingProfileClient);
+        if (!editProject) {
+          setFormData(prev => ({
+            ...prev,
+            client_ids: [signingProfileClient.id]
+          }));
+        }
+      }
     } catch (error) {
       console.error("Error loading clients:", error);
       toast({
@@ -340,11 +355,14 @@ export const AddProjectModal = ({ open, onOpenChange, onProjectAdded, editProjec
                           />
                           <Label
                             htmlFor={`client-${client.id}`}
-                            className="text-sm font-normal cursor-pointer flex-1"
+                            className="text-sm font-normal cursor-pointer flex-1 flex items-center gap-2"
                           >
                             {client.first_name} {client.last_name}
                             {client.company && (
                               <span className="text-muted-foreground ml-1">({client.company})</span>
+                            )}
+                            {client.is_signing_profile && (
+                              <span className="text-xs text-primary font-medium">(You)</span>
                             )}
                           </Label>
                         </div>

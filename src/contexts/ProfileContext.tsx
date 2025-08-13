@@ -10,6 +10,7 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+  signing_profile_created?: boolean;
 }
 
 interface ProfileContextType {
