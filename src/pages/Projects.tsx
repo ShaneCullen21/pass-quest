@@ -55,7 +55,7 @@ const Projects = () => {
     setProjectsLoading(true);
     
     // Add minimum loading time to show the nice animation
-    const [projectsData, clientsData] = await Promise.all([
+    const [projectsData, clientsData, documentsData] = await Promise.all([
       supabase
         .from("projects")
         .select("*")
@@ -63,12 +63,16 @@ const Projects = () => {
       supabase
         .from("clients")
         .select("id, first_name, last_name, company"),
+      supabase
+        .from("documents")
+        .select("project_id"),
       new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading time
     ]);
 
     try {
       const { data: projects, error: projectsError } = projectsData;
       const { data: clients, error: clientsError } = clientsData;
+      const { data: documents, error: documentsError } = documentsData;
 
       if (projectsError) {
         console.error("Error fetching projects:", projectsError);
@@ -84,6 +88,10 @@ const Projects = () => {
         console.error("Error fetching clients:", clientsError);
       }
 
+      if (documentsError) {
+        console.error("Error fetching documents:", documentsError);
+      }
+
       // Create a lookup map for clients
       const clientsMap = new Map();
       if (clients) {
@@ -92,12 +100,22 @@ const Projects = () => {
         });
       }
 
-      // Attach client data to projects
+      // Create a lookup map for document counts per project
+      const documentCountsMap = new Map();
+      if (documents) {
+        documents.forEach(doc => {
+          const count = documentCountsMap.get(doc.project_id) || 0;
+          documentCountsMap.set(doc.project_id, count + 1);
+        });
+      }
+
+      // Attach client data and document counts to projects
       const projectsWithClients = (projects || []).map(project => ({
         ...project,
         clients: project.client_ids && project.client_ids.length > 0 
           ? project.client_ids.map(id => clientsMap.get(id)).filter(Boolean)
-          : []
+          : [],
+        documentCount: documentCountsMap.get(project.id) || 0
       }));
 
       setProjects(projectsWithClients);
@@ -258,7 +276,7 @@ const Projects = () => {
         {/* Projects Table */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           {projectsLoading ? (
-            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Date Created", "Actions"]} rows={6} />
+            <TableLoading columns={["Project name", "Client(s)", "Status", "Location", "Documents", "Date Created", "Actions"]} rows={6} />
           ) : (
             <Table>
               <TableHeader>
@@ -296,6 +314,14 @@ const Projects = () => {
                     Location
                   </SortableTableHeader>
                   <SortableTableHeader 
+                    sortKey="documentCount" 
+                    currentSortKey={sortConfig.key} 
+                    sortDirection={sortConfig.direction}
+                    onSort={handleSort}
+                  >
+                    Documents
+                  </SortableTableHeader>
+                  <SortableTableHeader 
                     sortKey="created_at" 
                     currentSortKey={sortConfig.key} 
                     sortDirection={sortConfig.direction}
@@ -309,7 +335,7 @@ const Projects = () => {
               <TableBody>
                 {sortedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       No projects found. Create your first project to get started.
                     </TableCell>
                   </TableRow>
@@ -340,6 +366,9 @@ const Projects = () => {
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {project.location || "TBC"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {project.documentCount}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatCreatedDate(project.created_at)}

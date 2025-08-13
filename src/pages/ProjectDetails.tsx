@@ -54,10 +54,8 @@ interface Client {
 interface Document {
   id: string;
   title: string;
-  amount: number | null;
   status: string;
   created_at: string;
-  updated_at: string;
   type: 'proposal' | 'contract' | 'invoice';
   due_date?: string | null;
 }
@@ -402,7 +400,7 @@ export default function ProjectDetails() {
           </CardHeader>
           <CardContent>
             {documentsLoading ? (
-              <TableLoading columns={["Type", "Title", "Amount", "Status", "Created", "Last Edited", "Actions"]} rows={5} />
+              <TableLoading columns={["Type", "Title", "Status", "Created", "Actions"]} rows={5} />
             ) : sortedDocuments.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No documents found for this project</p>
@@ -424,14 +422,6 @@ export default function ProjectDetails() {
                       Title
                     </SortableTableHeader>
                     <SortableTableHeader
-                      sortKey="amount"
-                      currentSortKey={sortConfig.key}
-                      sortDirection={sortConfig.direction}
-                      onSort={handleSort}
-                    >
-                      Amount
-                    </SortableTableHeader>
-                    <SortableTableHeader
                       sortKey="status"
                       currentSortKey={sortConfig.key}
                       sortDirection={sortConfig.direction}
@@ -447,14 +437,6 @@ export default function ProjectDetails() {
                     >
                       Created
                     </SortableTableHeader>
-                    <SortableTableHeader
-                      sortKey="updated_at"
-                      currentSortKey={sortConfig.key}
-                      sortDirection={sortConfig.direction}
-                      onSort={handleSort}
-                    >
-                      Last Edited
-                    </SortableTableHeader>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -467,7 +449,6 @@ export default function ProjectDetails() {
                         </span>
                       </TableCell>
                       <TableCell className="font-medium">{document.title}</TableCell>
-                      <TableCell>{formatAmount(document.amount)}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(document.status)}>
                           {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
@@ -475,9 +456,6 @@ export default function ProjectDetails() {
                       </TableCell>
                       <TableCell>
                         {format(new Date(document.created_at), "MMM dd, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(document.updated_at), "MMM dd, yyyy")}
                       </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
