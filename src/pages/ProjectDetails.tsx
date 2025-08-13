@@ -57,6 +57,7 @@ interface Document {
   amount: number | null;
   status: string;
   created_at: string;
+  updated_at: string;
   type: 'proposal' | 'contract' | 'invoice';
   due_date?: string | null;
 }
@@ -133,11 +134,12 @@ export default function ProjectDetails() {
     try {
       setDocumentsLoading(true);
       
-      // Fetch all documents from the new unified documents table
+      // Fetch all documents from the new unified documents table, sorted by most recent creation
       const { data: documents, error: documentsError } = await supabase
         .from("documents")
         .select("*")
-        .eq("project_id", id);
+        .eq("project_id", id)
+        .order("created_at", { ascending: false });
 
       if (documentsError) throw documentsError;
 
@@ -400,7 +402,7 @@ export default function ProjectDetails() {
           </CardHeader>
           <CardContent>
             {documentsLoading ? (
-              <TableLoading columns={["Type", "Title", "Amount", "Status", "Created", "Actions"]} rows={5} />
+              <TableLoading columns={["Type", "Title", "Amount", "Status", "Created", "Last Edited", "Actions"]} rows={5} />
             ) : sortedDocuments.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No documents found for this project</p>
@@ -445,6 +447,14 @@ export default function ProjectDetails() {
                     >
                       Created
                     </SortableTableHeader>
+                    <SortableTableHeader
+                      sortKey="updated_at"
+                      currentSortKey={sortConfig.key}
+                      sortDirection={sortConfig.direction}
+                      onSort={handleSort}
+                    >
+                      Last Edited
+                    </SortableTableHeader>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -465,6 +475,9 @@ export default function ProjectDetails() {
                       </TableCell>
                       <TableCell>
                         {format(new Date(document.created_at), "MMM dd, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(document.updated_at), "MMM dd, yyyy")}
                       </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
