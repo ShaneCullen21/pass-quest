@@ -57,6 +57,7 @@ export const PagedEditor: React.FC<PagedEditorProps> = ({
       style={{ 
         background: '#f5f5f5',
         padding: '20px',
+        height: 'auto',
         minHeight: '100vh'
       }}
       onMouseUp={onMouseUp}

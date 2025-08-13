@@ -1,19 +1,21 @@
 /* Document Editor Styles */
 .document-container {
   overflow-y: auto;
-  max-height: calc(100vh - 200px);
+  height: auto;
+  min-height: calc(100vh - 200px);
 }
 
 .document-page {
   width: 8.5in;
-  height: 11in;
+  height: auto;
+  min-height: 11in;
   margin: 0 auto 30px auto; /* 30px spacing between pages */
   padding: 1in;
   background: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   page-break-after: always;
-  overflow: hidden; /* Prevent content from spilling over */
+  overflow: visible; /* Allow content to flow naturally */
   position: relative;
 }
 
