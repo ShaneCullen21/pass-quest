@@ -24,7 +24,16 @@ const Navigation = ({ className }: NavigationProps) => {
   ];
 
   return (
-    <>
+    <div className="flex items-center gap-8">
+      {/* Logo */}
+      <Link to="/dashboard" className="flex-shrink-0">
+        <img 
+          src="/lovable-uploads/92535014-9f07-4035-b0a6-fe278e72b62c.png" 
+          alt="Retainly Logo" 
+          className="h-8 object-contain"
+        />
+      </Link>
+      
       {/* Desktop Navigation */}
       <nav className={cn("hidden md:flex items-center space-x-8", className)}>
         {navItems.map((item) => (
@@ -77,7 +86,7 @@ const Navigation = ({ className }: NavigationProps) => {
           </SheetContent>
         </Sheet>
       </div>
-    </>
+    </div>
   );
 };
 

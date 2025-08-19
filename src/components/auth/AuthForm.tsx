@@ -157,7 +157,13 @@ export const AuthForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto bg-auth-card border-auth-border shadow-lg">
       <CardHeader className="space-y-6 text-center">
-        <CardTitle className="text-2xl font-semibold text-foreground">Welcome</CardTitle>
+        <div className="flex justify-center">
+          <img 
+            src="/lovable-uploads/92535014-9f07-4035-b0a6-fe278e72b62c.png" 
+            alt="Retainly Logo" 
+            className="h-12 object-contain"
+          />
+        </div>
         <CardDescription className="text-muted-foreground text-base">
           Sign in to your account or create a new one
         </CardDescription>
