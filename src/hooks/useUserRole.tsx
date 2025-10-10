@@ -27,8 +27,10 @@ export const useUserRole = () => {
         if (error) {
           console.error('Error fetching user role:', error);
           setRole('user'); // Default to user role
-        } else {
+        } else if (data) {
           setRole(data.role as UserRole);
+        } else {
+          setRole('user'); // Default to user role if no data
         }
       } catch (error) {
         console.error('Error in fetchUserRole:', error);
